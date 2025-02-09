@@ -1,0 +1,29 @@
+/*-- scss:links --*/
+
+/*-- custom variables --*/
+
+$link-unvisited: rgba(0, 255, 0, .8);
+$link-visited: rgba(0, 255, 0, .5);
+$link-hover: rgba(0, 255, 0, .5);
+
+
+// Selectors
+
+// Helpful link styling for most use-cases
+a {
+  &:link {
+    color: $link-unvisited;
+    //text-decoration: none;
+  }
+  &:visited {
+    color: $link-visited;
+  }
+  &:hover, &:focus {
+    color: $link-hover;
+    //text-decoration: underline;
+  }
+ &:active {
+    color: $link-hover;
+  } 
+}
+

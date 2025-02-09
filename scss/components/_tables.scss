@@ -1,0 +1,27 @@
+/*-- scss:tables --*/
+
+// Classes
+.gt_footnote, .gt_sourcenote {
+  text-align: left;
+}
+
+.gt_col_headings th.gt_col_heading {
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+}
+
+.gt_table_body td.gt_row {
+  box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+}
+
+.table-flex {
+  display: flex;
+  justify-content: center;
+  overflow-y: auto; 
+  overflow-x: hidden;
+  max-height: 90vh;
+  max-width: 100vw;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .50) transparent;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

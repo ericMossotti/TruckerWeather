@@ -1,0 +1,44 @@
+/*-- scss:code --*/
+
+// Classes
+
+.nutshell-bubble p code:not(.sourceCode), 
+.nutshell-bubble li code:not(.sourceCode),
+p code:not(.sourceCode),
+li code:not(.sourceCode),
+td code:not(.sourceCode) {
+  background-color: rgba(255,255, 255, .25);
+  color: rgba(255, 255, 0, 1);
+}
+
+.cell div.sourceCode {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: transparent; 
+    border: none;
+}
+
+.cell details.code-fold summary {
+    color: rgba(255, 255, 255, 0.7);
+    word-wrap: normal;
+    word-break: normal;
+    font-size: 14px;
+    padding: .50rem;
+    background-color: rgba(68, 68, 68, .5);
+    box-shadow: 4px 3px 7px 3px  rgba(255, 255, 255, 0.25);
+    border: none; //1px solid  rgba(255, 255, 255, 1);
+}
+
+
+.code-fold-flex {
+  display: flex;
+  flex-shrink: 1;
+  overflow-y: auto; 
+  overflow-x: hidden;
+  max-height: 60vh;
+  max-width: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .50) transparent;
+  padding: .5rem;
+  margin-bottom: .5rem;
+}
+
