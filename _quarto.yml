@@ -1,19 +1,31 @@
 project:
   type: website
+  render: 
+    - index.qmd
+    - "!practice/"
 
 website:
   title: "TruckerWeather"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+  #navbar:
+  # left:
+  #    - href: index.qmd
+  ##      text: Home
+   #   - about.qmd
+
+engine: knitr
+execute:
+  freeze: auto
+  
+layout: article
+editor: visual
 
 format:
   html:
-    theme: darkly
-    css: styles.css
-    toc: true
-
-editor: visual
+    comments:
+      hypothesis:
+        theme: clean
+        openSidebar: false
+    theme:
+       - darkly
+       - 'scss/main.scss'
 
