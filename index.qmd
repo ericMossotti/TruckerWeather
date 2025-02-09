@@ -1,11 +1,665 @@
 ---
 title: "TruckerWeather"
+
+bibliography: bibliography/references.bib
+
+citation: true
+citation-location: margin
+citations-hover: true
+
+code-copy: true
+code-fold: true
+code-link: true
+code-overflow: wrap
+code-tools: true
+
+fig-responsive: true
+
+lightbox: true
 ---
 
-This is a Quarto website.
+```{r}
+#| label: rLibraries
+#| echo: false
+#| warning: false
+#| message: false
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+library(DBI)
+library(dbplyr)
+library(dplyr)
+library(duckdb)
+library(gt)
+library(purrr)
+library(paletteer)
+library(reticulate)
+library(tibble)
+library(ggplot2)
+```
+
+```{python}
+#| label: pythonImports
+#| echo: false
+#| warning: false
+#| message: false
+
+import pandas as pd
+import openmeteo_requests
+import requests_cache
+
+from retry_requests import retry
+
+```
+
+# Visualize Weather Data
+
+## Database Connections
+
+### DuckDB Connection
 
 ```{r}
-1 + 1
+#| label: duckDBconnected
+
+duckdb_con <- dbConnect(duckdb::duckdb(
+     config = list(max_memory = '24GB')), ":memory:")
 ```
+
+## Custom Output Tools
+
+### Tables
+
+::: code-fold-flex
+```{r}
+#| label: "r_table_theming()"
+#| code-summary: "Table formatting code."
+#| warning: false
+
+
+eval_palette <- function(pal_name, n = 10, pal_type, direction = NULL) {
+     if (pal_type == "c") {
+       return(paletteer_c(pal_name, n, direction))
+       } else if (pal_type == "d") {
+            return(paletteer_d(pal_name, n, direction))
+       } else if (pal_type == "dynamic") {
+                 return(paletteer_dynamic(pal_name, n, direction))
+            }
+     }
+
+r_table_theming <- function(r_df,
+                            title,
+                            subtitle,
+                            footnotes_df,
+                            source_note,
+                            pal_df,
+                            multiline_feet = NULL,
+                            tbl_font_size = NULL,
+                            color_by_columns = NULL,
+                            do_col_labels = FALSE,
+                            target_everything = FALSE
+                            ) {
+     r_table <- gt(r_df)
+     
+     r_table <- r_table |>
+          tab_header(title = title, subtitle = subtitle)
+     
+     if (nrow(r_df) > 1 && target_everything == FALSE) {
+          # Formatted rows are added to the accumulator, 
+          # building up to the final result
+          r_table <- seq_len(nrow(pal_df)) |>
+               reduce(\(acc, i) {
+                    data_color(acc,
+                               palette = pal_df$pals[[i]],
+                               columns = pal_df$cols[[i]])
+               }, .init = r_table)
+     }
+     else if (nrow(r_df) > 1 && target_everything == TRUE) {
+          # Formatted columns are added to the accumulator, 
+          # building up to the final result
+          r_table <- seq_len(nrow(pal_df)) |>
+               reduce(\(acc, i) {
+                    data_color(
+                         acc,
+                         columns = color_by_columns,
+                         palette = pal_df$pals[[i]],
+                         target_columns = everything()
+                    )
+               }, .init = r_table)
+     }
+     
+     # Footnotes are added to the accumulator, building up to the final result
+     r_table <- seq_len(nrow(footnotes_df)) |>
+          reduce(\(acc, i) {
+               tab_footnote(
+                    acc,
+                    footnote = footnotes_df$notes[[i]],
+                    location = cells_column_labels(
+                         columns = footnotes_df$locations[[i]]),
+                    placement = "auto"
+               )
+          }, .init = r_table)
+     
+     if (ncol(r_df) > 1 && do_col_labels == TRUE) {
+          cell_col_fills = pal_df$pals[[1]]
+          # Formatted column labels are added to the accumulator, 
+          # building up to the final result
+          r_table <- seq_len(nrow(pal_df)) |>
+               reduce(\(acc, i) {
+                    tab_style(
+                         acc,
+                         style = cell_fill(color = cell_col_fills[i]),
+                         locations = cells_column_labels(
+                              columns = pal_df$cols[[i]])
+                    )
+               }, .init = r_table)
+          }
+     
+     r_table <- r_table |>
+          tab_source_note(source_note = source_note)
+     
+     r_table <- r_table |>
+          tab_options(
+               column_labels.padding = px(10),
+               column_labels.font.weight = "bold",
+               column_labels.background.color = '#333',
+               column_labels.border.top.width = px(0),
+               column_labels.border.bottom.color = 'black',
+               column_labels.vlines.width = px(1),
+               column_labels.border.lr.width = px(1),
+               column_labels.border.bottom.width = px(0),
+               column_labels.border.lr.color = 'black',
+               column_labels.vlines.color = 'black',
+               footnotes.padding = px(5),
+               footnotes.background.color = '#222',
+               footnotes.sep = ", ",
+               footnotes.multiline = multiline_feet,
+               heading.padding = px(10),
+               heading.background.color = '#222',
+               heading.title.font.size = pct(125),
+               heading.subtitle.font.size = pct(110),
+               heading.border.bottom.width = px(0),
+               row.striping.include_table_body	= TRUE,
+               row.striping.background_color = '#333',
+               source_notes.background.color = '#222',
+               table.margin.left = px(1),
+               table.margin.right = px(1),
+               table.align = "center",
+               table.border.top.width = px(0),
+               table.border.bottom.width = px(0),
+               table.background.color = '#222',
+               table.font.size = tbl_font_size,
+               table.layout = "auto",
+               table_body.hlines.color = 'black',
+               table_body.hlines.width = px(0),
+               table_body.vlines.width = px(0),
+               table_body.border.bottom.color = 'black',
+               table_body.border.top.color = 'black',
+               table_body.border.bottom.width = px(0),
+               table_body.border.top.width = px(0)
+          )
+     
+     return(r_table)
+}
+```
+:::
+
+#### Plots
+
+::: code-fold-flex
+```{r}
+#| label: "ggplot_theming"
+#| code-summary: "Plot theming code."
+
+# normal axes
+ggplot_theming <- function() {
+     theme_minimal() +
+          theme(
+               axis.title = element_text(color = 'gray100'),
+               axis.text = element_text(color = 'gray'),
+               legend.background = element_rect(fill = '#222'),
+               legend.text = element_text(color = 'gray'),
+               legend.title = element_text(color = 'white'),
+               panel.background = element_rect(fill = '#222'),
+               panel.grid.major.x = element_line(
+                    linetype = 'solid', color = 'black'),
+               panel.grid.minor.x = element_line(
+                    linetype = "dotted", color = 'gray'),
+               panel.grid.major.y = element_line(
+                    linetype = 'dashed', color = 'black'),
+               panel.grid.minor.y = element_line(
+                    linetype = 'dotted', color = 'gray'),
+               plot.title = element_text(color = 'white', size = rel(1.5)),
+               plot.background = element_rect(fill = '#222')
+          )
+     }
+
+# flipped axes
+ggplot_theming_flipped_axes <- function() {
+     theme_minimal() +
+          theme(
+               axis.title = element_text(color = 'gray100'),
+               axis.text = element_text(color = 'gray'),
+               panel.background = element_rect(fill = '#222'),
+               panel.grid.major.x = element_line(linetype = 'dashed'),
+               panel.grid.minor.x = element_line(linetype = "dotted"),
+               panel.grid.major.y = element_line(linetype = 'solid'),
+               panel.grid.minor.y = element_line(linetype = 'dotted'),
+               plot.title = element_text(color = 'white', size = rel(2)),
+               plot.background = element_rect(fill = '#222'),
+               legend.background = element_rect(fill = '#222'),
+               legend.text = element_text(color = 'gray'),
+               legend.title = element_text(color = 'white')
+          )
+     }
+
+```
+:::
+
+## Weather Data API Connection
+
+[@openMeteo_2025]
+
+Dwight D. Eisenhower Hwy, aka, the intersection of Hwy 70 & 270
+
+#### Daily
+
+```{python}
+#| label: weatherApi_Daily
+
+import openmeteo_requests
+
+import requests_cache
+import pandas as pd
+from retry_requests import retry
+
+# Setup the Open-Meteo API client with cache and retry on error
+cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+openmeteo = openmeteo_requests.Client(session = retry_session)
+
+# Make sure all required weather variables are listed here
+# The order of variables in hourly or daily is important to assign them correctly below
+url = "https://api.open-meteo.com/v1/forecast"
+params = {
+	"latitude": 38.748,
+	"longitude": -90.439,
+	"daily": 
+	     ["weather_code", 
+	     "daylight_duration", 
+	     "precipitation_sum", 
+	     "rain_sum", 
+	     "showers_sum", 
+	     "snowfall_sum", 
+	     "precipitation_hours", 
+	     "precipitation_probability_max", 
+	     "wind_speed_10m_max", 
+	     "wind_gusts_10m_max", 
+	     "wind_direction_10m_dominant"],
+	"temperature_unit": "fahrenheit",
+	"wind_speed_unit": "mph",
+	"precipitation_unit": "inch",
+	"timezone": "America/Chicago",
+	"models": "best_match"
+}
+responses = openmeteo.weather_api(url, params=params)
+
+# Process first location. Add a for-loop for multiple locations or weather models
+response = responses[0]
+print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+print(f"Elevation {response.Elevation()} m asl")
+print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
+print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
+
+# Process daily data. The order of variables needs to be the same as requested.
+daily = response.Daily()
+daily_weather_code = daily.Variables(0).ValuesAsNumpy()
+daily_daylight_duration = daily.Variables(1).ValuesAsNumpy()
+daily_precipitation_sum = daily.Variables(2).ValuesAsNumpy()
+daily_rain_sum = daily.Variables(3).ValuesAsNumpy()
+daily_showers_sum = daily.Variables(4).ValuesAsNumpy()
+daily_snowfall_sum = daily.Variables(5).ValuesAsNumpy()
+daily_precipitation_hours = daily.Variables(6).ValuesAsNumpy()
+daily_precipitation_probability_max = daily.Variables(7).ValuesAsNumpy()
+daily_wind_speed_10m_max = daily.Variables(8).ValuesAsNumpy()
+daily_wind_gusts_10m_max = daily.Variables(9).ValuesAsNumpy()
+daily_wind_direction_10m_dominant = daily.Variables(10).ValuesAsNumpy()
+
+daily_data = {"date": pd.date_range(
+	start = pd.to_datetime(daily.Time(), unit = "s", utc = True),
+	end = pd.to_datetime(daily.TimeEnd(), unit = "s", utc = True),
+	freq = pd.Timedelta(seconds = daily.Interval()),
+	inclusive = "left"
+)}
+
+daily_data["weather_code"] = daily_weather_code
+daily_data["daylight_duration"] = daily_daylight_duration
+daily_data["precipitation_sum"] = daily_precipitation_sum
+daily_data["rain_sum"] = daily_rain_sum
+daily_data["showers_sum"] = daily_showers_sum
+daily_data["snowfall_sum"] = daily_snowfall_sum
+daily_data["precipitation_hours"] = daily_precipitation_hours
+daily_data["precipitation_probability_max"] = daily_precipitation_probability_max
+daily_data["wind_speed_10m_max"] = daily_wind_speed_10m_max
+daily_data["wind_gusts_10m_max"] = daily_wind_gusts_10m_max
+daily_data["wind_direction_10m_dominant"] = daily_wind_direction_10m_dominant
+
+daily_dataframe = pd.DataFrame(data = daily_data)
+print(daily_dataframe)
+
+```
+
+#### Hourly
+
+```{python}
+import openmeteo_requests
+
+import requests_cache
+import pandas as pd
+from retry_requests import retry
+
+# Setup the Open-Meteo API client with cache and retry on error
+cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+openmeteo = openmeteo_requests.Client(session = retry_session)
+
+# Make sure all required weather variables are listed here
+# The order of variables in hourly or daily is important to assign them correctly below
+url = "https://api.open-meteo.com/v1/forecast"
+params = {
+	"latitude": 38.748,
+	"longitude": -90.439,
+	"hourly": 
+	     ["temperature_2m", 
+	     "precipitation_probability", 
+	     "precipitation", 
+	     "rain", 
+	     "showers", 
+	     "snowfall", 
+	     "snow_depth", 
+	     "weather_code", 
+	     "visibility", 
+	     "wind_speed_10m", 
+	     "wind_direction_10m"],
+	"temperature_unit": "fahrenheit",
+	"wind_speed_unit": "mph",
+	"precipitation_unit": "inch",
+	"timezone": "America/Chicago",
+	"models": "best_match"
+}
+responses = openmeteo.weather_api(url, params=params)
+
+# Process first location. Add a for-loop for multiple locations or weather models
+response = responses[0]
+print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+print(f"Elevation {response.Elevation()} m asl")
+print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
+print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
+
+# Process hourly data. The order of variables needs to be the same as requested.
+hourly = response.Hourly()
+hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
+hourly_precipitation_probability = hourly.Variables(1).ValuesAsNumpy()
+hourly_precipitation = hourly.Variables(2).ValuesAsNumpy()
+hourly_rain = hourly.Variables(3).ValuesAsNumpy()
+hourly_showers = hourly.Variables(4).ValuesAsNumpy()
+hourly_snowfall = hourly.Variables(5).ValuesAsNumpy()
+hourly_snow_depth = hourly.Variables(6).ValuesAsNumpy()
+hourly_weather_code = hourly.Variables(7).ValuesAsNumpy()
+hourly_visibility = hourly.Variables(8).ValuesAsNumpy()
+hourly_wind_speed_10m = hourly.Variables(9).ValuesAsNumpy()
+hourly_wind_direction_10m = hourly.Variables(10).ValuesAsNumpy()
+
+hourly_data = {"date": pd.date_range(
+	start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+	end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+	freq = pd.Timedelta(seconds = hourly.Interval()),
+	inclusive = "left"
+)}
+
+hourly_data["temperature_2m"] = hourly_temperature_2m
+hourly_data["precipitation_probability"] = hourly_precipitation_probability
+hourly_data["precipitation"] = hourly_precipitation
+hourly_data["rain"] = hourly_rain
+hourly_data["showers"] = hourly_showers
+hourly_data["snowfall"] = hourly_snowfall
+hourly_data["snow_depth"] = hourly_snow_depth
+hourly_data["weather_code"] = hourly_weather_code
+hourly_data["visibility"] = hourly_visibility
+hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
+
+hourly_dataframe = pd.DataFrame(data = hourly_data)
+print(hourly_dataframe)
+
+```
+
+```{r}
+#| label: quickConvert
+hourly_dataframe_r <- py$hourly_dataframe
+duckdb_register(duckdb_con, "hourly", hourly_dataframe_r)
+```
+
+```{sql}
+#| connection: duckdb_con
+CREATE TABLE hourly_table AS SELECT * FROM hourly;
+```
+
+```{sql}
+#| label: quickSqlChunkOutput
+#| connection: duckdb_con
+SELECT * FROM hourly_table;
+```
+
+```{r}
+#| label: quickLazyQueryExample
+dplyr::tbl(duckdb_con, "hourly_table") |>
+     dplyr::collect()
+```
+
+### Param Dictionary
+
+#### **API Documentation**
+
+The API endpoint /v1/forecast accepts a geographical coordinate, a list of weather variables and responds with a JSON hourly weather forecast for 7 days. Time always starts at 0:00 today and contains 168 hours. If &forecast_days=16 is set, up to 16 days of forecast can be returned. All URL parameters are listed below:
+
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Parameter             | Format                    | Required | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++=======================+===========================+==========+=========+================================================================================================================================================================================================================================================================================================================================================================================================================================================================================+
+| latitude, longitude   | Floating point            | Yes      |         | Geographical WGS84 coordinates of the location. Multiple coordinates can be comma separated. E.g. &latitude=52.52,48.85&longitude=13.41,2.35. To return data for multiple locations the JSON output changes to a list of structures. CSV and XLSX formats add a column location_id.                                                                                                                                                                                            |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| elevation             | Floating point            | No       |         | The elevation used for statistical downscaling. Per default, a [90 meter digital elevation model is used](https://openmeteo.substack.com/p/improving-weather-forecasts-with "Elevation based grid-cell selection explained"). You can manually set the elevation to correctly match mountain peaks. If &elevation=nan is specified, downscaling will be disabled and the API uses the average grid-cell height. For multiple locations, elevation can also be comma separated. |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| hourly                | String array              | No       |         | A list of weather variables which should be returned. Values can be comma separated, or multiple &hourly= parameter in the URL can be used.                                                                                                                                                                                                                                                                                                                                    |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| daily                 | String array              | No       |         | A list of daily weather variable aggregations which should be returned. Values can be comma separated, or multiple &daily= parameter in the URL can be used. If daily weather variables are specified, parameter timezone is required.                                                                                                                                                                                                                                         |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| current               | String array              | No       |         | A list of weather variables to get current conditions.                                                                                                                                                                                                                                                                                                                                                                                                                         |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| temperature_unit      | String                    | No       | celsius | If fahrenheit is set, all temperature values are converted to Fahrenheit.                                                                                                                                                                                                                                                                                                                                                                                                      |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_speed_unit       | String                    | No       | kmh     | Other wind speed speed units: ms, mph and kn                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation_unit    | String                    | No       | mm      | Other precipitation amount units: inch                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| timeformat            | String                    | No       | iso8601 | If format unixtime is selected, all time values are returned in UNIX epoch time in seconds. Please note that all timestamp are in GMT+0! For daily values with unix timestamps, please apply utc_offset_seconds again to get the correct date.                                                                                                                                                                                                                                 |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| timezone              | String                    | No       | GMT     | If timezone is set, all timestamps are returned as local-time and data is returned starting at 00:00 local-time. Any time zone name from the [time zone database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) is supported. If auto is set as a time zone, the coordinates will be automatically resolved to the local time zone. For multiple coordinates, a comma separated list of timezones can be specified.                                            |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| past_days             | Integer (0-92)            | No       | 0       | If past_days is set, yesterday or the day before yesterday data are also returned.                                                                                                                                                                                                                                                                                                                                                                                             |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| forecast_days         | Integer (0-16)            | No       | 7       | Per default, only 7 days are returned. Up to 16 days of forecast are possible.                                                                                                                                                                                                                                                                                                                                                                                                 |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| forecast_hours\       | Integer (\>0)             | No       |         | Similar to forecast_days, the number of timesteps of hourly and 15-minutely data can controlled. Instead of using the current day as a reference, the current hour or the current 15-minute time-step is used.                                                                                                                                                                                                                                                                 |
+| forecast_minutely_15\ |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| past_hours\           |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| past_minutely_15      |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| start_date\           | String (yyyy-mm-dd)       | No       |         | The time interval to get weather data. A day must be specified as an ISO8601 date (e.g. 2022-06-30).                                                                                                                                                                                                                                                                                                                                                                           |
+| end_date              |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| start_hour\           | String (yyyy-mm-ddThh:mm) | No       |         | The time interval to get weather data for hourly or 15 minutely data. Time must be specified as an ISO8601 date (e.g. 2022-06-30T12:00).                                                                                                                                                                                                                                                                                                                                       |
+| end_hour\             |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| start_minutely_15\    |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| end_minutely_15       |                           |          |         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| models                | String array              | No       | auto    | Manually select one or more weather models. Per default, the best suitable weather models will be combined.                                                                                                                                                                                                                                                                                                                                                                    |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cell_selection        | String                    | No       | land    | Set a preference how grid-cells are selected. The default land finds a suitable grid-cell on land with [similar elevation to the requested coordinates using a 90-meter digital elevation model](https://openmeteo.substack.com/p/improving-weather-forecasts-with "Elevation based grid-cell selection explained"). sea prefers grid-cells on sea. nearest selects the nearest possible grid-cell.                                                                            |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| apikey                | String                    | No       |         | Only required to commercial use to access reserved API resources for customers. The server URL requires the prefix customer-. See [pricing](https://open-meteo.com/en/pricing "Pricing information to use the weather API commercially") for more information.                                                                                                                                                                                                                 |
++-----------------------+---------------------------+----------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**\
+**
+
+#### **WMO Weather interpretation codes (WW)**
+
+| Code       | Description                                      |
+|------------|--------------------------------------------------|
+| 0          | Clear sky                                        |
+| 1, 2, 3    | Mainly clear, partly cloudy, and overcast        |
+| 45, 48     | Fog and depositing rime fog                      |
+| 51, 53, 55 | Drizzle: Light, moderate, and dense intensity    |
+| 56, 57     | Freezing Drizzle: Light and dense intensity      |
+| 61, 63, 65 | Rain: Slight, moderate and heavy intensity       |
+| 66, 67     | Freezing Rain: Light and heavy intensity         |
+| 71, 73, 75 | Snow fall: Slight, moderate, and heavy intensity |
+| 77         | Snow grains                                      |
+| 80, 81, 82 | Rain showers: Slight, moderate, and violent      |
+| 85, 86     | Snow showers slight and heavy                    |
+| 95 \*      | Thunderstorm: Slight or moderate                 |
+| 96, 99 \*  | Thunderstorm with slight and heavy hail          |
+
+#### **Hourly Parameter Definition**
+
+The parameter &hourly= accepts the following values. Most weather variables are given as an instantaneous value for the indicated hour. Some variables like precipitation are calculated from the preceding hour as an average or sum.
+
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable                   | Valid time                 | Unit                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
++============================+============================+========================+========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================+
+| temperature_2m             | Instant                    | °C (°F)                | Air temperature at 2 meters above ground                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| relative_humidity_2m       | Instant                    | \%                     | Relative humidity at 2 meters above ground                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| dew_point_2m               | Instant                    | °C (°F)                | Dew point temperature at 2 meters above ground                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| apparent_temperature       | Instant                    | °C (°F)                | Apparent temperature is the perceived feels-like temperature combining wind chill factor, relative humidity and solar radiation                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| pressure_msl\              | Instant                    | hPa                    | Atmospheric air pressure reduced to mean sea level (msl) or pressure at surface. Typically pressure on mean sea level is used in meteorology. Surface pressure gets lower with increasing elevation.                                                                                                                                                                                                                                                                                                                                   |
+| surface_pressure           |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cloud_cover                | Instant                    | \%                     | Total cloud cover as an area fraction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cloud_cover_low            | Instant                    | \%                     | Low level clouds and fog up to 3 km altitude                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cloud_cover_mid            | Instant                    | \%                     | Mid level clouds from 3 to 8 km altitude                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cloud_cover_high           | Instant                    | \%                     | High level clouds from 8 km altitude                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_speed_10m\            | Instant                    | km/h (mph, m/s, knots) | Wind speed at 10, 80, 120 or 180 meters above ground. Wind speed on 10 meters is the standard level.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| wind_speed_80m\            |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| wind_speed_120m\           |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| wind_speed_180m            |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_direction_10m\        | Instant                    | °                      | Wind direction at 10, 80, 120 or 180 meters above ground                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| wind_direction_80m\        |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| wind_direction_120m\       |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| wind_direction_180m        |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_gusts_10m             | Preceding hour max         | km/h (mph, m/s, knots) | Gusts at 10 meters above ground as a maximum of the preceding hour                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| shortwave_radiation        | Preceding hour mean        | W/m²                   | Shortwave solar radiation as average of the preceding hour. This is equal to the total global horizontal irradiation                                                                                                                                                                                                                                                                                                                                                                                                                   |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| direct_radiation\          | Preceding hour mean        | W/m²                   | Direct solar radiation as average of the preceding hour on the horizontal plane and the normal plane (perpendicular to the sun)                                                                                                                                                                                                                                                                                                                                                                                                        |
+| direct_normal_irradiance   |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| diffuse_radiation          | Preceding hour mean        | W/m²                   | Diffuse solar radiation as average of the preceding hour                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| global_tilted_irradiance   | Preceding hour mean        | W/m²                   | Total radiation received on a tilted pane as average of the preceding hour. The calculation is assuming a fixed albedo of 20% and in isotropic sky. Please specify tilt and azimuth parameter. Tilt ranges from 0° to 90° and is typically around 45°. Azimuth should be close to 0° (0° south, -90° east, 90° west). If azimuth is set to "nan", the calculation assumes a horizontal tracker. If tilt is set to "nan", it is assumed that the panel has a vertical tracker. If both are set to "nan", a bi-axial tracker is assumed. |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| vapour_pressure_deficit    | Instant                    | kPa                    | Vapour Pressure Deficit (VPD) in kilopascal (kPa). For high VPD (\>1.6), water transpiration of plants increases. For low VPD (\<0.4), transpiration decreases                                                                                                                                                                                                                                                                                                                                                                         |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| cape                       | Instant                    | J/kg                   | Convective available potential energy. See [Wikipedia](https://en.wikipedia.org/wiki/Convective_available_potential_energy).                                                                                                                                                                                                                                                                                                                                                                                                           |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| evapotranspiration         | Preceding hour sum         | mm (inch)              | Evapotranspration from land surface and plants that weather models assumes for this location. Available soil water is considered. 1 mm evapotranspiration per hour equals 1 liter of water per spare meter.                                                                                                                                                                                                                                                                                                                            |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| et0_fao_evapotranspiration | Preceding hour sum         | mm (inch)              | ET₀ Reference Evapotranspiration of a well watered grass field. Based on [FAO-56 Penman-Monteith equations](https://www.fao.org/3/x0490e/x0490e04.htm) ET₀ is calculated from temperature, wind speed, humidity and solar radiation. Unlimited soil water is assumed. ET₀ is commonly used to estimate the required irrigation for plants.                                                                                                                                                                                             |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation              | Preceding hour sum         | mm (inch)              | Total precipitation (rain, showers, snow) sum of the preceding hour                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| snowfall                   | Preceding hour sum         | cm (inch)              | Snowfall amount of the preceding hour in centimeters. For the water equivalent in millimeter, divide by 7. E.g. 7 cm snow = 10 mm precipitation water equivalent                                                                                                                                                                                                                                                                                                                                                                       |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation_probability  | Preceding hour probability | \%                     | Probability of precipitation with more than 0.1 mm of the preceding hour. Probability is based on ensemble weather models with 0.25° (\~27 km) resolution. 30 different simulations are computed to better represent future weather conditions.                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| rain                       | Preceding hour sum         | mm (inch)              | Rain from large scale weather systems of the preceding hour in millimeter                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| showers                    | Preceding hour sum         | mm (inch)              | Showers from convective precipitation in millimeters from the preceding hour                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| weather_code               | Instant                    | WMO code               | Weather condition as a numeric code. Follow WMO weather interpretation codes. See table below for details.                                                                                                                                                                                                                                                                                                                                                                                                                             |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| snow_depth                 | Instant                    | meters                 | Snow depth on the ground                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| freezing_level_height      | Instant                    | meters                 | Altitude above sea level of the 0°C level                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| visibility                 | Instant                    | meters                 | Viewing distance in meters. Influenced by low clouds, humidity and aerosols.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| soil_temperature_0cm\      | Instant                    | °C (°F)                | Temperature in the soil at 0, 6, 18 and 54 cm depths. 0 cm is the surface temperature on land or water surface temperature on water.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| soil_temperature_6cm\      |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| soil_temperature_18cm\     |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| soil_temperature_54cm      |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| soil_moisture_0_to_1cm\    | Instant                    | m³/m³                  | Average soil water content as volumetric mixing ratio at 0-1, 1-3, 3-9, 9-27 and 27-81 cm depths.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| soil_moisture_1_to_3cm\    |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| soil_moisture_3_to_9cm\    |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| soil_moisture_9_to_27cm\   |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| soil_moisture_27_to_81cm   |                            |                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| is_day                     | Instant                    | Dimensionless          | 1 if the current time step has daylight, 0 at night.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++----------------------------+----------------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+#### **Daily Parameter Definition**
+
+Aggregations are a simple 24 hour aggregation from hourly values. The parameter &daily= accepts the following values:
+
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable                       | Unit                   | Description                                                                                                                                                                                                                                                        |
++================================+========================+====================================================================================================================================================================================================================================================================+
+| temperature_2m_max\            | °C (°F)                | Maximum and minimum daily air temperature at 2 meters above ground                                                                                                                                                                                                 |
+| temperature_2m_min             |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| apparent_temperature_max\      | °C (°F)                | Maximum and minimum daily apparent temperature                                                                                                                                                                                                                     |
+| apparent_temperature_min       |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation_sum              | mm                     | Sum of daily precipitation (including rain, showers and snowfall)                                                                                                                                                                                                  |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| rain_sum                       | mm                     | Sum of daily rain                                                                                                                                                                                                                                                  |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| showers_sum                    | mm                     | Sum of daily showers                                                                                                                                                                                                                                               |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| snowfall_sum                   | cm                     | Sum of daily snowfall                                                                                                                                                                                                                                              |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation_hours            | hours                  | The number of hours with rain                                                                                                                                                                                                                                      |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| precipitation_probability_max\ | \%                     | Probability of precipitation                                                                                                                                                                                                                                       |
+| precipitation_probability_min\ |                        |                                                                                                                                                                                                                                                                    |
+| precipitation_probability_mean |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| weather_code                   | WMO code               | The most severe weather condition on a given day                                                                                                                                                                                                                   |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| sunrise\                       | iso8601                | Sun rise and set times                                                                                                                                                                                                                                             |
+| sunset                         |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| sunshine_duration              | seconds                | The number of seconds of sunshine per day is determined by calculating direct normalized irradiance exceeding 120 W/m², following the WMO definition. Sunshine duration will consistently be less than daylight duration due to dawn and dusk.                     |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| daylight_duration              | seconds                | Number of seconds of daylight per day                                                                                                                                                                                                                              |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_speed_10m_max\            | km/h (mph, m/s, knots) | Maximum wind speed and gusts on a day                                                                                                                                                                                                                              |
+| wind_gusts_10m_max             |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| wind_direction_10m_dominant    | °                      | Dominant wind direction                                                                                                                                                                                                                                            |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| shortwave_radiation_sum        | MJ/m²                  | The sum of solar radiation on a given day in Megajoules                                                                                                                                                                                                            |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| et0_fao_evapotranspiration     | mm                     | Daily sum of ET₀ Reference Evapotranspiration of a well watered grass field                                                                                                                                                                                        |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| uv_index_max\                  | Index                  | Daily maximum in UV Index starting from 0. uv_index_clear_sky_max assumes cloud free conditions. Please follow the [official WMO guidelines](https://www.who.int/news-room/questions-and-answers/item/radiation-the-ultraviolet-(uv)-index) for ultraviolet index. |
+| uv_index_clear_sky_max         |                        |                                                                                                                                                                                                                                                                    |
++--------------------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
