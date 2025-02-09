@@ -1,6 +1,6 @@
 # TruckerWeather
 
-### ::: For adding version control to quarto project :::
+### For adding version control to quarto project
 
 In bash terminal:
 
@@ -24,7 +24,7 @@ gh auth login
 gh repo create
 ```
 
-**Follow instructions on browser popup, or possibly (as an example):**
+#### **Follow instructions on browser popup, or possibly (as an example):**
 
 ``` bash
 echo "# TruckerWeather" >> README.md 
@@ -50,7 +50,7 @@ git branch -M main git remote add origin https://github.com/ericMossotti/Trucker
 git push -u origin main
 ```
 
-### ::: Reproducing a renv project environment on another machine:::
+### Reproducing a renv project environment on another machine
 
 in R console:
 
