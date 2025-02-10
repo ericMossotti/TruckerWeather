@@ -28,7 +28,7 @@ renv::restore()
 renv::snapshot()
 ```
 
-Follow prompts to install R and Python packages during these steps where necessary.
+Follow prompts to install R and Python packages during these steps where necessary. If doing this without an R console, you might be able to run that R code in R-code chunk(s) within the `index.qmd` file of the project.
 
 ### For adding version control to a new quarto project
 
