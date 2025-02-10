@@ -94,7 +94,7 @@ From sql file
 
 ```{r}
      
-sql <- readLines("scripts/msTest.sql")
+sql <- readLines("scripts/SQL/msTest.sql")
 
 # Execute the SQL commands
 dbExecute(mssql_con, paste(sql, collapse = "\n"))
