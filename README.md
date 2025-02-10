@@ -1,6 +1,36 @@
 # TruckerWeather
 
-### For adding version control to quarto project
+### Reproducing a renv project environment on another machine
+
+First, have R and Python installed globally on your system.
+
+In Rstudio:
+
+Go to: `File`
+
+Click `New Project`
+
+Select `Version Control`
+
+Paste the gh repo link.
+
+in R console:
+
+``` r
+install.packages("renv")
+```
+
+``` r
+renv::restore()
+```
+
+``` r
+renv::snapshot()
+```
+
+Follow prompts to install R and Python packages during these steps where necessary.
+
+### For adding version control to a new quarto project
 
 In bash terminal:
 
@@ -48,12 +78,4 @@ git branch -M main git remote add origin https://github.com/ericMossotti/Trucker
 
 ``` bash
 git push -u origin main
-```
-
-### Reproducing a renv project environment on another machine
-
-in R console:
-
-``` R
-renv::restore()
 ```
