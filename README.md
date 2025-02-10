@@ -1,6 +1,6 @@
 # TruckerWeather
 
-### Reproducing a renv Quarto project environment on another machine
+## Reproducing a Quarto project environment on another machine
 
 First, have R and Python installed globally on your system.
 
@@ -30,7 +30,7 @@ renv::snapshot()
 
 Follow prompts to install R and Python packages during these steps where necessary. If doing this without an R console, you might be able to run that R code in R-code chunk(s) within the `index.qmd` file of the project.
 
-### For Creating a MSSQL Server in Docker
+## For Creating a MSSQL Server in Docker
 
 ``` bash
 sudo docker pull mcr.microsoft.com/mssql/server:2022-latest
@@ -40,7 +40,7 @@ sudo docker pull mcr.microsoft.com/mssql/server:2022-latest
 sudo docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=MyStr@ngPassw0rd11" -p 1433:1433 --name sql1 --hostname sql1 -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-#### Creating a Database within Docker MSSQL Server
+### Creating a Database within Docker MSSQL Server
 
 From system's bash terminal:
 
