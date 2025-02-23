@@ -40,3 +40,432 @@ Then run this to verify this database connection type is now available.
 ```{bash}
 odbcinst -q -d
 ```
+
+### Test SQL Server to DuckDB Pipeline
+
+From sql file
+
+```{r}
+     
+sql <- readLines("scripts/SQL/msTest.sql")
+
+# Execute the SQL commands
+dbExecute(mssql_con, paste(sql, collapse = "\n"))
+
+result <- tbl(mssql_con, I("dbo.inventory"))
+
+print(result)
+```
+
+Or from sql code chunk
+
+```{sql}
+#| connection: mssql_con
+USE TestDB;
+
+CREATE TABLE dbo.Inventory
+(id INT,
+name NVARCHAR (50),
+quantity INT,
+PRIMARY KEY (id));
+
+INSERT INTO dbo.Inventory
+VALUES (1, 'banana', 150);
+
+INSERT INTO dbo.Inventory
+VALUES (2, 'orange', 154);
+```
+
+Lazy query on mssql database table
+
+```{r}
+#| label: lazyMssql
+tbl(mssql_con, I("dbo.Inventory"))
+```
+
+Register mssql table with duckdb
+
+```{r}
+#| label: regMssql2ddb
+tbl(mssql_con, I("dbo.Inventory")) |>
+     duckdb_register(conn = duckdb_con, name = I("dbo.Inventory"))
+```
+
+return duckcdb registered mssql table as dataframe output
+
+```{r}
+#| label: dfOutRegMssqlddb
+result <- dbGetQuery(duckdb_con, "SELECT * FROM 'dbo.Inventory';")
+print(result)
+```
+
+```{r}
+#| label: normalCalcs
+result |>
+     summarize(q_sum = sum(quantity))
+```
+
+or lazy query registered mssql table with duckdb
+
+```{r}
+#| label: regMssql2Ddb
+tbl(duckdb_con, I("'dbo.Inventory'"))
+```
+
+do some lazy calculations
+
+```{r}
+#| label: lazyCalculations
+tbl(duckdb_con, I("'dbo.Inventory'")) |>
+     summarize(
+     q_sum = sum(quantity), 
+     q_avg = mean(quantity)
+     )
+```
+
+if you want to output as an object
+
+```{sql}
+#| label: output2Robject
+#| connection: duckdb_con
+#| output.var: "summary_of_hourly"
+SUMMARIZE 
+SELECT * 
+FROM hourly;
+```
+
+## Test Performance
+
+### Compare
+
+```{r}
+
+
+gc()
+
+# Profile the original code
+profvis({
+  result_original <- tbl(duckdb_con, "hourly") |>
+    select(
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall
+    ) |>
+    collect() |>
+    mutate(
+      time_only = format(date, "%H:%M:%S"),
+      common_date = as.POSIXct(paste("1970-01-01", time_only), format = "%Y-%m-%d %H:%M:%S"),
+      day = format(date, "%b %d")  # Extract day in "Feb 19" format
+    )
+})
+
+```
+
+```{r}
+gc()
+
+# Measure memory usage before running the code
+mem_before_original <- mem_used()
+
+# Run the original code
+result_original <- tbl(duckdb_con, "hourly") |>
+  select(
+    date, 
+    precipitation_probability, 
+    precipitation, 
+    rain, 
+    snowfall
+  ) |>
+  collect() |>
+  mutate(
+    time_only = format(date, "%H:%M:%S"),
+    common_date = as.POSIXct(paste("1970-01-01", time_only), format = "%Y-%m-%d %H:%M:%S"),
+    day = format(date, "%b %d")  # Extract day in "Feb 19" format
+  )
+
+# Measure memory usage after running the code
+mem_after_original <- mem_used()
+
+# Calculate memory used by the original code
+mem_used_original <- mem_after_original - mem_before_original
+
+# Print memory usage
+print(paste("Memory used by original code:", mem_used_original))
+```
+
+```{r}
+gc()
+original_time <- system.time({
+  result_original <- tbl(duckdb_con, "hourly") |>
+    select(
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall
+    ) |>
+    collect() |>
+    mutate(
+      time_only = format(date, "%H:%M:%S"),
+      common_date = as.POSIXct(paste("1970-01-01", time_only), format = "%Y-%m-%d %H:%M:%S"),
+      day = format(date, "%b %d")  # Extract day in "Feb 19" format
+    )
+})
+
+# Print the execution time
+print("Original code execution time:")
+print(original_time)
+
+```
+
+```{r}
+gc()
+
+# Profile the pure SQL approach
+profvis({
+  result_sql <- dbGetQuery(duckdb_con, "
+    SELECT 
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall,
+      strftime(date, '%H:%M:%S') AS time_only,
+      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
+      strftime(date, '%b %d') AS day
+    FROM 
+      hourly;
+  ")
+})
+```
+
+```{r}
+
+gc()
+
+# Measure memory usage before running the code
+mem_before_sql <- mem_used()
+
+# Run the pure SQL approach
+result_sql <- dbGetQuery(duckdb_con, "
+  SELECT 
+    date, 
+    precipitation_probability, 
+    precipitation, 
+    rain, 
+    snowfall,
+    strftime(date, '%H:%M:%S') AS time_only,
+    strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
+    strftime(date, '%b %d') AS day
+  FROM 
+    hourly;
+")
+
+# Measure memory usage after running the code
+mem_after_sql <- mem_used()
+
+# Calculate memory used by the pure SQL approach
+mem_used_sql <- mem_after_sql - mem_before_sql
+
+# Print memory usage
+print(paste("Memory used by pure SQL approach:", mem_used_sql))
+```
+
+```{r}
+gc()
+# Measure the performance of the new code
+new_time <- system.time({
+  result_new <- dbGetQuery(duckdb_con, "
+    SELECT 
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall,
+      strftime(date, '%H:%M:%S') AS time_only,
+      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
+      strftime(date, '%b %d') AS day
+    FROM 
+      hourly;
+  ")
+})
+
+# Print the execution time
+print("New code execution time:")
+print(new_time)
+```
+
+```{r}
+gc()
+# Profile the lazy query approach
+profvis({
+  hourly_lazy <- tbl(duckdb_con, "hourly")
+  
+  lazy_query <- hourly_lazy |>
+    select(
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall
+    ) |>
+    mutate(
+      time_only = sql("strftime(date, '%H:%M:%S')"),  # Use SQL for DuckDB functions
+      common_date = sql("strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S')"),
+      day = sql("strftime(date, '%b %d')")  # Extract day in "Feb 19" format
+    )
+  
+  result_lazy <- lazy_query |>
+    collect()
+})
+```
+
+```{r}
+
+gc()
+
+# Measure memory usage before running the code
+mem_before_lazy <- mem_used()
+
+# Run the lazy query approach
+hourly_lazy <- tbl(duckdb_con, "hourly")
+
+lazy_query <- hourly_lazy |>
+  select(
+    date, 
+    precipitation_probability, 
+    precipitation, 
+    rain, 
+    snowfall
+  ) |>
+  mutate(
+    time_only = sql("strftime(date, '%H:%M:%S')"),  # Use SQL for DuckDB functions
+    common_date = sql("strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S')"),
+    day = sql("strftime(date, '%b %d')")  # Extract day in "Feb 19" format
+  )
+
+result_lazy <- lazy_query |>
+  collect()
+
+# Measure memory usage after running the code
+mem_after_lazy <- mem_used()
+
+# Calculate memory used by the lazy query approach
+mem_used_lazy <- mem_after_lazy - mem_before_lazy
+
+# Print memory usage
+print(paste("Memory used by lazy query approach:", mem_used_lazy))
+```
+
+```{r}
+gc()
+# Measure the performance of the lazy query approach
+lazy_time <- system.time({
+  hourly_lazy <- tbl(duckdb_con, "hourly")
+  
+  lazy_query <- hourly_lazy |>
+    select(
+      date, 
+      precipitation_probability, 
+      precipitation, 
+      rain, 
+      snowfall
+    ) |>
+    mutate(
+      time_only = sql("strftime(date, '%H:%M:%S')"),  # Use SQL for DuckDB functions
+      common_date = sql("strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S')"),
+      day = sql("strftime(date, '%b %d')")  # Extract day in "Feb 19" format
+    )
+  
+  result_lazy <- lazy_query |>
+    collect()
+})
+
+# Print the execution time
+print("Lazy query code execution time:")
+print(lazy_time)
+```
+
+```{r}
+print(paste("Memory used by original code:", mem_used_original))
+print(paste("Memory used by pure SQL approach:", mem_used_sql))
+print(paste("Memory used by lazy query approach:", mem_used_lazy))
+```
+
+```{r}
+print("Original code execution time:")
+print(original_time)
+
+print("Pure SQL code execution time:")
+print(new_time)
+
+print("Lazy query code execution time:")
+print(lazy_time)
+```
+
+## Output
+
+```{r}
+test <- tbl(duckdb_con, "minutely") |>
+select("date", "temperature_2m") |>
+collect() |>
+mutate(
+time_only = format(date, "%H:%M:%S"),
+common_date = as.POSIXct(paste("1970-01-01", time_only), format = "%Y-%m-%d %H:%M:%S"),
+day = format(date, "%b %d")  # Extract day in "Feb 19" format
+)
+
+test |>
+ggplot(mapping = aes(x = common_date, y = temperature_2m)) +
+  geom_line() +
+  labs(title = "Temperature Trends", x = "Date", y = "Temperature (°F)") +
+  theme_minimal() +
+   scale_x_datetime(
+     labels = label_time("%l %p"),
+     breaks = "7 day",
+     minor_breaks = "1 hour",
+     guide = guide_axis(n.dodge = 2)
+     ) +
+   facet_grid(.~ day)  # One facet per day
+```
+
+```{python}
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+ 
+# link for extract html data
+ 
+ 
+def getdata(url):
+    r = requests.get(url)
+    return r.text
+ 
+ 
+htmldata = getdata("https://www.goodreturns.in/petrol-price.html")
+soup = BeautifulSoup(htmldata, 'html.parser')
+ 
+# Declare string var
+# Declare list
+mydatastr = ''
+result = []
+ 
+# searching all tr in the html data
+# storing as a string
+for table in soup.find_all('tr'):
+    mydatastr += table.get_text()
+ 
+# set according to your required
+mydatastr = mydatastr[1:]
+itemlist = mydatastr.split("\n\n")
+ 
+for item in itemlist[:-5]:
+    result.append(item.split("\n"))
+ 
+# Calling DataFrame constructor on list
+df = pd.DataFrame(result[:-8])
+df
+
+```

@@ -67,7 +67,7 @@ FROM sys.databases;
 GO
 ```
 
-## Optional and Other Info: 
+## Optional and Other Info:
 
 ### For adding version control to a new quarto project in general
 

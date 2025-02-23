@@ -23,9 +23,9 @@ td code:not(.sourceCode) {
     word-break: normal;
     font-size: 14px;
     padding: .50rem;
-    background-color: rgba(68, 68, 68, .5);
-    box-shadow: 4px 3px 7px 3px  rgba(255, 255, 255, 0.25);
-    border: none; //1px solid  rgba(255, 255, 255, 1);
+    background-color: rgba(34, 34, 34, 1);
+    box-shadow: 3px 2px 1px 0px rgba(255, 255, 255, .8);
+    border: 2px solid  rgba(255, 255, 255, 0.7);
 }
 
 
@@ -41,4 +41,3 @@ td code:not(.sourceCode) {
   padding: .5rem;
   margin-bottom: .5rem;
 }
-
