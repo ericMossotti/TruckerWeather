@@ -20,10 +20,18 @@ r_table_theming <- function(r_df,
                             multiline_feet = NULL,
                             tbl_font_size = NULL,
                             color_by_columns = NULL,
+                            row_name_col = NULL,
                             do_col_labels = FALSE,
                             target_everything = FALSE
 ) {
-     r_table <- gt(r_df)
+     if(is.null(row_name_col)) {
+          r_table <- gt(r_df)
+          
+     } else{
+          r_table <- gt(r_df,
+                        rowname_col = row_name_col,
+                       )
+     }
      
      r_table <- r_table |>
           tab_header(title = title, subtitle = subtitle)
@@ -103,9 +111,13 @@ r_table_theming <- function(r_df,
                heading.title.font.size = pct(125),
                heading.subtitle.font.size = pct(110),
                heading.border.bottom.width = px(0),
-               row.striping.include_table_body	= TRUE,
+               row.striping.include_table_body = TRUE,
+               row.striping.include_stub = TRUE,
                row.striping.background_color = '#333',
+               row_group.as_column = TRUE,
                source_notes.background.color = '#222',
+               stub.border.width = px(0),
+               stub.font.weight = "bolder",
                table.margin.left = px(1),
                table.margin.right = px(1),
                table.align = "center",
@@ -122,6 +134,10 @@ r_table_theming <- function(r_df,
                table_body.border.bottom.width = px(0),
                table_body.border.top.width = px(0)
           )
+     
+     
+ 
+     
      
      return(r_table)
 }

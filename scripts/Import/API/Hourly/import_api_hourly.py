@@ -1,5 +1,5 @@
 
-def hourly_api():
+def import_api_hourly(latitude: float, longitude: float) -> pd.DataFrame:
      # Setup the Open-Meteo API client with cache and retry on error
      cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
      retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
@@ -9,8 +9,8 @@ def hourly_api():
      # The order of variables in hourly or daily is important to assign them correctly below
      url = "https://api.open-meteo.com/v1/forecast"
      params = {
-     	"latitude": 38.748,
-     	"longitude": -90.439,
+     	"latitude": latitude,
+     	"longitude": longitude,
      	"hourly": 
      	     ["temperature_2m", 
      	     "precipitation_probability", 
@@ -27,6 +27,9 @@ def hourly_api():
      	"wind_speed_unit": "mph",
      	"precipitation_unit": "inch",
      	"timezone": "America/Chicago",
+     	"forecast_days": 1,
+     	"past_hours": 6,
+     	"forecast_hours": 24,
      	"models": "best_match"
      }
      responses = openmeteo.weather_api(url, params=params)
@@ -71,6 +74,4 @@ def hourly_api():
      hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
      hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
      
-     hourly_dataframe = pd.DataFrame(data = hourly_data)
-     
-     return(hourly_dataframe)
+     return(pd.DataFrame(data = hourly_data))

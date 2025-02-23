@@ -1,4 +1,4 @@
-def daily_api():
+def import_api_daily(latitude: float, longitude: float) -> pd.DataFrame:
      
      # Setup the Open-Meteo API client with cache and retry on error
      cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
@@ -9,8 +9,8 @@ def daily_api():
      # The order of variables in hourly or daily is important to assign them correctly below
      url = "https://api.open-meteo.com/v1/forecast"
      params = {
-     	"latitude": 38.748,
-     	"longitude": -90.439,
+     	"latitude": latitude,
+     	"longitude": longitude,
      	"daily": 
      	     ["weather_code", 
      	     "daylight_duration", 
@@ -71,6 +71,6 @@ def daily_api():
      daily_data["wind_gusts_10m_max"] = daily_wind_gusts_10m_max
      daily_data["wind_direction_10m_dominant"] = daily_wind_direction_10m_dominant
      
-     daily_dataframe = pd.DataFrame(data = daily_data)
+    # daily_dataframe = pd.DataFrame(data = daily_data)
      
-     return(daily_dataframe)
+     return(pd.DataFrame(data = daily_data))

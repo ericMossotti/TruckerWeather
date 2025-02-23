@@ -3,7 +3,7 @@ title: "TruckerWeather"
 
 bibliography: bibliography/references.bib
 
-citation: true
+citation: false
 citation-location: margin
 citations-hover: true
 
@@ -16,6 +16,8 @@ code-tools: true
 fig-responsive: true
 
 lightbox: true
+
+source: true
 ---
 
 ```{r}
@@ -23,16 +25,31 @@ lightbox: true
 #| echo: false
 #| warning: false
 #| message: false
+
+library(arrow)
 library(DBI)
 library(dbplyr)
 library(dplyr)
 library(duckdb)
+library(forcats)
+library(ggplot2)
 library(gt)
+library(lubridate)
+library(odbc)
+library(openair)
+#library(pillar)
+library(pryr)
 library(purrr)
 library(paletteer)
+#library(plotly)
+#library(plumber)
+library(png)
+#library(profvis)
+library(readr)
 library(reticulate)
+library(scales)
 library(tibble)
-library(ggplot2)
+library(tidyr)
 ```
 
 ```{python}
@@ -40,131 +57,56 @@ library(ggplot2)
 #| echo: false
 #| warning: false
 #| message: false
-import pandas as pd
 import openmeteo_requests
+import pandas as pd
+import polars as pl
 import requests_cache
 from retry_requests import retry
 ```
-
-# Visualize Weather Data
 
 ## Database Connections
 
 ### MSSQL
 
 ```{r}
-#| code-summary: "What you would execute in your terminal if on Ubuntu to get the odbc drivers for mssql connections."
-#| file: "scripts/Bash/mssql_odbc_driver.sh"
+#| include: false
 #| eval: false
+#| echo: false
+#| code-summary: "What you would execute in your terminal if on Ubuntu to get the odbc drivers for mssql connections."
+##| file: "practice/Bash/mssql_odbc_driver.sh"
 ```
 
 ```{r}
-library(DBI)
-library(odbc)
+#| label: "mssqlconnect"
+#| code-summary: "Connects to a dockerized mssql database."
+#| eval: false
+#| echo: true
 
 # Set up the connection
 mssql_con <- dbConnect(
   odbc::odbc(),
-  Driver = "ODBC Driver 18 for SQL Server", # Ensure this driver is installed
-  Server = "localhost,1433",               # Server address and port
-  Database = "TestDB",                     # Database name
-  UID = "sa",                              # Username
-  PWD = "MyStr@ngPassw0rd11",              # Password
-  TrustServerCertificate = "yes"           # Optional: For self-signed certificates
+  driver = "ODBC Driver 18 for SQL Server", 
+  server = "localhost,1433",               
+  database = "TestDB",                    
+  uid = "sa",                             
+  pwd = "MyStr@ngPassw0rd11",             
+  TrustServerCertificate = "yes"
 )
 
 # Test the connection
 #dbListTables(con)  # List tables in the database to verify the connection
 ```
 
-### DuckDB Connection
+### DuckDB
 
+::: code-fold-flex
 ```{r}
-#| label: duckDBconnected
+#| label: "duckDBconnected"
+#| code-summary: "Establish a DuckDB, embedded database connection."
 duckdb_con <- dbConnect(duckdb::duckdb(
      config = list(max_memory = '24GB')), ":memory:")
 ```
-
-### Test SQL Server to DuckDB Pipeline
-
-From sql file
-
-```{r}
-     
-sql <- readLines("scripts/SQL/msTest.sql")
-
-# Execute the SQL commands
-dbExecute(mssql_con, paste(sql, collapse = "\n"))
-
-result <- dplyr::tbl(mssql_con, I("dbo.inventory"))
-print(result)
-```
-
-Or from sql code chunk
-
-```{sql}
-#| connection: mssql_con
-USE TestDB;
-
-CREATE TABLE dbo.Inventory2
-(id INT,
-name NVARCHAR (50),
-quantity INT,
-PRIMARY KEY (id));
-
-INSERT INTO dbo.Inventory2
-VALUES (1, 'banana', 150);
-
-INSERT INTO dbo.Inventory2
-VALUES (2, 'orange', 154);
-```
-
-Lazy query on mssql database table
-
-```{r}
-#| label: lazyMssql
-dplyr::tbl(mssql_con, I("dbo.Inventory"))
-```
-
-Register mssql table with duckdb
-
-```{r}
-#| label: regMssql2Ddb
-dplyr::tbl(mssql_con, I("dbo.Inventory")) |>
-     duckdb_register(conn = duckdb_con, name = I("dbo.Inventory"))
-```
-
-return duckcdb registered mssql table as dataframe output
-
-```{r}
-#| label: dfOutRegMssqlDdb
-result <- dbGetQuery(duckdb_con, "SELECT * FROM 'dbo.Inventory';")
-print(result)
-```
-
-```{r}
-#| label: normalCalcs
-result |>
-     summarize(q_sum = sum(quantity))
-```
-
-or lazy query registered mssql table with duckdb
-
-```{r}
-#| label: regMssql2Ddb
-dplyr::tbl(duckdb_con, I("'dbo.Inventory'"))
-```
-
-do some lazy calculations
-
-```{r}
-#| label: lazyCalculations
-dplyr::tbl(duckdb_con, I("'dbo.Inventory'")) |>
-     summarize(
-     q_sum = sum(quantity), 
-     q_avg = mean(quantity)
-     )
-```
+:::
 
 ## Custom Output Tools
 
@@ -174,7 +116,7 @@ dplyr::tbl(duckdb_con, I("'dbo.Inventory'")) |>
 ```{r}
 #| label: "loadTableOutput"
 #| code-summary: "Table formatting code."
-#| file: "scripts/R/table_output.R"
+#| file: "scripts/Output/Tables/table_output.R"
 ```
 :::
 
@@ -184,7 +126,7 @@ dplyr::tbl(duckdb_con, I("'dbo.Inventory'")) |>
 ```{r}
 #| label: "loadPlotOutput"
 #| code-summary: "Plot theming code."
-#| file: "scripts/R/plot_output.R"
+#| file: "scripts/Output/Plots/plot_output.R"
 ```
 :::
 
@@ -192,57 +134,281 @@ dplyr::tbl(duckdb_con, I("'dbo.Inventory'")) |>
 
 [@openMeteo_2025]
 
-The coordinates used in example are currently from:
+#### Realistic Coordinate Examples
 
-> Dwight D. Eisenhower Hwy, aka, the intersection of Hwy 70 & 270
+-   Intersection of Hwy 70 & 270 38.748, -90.439
 
-#### Hourly
+-   The St. Louis Regional Freightway 38.627480, -90.189781
 
+-   Port of St. Louis 38.609215, -90.204275
+
+-   USPS Office Kansas City International Airport, KC, MO 39.304413, -94.720711
+
+-   Walmart Distribution Center, 1100 Matlock Dr, Saint James, MO 65559-9026 38.002338, -91.634422
+
+-   KCS International Freight Gateway, MO, 3301 East 147th Street, Kansas City, MO 64147 38.84930037041913, -94.55499143307868
+
+### Import Hourly Data
+
+::: code-fold-flex
 ```{python}
-#| label: sourceHourlyAPI
-#| file: "scripts/Python/hourly_api.py"
+#| label: loadHourlyAPIscript
+#| code-summary: "Run the API script to import the dataset."
+#| file: "scripts/Import/API/Hourly/import_api_hourly.py"
 ```
+:::
 
-```{python}
-hourly_api()
+::: code-fold-flex
+```{r}
+#| label: registerHourlyAPIdata
+#| code-summary: "Register hourly api results as a virtual table."
+
+duckdb_register(duckdb_con, 
+                "hourly", 
+                py$import_api_hourly(38.748, -90.439),
+                overwrite = TRUE)
 ```
+:::
 
-```{python}
-#| label: sourceDailyAPI
-#| file: "scripts/Python/daily_api.py"
+## Model Background Info
+
+::: p-1
+The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022
+:::
+
+::: code-fold-flex
+```{r}
+#| label: "forecastModelDescription"
+#| code-summary: "table setup"
+#| warning: false
+
+# Create the tibble
+forecast_models <- tibble(
+     Model = c("GFS", "HRRR"),
+     Developed_By = c(
+          "NOAA (National Oceanic and Atmospheric Administration)",
+          "NOAA (specifically by the Earth System Research Laboratory)"
+     ),
+     Scope = c(
+          "Global",
+          "Regional (primarily focused on the contiguous United States)"
+     ),
+     Resolution = c(
+          "Lower resolution compared to HRRR (approximately 13 km as of recent updates)",
+          "High resolution (3 km)"
+     ),
+     Forecast_Range = c("Up to 16 days", "Up to 18 hours"),
+     Updates = c("Runs four times a day (00Z, 06Z, 12Z, 18Z)", "Runs every hour"),
+     Applications = c(
+          "Used for long-term weather forecasting, climate modeling, and global weather patterns.",
+          "Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."
+     )
+)
+
+locations_list = colnames(forecast_models)
+
+notes_list =  list(
+  "Organization or entity responsible for developing the model.",
+  "Geographical coverage of the model (e.g., global or regional).",
+  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
+  "Time period for which the model provides forecasts.",
+  "Frequency at which the model is updated with new data.",
+  "Primary uses and strengths of the model in weather forecasting.",
+  "Main distinctions between the models, highlighting their unique features and capabilities."
+  )
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list
+#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
+)
+
+rTable <- r_table_theming(
+forecast_models,
+title = "Forecast Models: Attributes",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+multiline_feet = TRUE,
+tbl_font_size = pct(85),
+target_everything = TRUE,
+row_name_col = "Model"
+)
+
 ```
-
-```{python}
-daily_api()
-```
-
-## Weather API data to DuckDB Test
+:::
 
 ```{r}
-#| label: quickConvert
-hourly_dataframe_r <- py$hourly_dataframe
-duckdb_register(duckdb_con, "hourly", hourly_dataframe_r)
+#| label: "tbl-modelAttributes"
+#| warning: false
+#| echo: false
+rTable
 ```
 
-```{sql}
-#| connection: duckdb_con
-CREATE OR REPLACE TABLE hourly_table AS SELECT * FROM hourly;
+::: code-fold-flex
+```{r}
+#| label: "modelDiffSetup"
+#| code-summary: "table setup"
+#| message: false
+#| error: false
+
+forecast_model_differences <- tibble(
+"Resolution" = c(
+"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."
+),
+"Forecast_Range" = c("GFS provides forecasts for a much longer period compared to HRRR."),
+"Update_Frequency" =  c(
+"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."
+)
+)
+
+locations_list = colnames(forecast_model_differences)
+
+notes_list =  list(
+  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
+  "Time period for which the model provides forecasts.",
+  "Frequency at which the model is updated with new data.")
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list
+#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
+)
+
+rTable <- r_table_theming(
+forecast_model_differences,
+title = "Forecast Models: Differences",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: Kaggle"),
+pal_df,
+multiline_feet = TRUE,
+tbl_font_size = pct(85),
+target_everything = TRUE,
+row_name_col = NULL
+)
+```
+:::
+
+```{r}
+#| label: "tbl-modelDiffs"
+#| echo: false
+rTable
 ```
 
-```{sql}
-#| label: quickSqlChunkOutput
-#| connection: duckdb_con
-SELECT * FROM hourly_table;
+## Weather Condition Analysis
+
+::: code-fold-flex
+```{r}
+#| label: "loadPlots"
+#| code-summary: "Plot load."
+#| file: "scripts/Output/Plots/plot_load.R"
+```
+:::
+
+::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}
+```{r}
+#| label: "fig-weather_codes"
+#| lightbox: 
+#|   group: weather
+#|   description: "Simple weather codes for simple insights." 
+#| fig-cap: "Weather Codes"
+#| echo: false
+#| warning: false
+#| message: false
+plot_weather_codes(duckdb_con)
 ```
 
 ```{r}
-#| label: quickLazyQuery
-dplyr::tbl(duckdb_con, "hourly_table")
+#| label: "fig-temperature_freezing"
+#| lightbox: 
+#|   group: weather
+#|   description: "Temperature with freezing point indicators." 
+#| fig-subcap: "Freezing/Non-Freezing Temperature"
+#| echo: false
+#| warning: false
+#| message: false
+plot_temperature_trend(duckdb_con)
 ```
+
+```{r}
+#| label: "fig-visibility_km"
+#| lightbox: 
+#|   group: weather
+#|   description: "Visibility in kilometers." 
+#| fig-cap: "Visibility (km)"
+#| echo: false
+#| warning: false
+#| message: false
+plot_visibility_heat(duckdb_con)
+```
+
+```{r}
+#| label: "fig-visibility_categories"
+#| lightbox: 
+#|   group: weather
+#|   description: "Simple weather codes for simple insights." 
+#| fig-cap: "Visibility Categories"
+#| echo: false
+#| warning: false
+#| message: false
+plot_visibility_categorical_heat(duckdb_con)
+```
+
+```{r}
+#| label: "fig-precipitation"
+#| lightbox: 
+#|   group: weather
+#|   description: "Indicator for rain and or snowfall." 
+#| fig-cap: "Precipitation (empty if no precipitation)"
+#| echo: false
+#| warning: false
+#| message: false
+plot_precipitation(duckdb_con)
+```
+
+```{r}
+#| label: "fig-wind_rose"
+#| lightbox: 
+#|   group: weather
+#|   description: "Wind direction and speed." 
+#| fig-cap: "Wind Rose"
+#| echo: false
+#| warning: false
+#| message: false
+plot_wind_rose_ggplot(duckdb_con)
+```
+:::
+
+@fig-weather
+
+@fig-weather_codes
+
+@fig-temperature_freezing
+
+@fig-visibility_km
+
+@fig-visibility_categories
+
+@fig-precipitation
+
+@fig-wind_rose
 
 ## Disconnect From Databases
 
+::: code-fold-flex
 ```{r}
-dbDisconnect(mssql_con)
+#| label: "dbDisconnect"
+#| code-summary: "Dereference memory from the in-memory database connections."
+#| 
+#dbDisconnect(mssql_con)
 dbDisconnect(duckdb_con)
 ```
+:::

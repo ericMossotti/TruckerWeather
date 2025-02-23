@@ -1,14 +1,11 @@
 TruckerWeather*
 about*
-
 .R*
 .Rproj.user
 .*
-
 /.quarto/
 /practice/
 /plumber/
-
 unusedCode.qmd
-
 plots.R
+project_ideas.qmd
