@@ -1,8 +1,10 @@
 project:
   type: website
+  output-dir: docs
   render: 
     - index.qmd
     - "!practice/"
+    - "!unusedCode.qmd"
 
 website:
   title: "TruckerWeather"
