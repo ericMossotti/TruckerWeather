@@ -410,12 +410,57 @@ div.csl-indent {
 <span>“🌤️ <span>Free</span> <span>Open</span>-<span>Source</span> <span>Weather</span> <span>API</span> <span></span> <span>Open</span>-<span>Meteo</span>.com.”</span> n.d. Accessed February 8, 2025. <a href="https://open-meteo.com/">https://open-meteo.com/</a>.
 </div></div><section id="realistic-coordinate-examples" class="level4"><h4 class="anchored" data-anchor-id="realistic-coordinate-examples">Realistic Coordinate Examples</h4>
 <ul>
-<li><p>Intersection of Hwy 70 &amp; 270 38.748, -90.439</p></li>
-<li><p>The St.&nbsp;Louis Regional Freightway 38.627480, -90.189781</p></li>
-<li><p>Port of St.&nbsp;Louis 38.609215, -90.204275</p></li>
-<li><p>USPS Office Kansas City International Airport, KC, MO 39.304413, -94.720711</p></li>
-<li><p>Walmart Distribution Center, 1100 Matlock Dr, Saint James, MO 65559-9026 38.002338, -91.634422</p></li>
-<li><p>KCS International Freight Gateway, MO, 3301 East 147th Street, Kansas City, MO 64147 38.84930037041913, -94.55499143307868</p></li>
+<li>
+<p>Intersection of Hwy 70 &amp; 270</p>
+<ul>
+<li>38.748, -90.439</li>
+</ul>
+</li>
+<li>
+<p>The St.&nbsp;Louis Regional Freightway</p>
+<ul>
+<li>38.627480, -90.189781</li>
+</ul>
+</li>
+<li>
+<p>Port of St.&nbsp;Louis</p>
+<ul>
+<li>38.609215, -90.204275</li>
+</ul>
+</li>
+<li>
+<p>USPS Office Kansas City International Airport</p>
+<ul>
+<li>
+<p>KC, MO</p>
+<ul>
+<li>39.304413, -94.720711</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Walmart Distribution Center</p>
+<ul>
+<li>
+<p>1100 Matlock Dr, Saint James, MO 65559-9026</p>
+<ul>
+<li>38.002338, -91.634422</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>KCS International Freight Gateway</p>
+<ul>
+<li>
+<p>3301 East 147th Street, Kansas City, MO 64147</p>
+<ul>
+<li>38.84930037041913, -94.55499143307868</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul></section><section id="import-hourly-data" class="level3"><h3 class="anchored" data-anchor-id="import-hourly-data">Import Hourly Data</h3>
 <div class="code-fold-flex">
 <div class="cell">
@@ -547,13 +592,13 @@ Dowell, David C., Curtis R. Alexander, Eric P. James, Stephen S. Weygandt, Stanl
 <span><span class="va">locations_list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">forecast_models</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">notes_list</span> <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>     <span class="st">""</span>,</span>
 <span>  <span class="st">"Organization or entity responsible for developing the model."</span>,</span>
 <span>  <span class="st">"Geographical coverage of the model (e.g., global or regional)."</span>,</span>
 <span>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
 <span>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
 <span>  <span class="st">"Frequency at which the model is updated with new data."</span>,</span>
-<span>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span>,</span>
-<span>  <span class="st">"Main distinctions between the models, highlighting their unique features and capabilities."</span></span>
+<span>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">footnotes_df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
@@ -586,23 +631,23 @@ Dowell, David C., Curtis R. Alexander, Eric P. James, Stephen S. Weygandt, Stanl
 Table&nbsp;1
 </figcaption><div aria-describedby="tbl-modelAttributes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="yxrnkwdwtb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#yxrnkwdwtb table {
+<div id="zoeqbpunie" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zoeqbpunie table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#yxrnkwdwtb thead, #yxrnkwdwtb tbody, #yxrnkwdwtb tfoot, #yxrnkwdwtb tr, #yxrnkwdwtb td, #yxrnkwdwtb th {
+#zoeqbpunie thead, #zoeqbpunie tbody, #zoeqbpunie tfoot, #zoeqbpunie tr, #zoeqbpunie td, #zoeqbpunie th {
   border-style: none;
 }
 
-#yxrnkwdwtb p {
+#zoeqbpunie p {
   margin: 0;
   padding: 0;
 }
 
-#yxrnkwdwtb .gt_table {
+#zoeqbpunie .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -628,12 +673,12 @@ Table&nbsp;1
   border-left-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_caption {
+#zoeqbpunie .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#yxrnkwdwtb .gt_title {
+#zoeqbpunie .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -645,7 +690,7 @@ Table&nbsp;1
   border-bottom-width: 0;
 }
 
-#yxrnkwdwtb .gt_subtitle {
+#zoeqbpunie .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -657,7 +702,7 @@ Table&nbsp;1
   border-top-width: 0;
 }
 
-#yxrnkwdwtb .gt_heading {
+#zoeqbpunie .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -669,13 +714,13 @@ Table&nbsp;1
   border-right-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_bottom_border {
+#zoeqbpunie .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_col_headings {
+#zoeqbpunie .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -690,7 +735,7 @@ Table&nbsp;1
   border-right-color: #000000;
 }
 
-#yxrnkwdwtb .gt_col_heading {
+#zoeqbpunie .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -710,7 +755,7 @@ Table&nbsp;1
   overflow-x: hidden;
 }
 
-#yxrnkwdwtb .gt_column_spanner_outer {
+#zoeqbpunie .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -722,15 +767,15 @@ Table&nbsp;1
   padding-right: 4px;
 }
 
-#yxrnkwdwtb .gt_column_spanner_outer:first-child {
+#zoeqbpunie .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#yxrnkwdwtb .gt_column_spanner_outer:last-child {
+#zoeqbpunie .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#yxrnkwdwtb .gt_column_spanner {
+#zoeqbpunie .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -742,11 +787,11 @@ Table&nbsp;1
   width: 100%;
 }
 
-#yxrnkwdwtb .gt_spanner_row {
+#zoeqbpunie .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#yxrnkwdwtb .gt_group_heading {
+#zoeqbpunie .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -772,7 +817,7 @@ Table&nbsp;1
   text-align: left;
 }
 
-#yxrnkwdwtb .gt_empty_group_heading {
+#zoeqbpunie .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -787,15 +832,15 @@ Table&nbsp;1
   vertical-align: middle;
 }
 
-#yxrnkwdwtb .gt_from_md > :first-child {
+#zoeqbpunie .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#yxrnkwdwtb .gt_from_md > :last-child {
+#zoeqbpunie .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#yxrnkwdwtb .gt_row {
+#zoeqbpunie .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -814,7 +859,7 @@ Table&nbsp;1
   overflow-x: hidden;
 }
 
-#yxrnkwdwtb .gt_stub {
+#zoeqbpunie .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -827,7 +872,7 @@ Table&nbsp;1
   padding-right: 5px;
 }
 
-#yxrnkwdwtb .gt_stub_row_group {
+#zoeqbpunie .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -841,15 +886,15 @@ Table&nbsp;1
   vertical-align: top;
 }
 
-#yxrnkwdwtb .gt_row_group_first td {
+#zoeqbpunie .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#yxrnkwdwtb .gt_row_group_first th {
+#zoeqbpunie .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#yxrnkwdwtb .gt_summary_row {
+#zoeqbpunie .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -859,16 +904,16 @@ Table&nbsp;1
   padding-right: 5px;
 }
 
-#yxrnkwdwtb .gt_first_summary_row {
+#zoeqbpunie .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_first_summary_row.thick {
+#zoeqbpunie .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#yxrnkwdwtb .gt_last_summary_row {
+#zoeqbpunie .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -878,7 +923,7 @@ Table&nbsp;1
   border-bottom-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_grand_summary_row {
+#zoeqbpunie .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -888,7 +933,7 @@ Table&nbsp;1
   padding-right: 5px;
 }
 
-#yxrnkwdwtb .gt_first_grand_summary_row {
+#zoeqbpunie .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -898,7 +943,7 @@ Table&nbsp;1
   border-top-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_last_grand_summary_row_top {
+#zoeqbpunie .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -908,11 +953,11 @@ Table&nbsp;1
   border-bottom-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_striped {
+#zoeqbpunie .gt_striped {
   background-color: #333333;
 }
 
-#yxrnkwdwtb .gt_table_body {
+#zoeqbpunie .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -921,7 +966,7 @@ Table&nbsp;1
   border-bottom-color: #000000;
 }
 
-#yxrnkwdwtb .gt_footnotes {
+#zoeqbpunie .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -935,7 +980,7 @@ Table&nbsp;1
   border-right-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_footnote {
+#zoeqbpunie .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -944,7 +989,7 @@ Table&nbsp;1
   padding-right: 5px;
 }
 
-#yxrnkwdwtb .gt_sourcenotes {
+#zoeqbpunie .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -958,7 +1003,7 @@ Table&nbsp;1
   border-right-color: #D3D3D3;
 }
 
-#yxrnkwdwtb .gt_sourcenote {
+#zoeqbpunie .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -966,72 +1011,72 @@ Table&nbsp;1
   padding-right: 5px;
 }
 
-#yxrnkwdwtb .gt_left {
+#zoeqbpunie .gt_left {
   text-align: left;
 }
 
-#yxrnkwdwtb .gt_center {
+#zoeqbpunie .gt_center {
   text-align: center;
 }
 
-#yxrnkwdwtb .gt_right {
+#zoeqbpunie .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#yxrnkwdwtb .gt_font_normal {
+#zoeqbpunie .gt_font_normal {
   font-weight: normal;
 }
 
-#yxrnkwdwtb .gt_font_bold {
+#zoeqbpunie .gt_font_bold {
   font-weight: bold;
 }
 
-#yxrnkwdwtb .gt_font_italic {
+#zoeqbpunie .gt_font_italic {
   font-style: italic;
 }
 
-#yxrnkwdwtb .gt_super {
+#zoeqbpunie .gt_super {
   font-size: 65%;
 }
 
-#yxrnkwdwtb .gt_footnote_marks {
+#zoeqbpunie .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#yxrnkwdwtb .gt_asterisk {
+#zoeqbpunie .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#yxrnkwdwtb .gt_indent_1 {
+#zoeqbpunie .gt_indent_1 {
   text-indent: 5px;
 }
 
-#yxrnkwdwtb .gt_indent_2 {
+#zoeqbpunie .gt_indent_2 {
   text-indent: 10px;
 }
 
-#yxrnkwdwtb .gt_indent_3 {
+#zoeqbpunie .gt_indent_3 {
   text-indent: 15px;
 }
 
-#yxrnkwdwtb .gt_indent_4 {
+#zoeqbpunie .gt_indent_4 {
   text-indent: 20px;
 }
 
-#yxrnkwdwtb .gt_indent_5 {
+#zoeqbpunie .gt_indent_5 {
   text-indent: 25px;
 }
 
-#yxrnkwdwtb .katex-display {
+#zoeqbpunie .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#yxrnkwdwtb div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#zoeqbpunie div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1082,27 +1127,27 @@ Table&nbsp;1
 <tfoot class="gt_footnotes">
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> Geographical coverage of the model (e.g., global or regional).</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> Organization or entity responsible for developing the model.</td>
     </tr>
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span> Spatial resolution of the model, indicating the level of detail in the forecasts.</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span> Geographical coverage of the model (e.g., global or regional).</td>
     </tr>
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>3</sup></span> Time period for which the model provides forecasts.</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>3</sup></span> Spatial resolution of the model, indicating the level of detail in the forecasts.</td>
     </tr>
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>4</sup></span> Frequency at which the model is updated with new data.</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>4</sup></span> Time period for which the model provides forecasts.</td>
     </tr>
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>5</sup></span> Primary uses and strengths of the model in weather forecasting.</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>5</sup></span> Frequency at which the model is updated with new data.</td>
     </tr>
 <tr>
 <td class="gt_footnote" colspan="7">
-<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>6</sup></span> Main distinctions between the models, highlighting their unique features and capabilities.</td>
+<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>6</sup></span> Primary uses and strengths of the model in weather forecasting.</td>
     </tr>
 </tfoot>
 </table>
@@ -1161,23 +1206,23 @@ Table&nbsp;1
 Table&nbsp;2
 </figcaption><div aria-describedby="tbl-modelDiffs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="dnssfphqky" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#dnssfphqky table {
+<div id="hdkxdipzaw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hdkxdipzaw table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#dnssfphqky thead, #dnssfphqky tbody, #dnssfphqky tfoot, #dnssfphqky tr, #dnssfphqky td, #dnssfphqky th {
+#hdkxdipzaw thead, #hdkxdipzaw tbody, #hdkxdipzaw tfoot, #hdkxdipzaw tr, #hdkxdipzaw td, #hdkxdipzaw th {
   border-style: none;
 }
 
-#dnssfphqky p {
+#hdkxdipzaw p {
   margin: 0;
   padding: 0;
 }
 
-#dnssfphqky .gt_table {
+#hdkxdipzaw .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1203,12 +1248,12 @@ Table&nbsp;2
   border-left-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_caption {
+#hdkxdipzaw .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#dnssfphqky .gt_title {
+#hdkxdipzaw .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -1220,7 +1265,7 @@ Table&nbsp;2
   border-bottom-width: 0;
 }
 
-#dnssfphqky .gt_subtitle {
+#hdkxdipzaw .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -1232,7 +1277,7 @@ Table&nbsp;2
   border-top-width: 0;
 }
 
-#dnssfphqky .gt_heading {
+#hdkxdipzaw .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -1244,13 +1289,13 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_bottom_border {
+#hdkxdipzaw .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_col_headings {
+#hdkxdipzaw .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1265,7 +1310,7 @@ Table&nbsp;2
   border-right-color: #000000;
 }
 
-#dnssfphqky .gt_col_heading {
+#hdkxdipzaw .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -1285,7 +1330,7 @@ Table&nbsp;2
   overflow-x: hidden;
 }
 
-#dnssfphqky .gt_column_spanner_outer {
+#hdkxdipzaw .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -1297,15 +1342,15 @@ Table&nbsp;2
   padding-right: 4px;
 }
 
-#dnssfphqky .gt_column_spanner_outer:first-child {
+#hdkxdipzaw .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dnssfphqky .gt_column_spanner_outer:last-child {
+#hdkxdipzaw .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dnssfphqky .gt_column_spanner {
+#hdkxdipzaw .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -1317,11 +1362,11 @@ Table&nbsp;2
   width: 100%;
 }
 
-#dnssfphqky .gt_spanner_row {
+#hdkxdipzaw .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#dnssfphqky .gt_group_heading {
+#hdkxdipzaw .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1347,7 +1392,7 @@ Table&nbsp;2
   text-align: left;
 }
 
-#dnssfphqky .gt_empty_group_heading {
+#hdkxdipzaw .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -1362,15 +1407,15 @@ Table&nbsp;2
   vertical-align: middle;
 }
 
-#dnssfphqky .gt_from_md > :first-child {
+#hdkxdipzaw .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dnssfphqky .gt_from_md > :last-child {
+#hdkxdipzaw .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dnssfphqky .gt_row {
+#hdkxdipzaw .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1389,7 +1434,7 @@ Table&nbsp;2
   overflow-x: hidden;
 }
 
-#dnssfphqky .gt_stub {
+#hdkxdipzaw .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -1402,7 +1447,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#dnssfphqky .gt_stub_row_group {
+#hdkxdipzaw .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -1416,15 +1461,15 @@ Table&nbsp;2
   vertical-align: top;
 }
 
-#dnssfphqky .gt_row_group_first td {
+#hdkxdipzaw .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#dnssfphqky .gt_row_group_first th {
+#hdkxdipzaw .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#dnssfphqky .gt_summary_row {
+#hdkxdipzaw .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -1434,16 +1479,16 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#dnssfphqky .gt_first_summary_row {
+#hdkxdipzaw .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_first_summary_row.thick {
+#hdkxdipzaw .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#dnssfphqky .gt_last_summary_row {
+#hdkxdipzaw .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1453,7 +1498,7 @@ Table&nbsp;2
   border-bottom-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_grand_summary_row {
+#hdkxdipzaw .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -1463,7 +1508,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#dnssfphqky .gt_first_grand_summary_row {
+#hdkxdipzaw .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1473,7 +1518,7 @@ Table&nbsp;2
   border-top-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_last_grand_summary_row_top {
+#hdkxdipzaw .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1483,11 +1528,11 @@ Table&nbsp;2
   border-bottom-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_striped {
+#hdkxdipzaw .gt_striped {
   background-color: #333333;
 }
 
-#dnssfphqky .gt_table_body {
+#hdkxdipzaw .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -1496,7 +1541,7 @@ Table&nbsp;2
   border-bottom-color: #000000;
 }
 
-#dnssfphqky .gt_footnotes {
+#hdkxdipzaw .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -1510,7 +1555,7 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_footnote {
+#hdkxdipzaw .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -1519,7 +1564,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#dnssfphqky .gt_sourcenotes {
+#hdkxdipzaw .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -1533,7 +1578,7 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#dnssfphqky .gt_sourcenote {
+#hdkxdipzaw .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1541,72 +1586,72 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#dnssfphqky .gt_left {
+#hdkxdipzaw .gt_left {
   text-align: left;
 }
 
-#dnssfphqky .gt_center {
+#hdkxdipzaw .gt_center {
   text-align: center;
 }
 
-#dnssfphqky .gt_right {
+#hdkxdipzaw .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dnssfphqky .gt_font_normal {
+#hdkxdipzaw .gt_font_normal {
   font-weight: normal;
 }
 
-#dnssfphqky .gt_font_bold {
+#hdkxdipzaw .gt_font_bold {
   font-weight: bold;
 }
 
-#dnssfphqky .gt_font_italic {
+#hdkxdipzaw .gt_font_italic {
   font-style: italic;
 }
 
-#dnssfphqky .gt_super {
+#hdkxdipzaw .gt_super {
   font-size: 65%;
 }
 
-#dnssfphqky .gt_footnote_marks {
+#hdkxdipzaw .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#dnssfphqky .gt_asterisk {
+#hdkxdipzaw .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#dnssfphqky .gt_indent_1 {
+#hdkxdipzaw .gt_indent_1 {
   text-indent: 5px;
 }
 
-#dnssfphqky .gt_indent_2 {
+#hdkxdipzaw .gt_indent_2 {
   text-indent: 10px;
 }
 
-#dnssfphqky .gt_indent_3 {
+#hdkxdipzaw .gt_indent_3 {
   text-indent: 15px;
 }
 
-#dnssfphqky .gt_indent_4 {
+#hdkxdipzaw .gt_indent_4 {
   text-indent: 20px;
 }
 
-#dnssfphqky .gt_indent_5 {
+#hdkxdipzaw .gt_indent_5 {
   text-indent: 25px;
 }
 
-#dnssfphqky .katex-display {
+#hdkxdipzaw .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#dnssfphqky div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#hdkxdipzaw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1953,7 +1998,7 @@ Table&nbsp;2
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html">scale_fill_viridis_c</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"magma"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
-<span>               title <span class="op">=</span> <span class="st">"Visibility Line-Chart"</span>,</span>
+<span>               title <span class="op">=</span> <span class="st">"Visibility (km)"</span>,</span>
 <span>               x <span class="op">=</span> <span class="st">"Time of Day"</span>,</span>
 <span>               y <span class="op">=</span> <span class="st">"Date"</span>,</span>
 <span>               fill <span class="op">=</span> <span class="st">"Visibility (km)"</span></span>
@@ -2861,282 +2906,300 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb12-150"><a href="#cb12-150" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-151"><a href="#cb12-151" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Realistic Coordinate Examples</span></span>
 <span id="cb12-152"><a href="#cb12-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Intersection of Hwy 70 &amp; 270 38.748, -90.439</span>
+<span id="cb12-153"><a href="#cb12-153" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Intersection of Hwy 70 &amp; 270</span>
 <span id="cb12-154"><a href="#cb12-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The St. Louis Regional Freightway 38.627480, -90.189781</span>
+<span id="cb12-155"><a href="#cb12-155" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>38.748, -90.439</span>
 <span id="cb12-156"><a href="#cb12-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-157"><a href="#cb12-157" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Port of St. Louis 38.609215, -90.204275</span>
+<span id="cb12-157"><a href="#cb12-157" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The St. Louis Regional Freightway</span>
 <span id="cb12-158"><a href="#cb12-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-159"><a href="#cb12-159" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>USPS Office Kansas City International Airport, KC, MO 39.304413, -94.720711</span>
+<span id="cb12-159"><a href="#cb12-159" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>38.627480, -90.189781</span>
 <span id="cb12-160"><a href="#cb12-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-161"><a href="#cb12-161" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Walmart Distribution Center, 1100 Matlock Dr, Saint James, MO 65559-9026 38.002338, -91.634422</span>
+<span id="cb12-161"><a href="#cb12-161" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Port of St. Louis</span>
 <span id="cb12-162"><a href="#cb12-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-163"><a href="#cb12-163" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>KCS International Freight Gateway, MO, 3301 East 147th Street, Kansas City, MO 64147 38.84930037041913, -94.55499143307868</span>
+<span id="cb12-163"><a href="#cb12-163" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>38.609215, -90.204275</span>
 <span id="cb12-164"><a href="#cb12-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-165"><a href="#cb12-165" aria-hidden="true" tabindex="-1"></a><span class="fu">### Import Hourly Data</span></span>
+<span id="cb12-165"><a href="#cb12-165" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>USPS Office Kansas City International Airport</span>
 <span id="cb12-166"><a href="#cb12-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-167"><a href="#cb12-167" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-170"><a href="#cb12-170" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb12-171"><a href="#cb12-171" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: loadHourlyAPIscript</span></span>
-<span id="cb12-172"><a href="#cb12-172" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Run the API script to import the dataset."</span></span>
-<span id="cb12-173"><a href="#cb12-173" aria-hidden="true" tabindex="-1"></a><span class="co">#| file: "scripts/Import/API/Hourly/import_api_hourly.py"</span></span>
-<span id="cb12-174"><a href="#cb12-174" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-175"><a href="#cb12-175" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-167"><a href="#cb12-167" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>KC, MO</span>
+<span id="cb12-168"><a href="#cb12-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-169"><a href="#cb12-169" aria-hidden="true" tabindex="-1"></a><span class="ss">        -   </span>39.304413, -94.720711</span>
+<span id="cb12-170"><a href="#cb12-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-171"><a href="#cb12-171" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Walmart Distribution Center</span>
+<span id="cb12-172"><a href="#cb12-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-173"><a href="#cb12-173" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>1100 Matlock Dr, Saint James, MO 65559-9026</span>
+<span id="cb12-174"><a href="#cb12-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-175"><a href="#cb12-175" aria-hidden="true" tabindex="-1"></a><span class="ss">        -   </span>38.002338, -91.634422</span>
 <span id="cb12-176"><a href="#cb12-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-177"><a href="#cb12-177" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-180"><a href="#cb12-180" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-181"><a href="#cb12-181" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: registerHourlyAPIdata</span></span>
-<span id="cb12-182"><a href="#cb12-182" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Register hourly api results as a virtual table."</span></span>
-<span id="cb12-183"><a href="#cb12-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-184"><a href="#cb12-184" aria-hidden="true" tabindex="-1"></a><span class="fu">duckdb_register</span>(duckdb_con, </span>
-<span id="cb12-185"><a href="#cb12-185" aria-hidden="true" tabindex="-1"></a>                <span class="st">"hourly"</span>, </span>
-<span id="cb12-186"><a href="#cb12-186" aria-hidden="true" tabindex="-1"></a>                py<span class="sc">$</span><span class="fu">import_api_hourly</span>(<span class="fl">38.748</span>, <span class="sc">-</span><span class="fl">90.439</span>),</span>
-<span id="cb12-187"><a href="#cb12-187" aria-hidden="true" tabindex="-1"></a>                <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-188"><a href="#cb12-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-189"><a href="#cb12-189" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-190"><a href="#cb12-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-191"><a href="#cb12-191" aria-hidden="true" tabindex="-1"></a><span class="fu">## Model Background Info</span></span>
-<span id="cb12-192"><a href="#cb12-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-193"><a href="#cb12-193" aria-hidden="true" tabindex="-1"></a>::: p-1</span>
-<span id="cb12-194"><a href="#cb12-194" aria-hidden="true" tabindex="-1"></a>The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022</span>
-<span id="cb12-195"><a href="#cb12-195" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-196"><a href="#cb12-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-197"><a href="#cb12-197" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-200"><a href="#cb12-200" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-201"><a href="#cb12-201" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "forecastModelDescription"</span></span>
-<span id="cb12-202"><a href="#cb12-202" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
-<span id="cb12-203"><a href="#cb12-203" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-204"><a href="#cb12-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-205"><a href="#cb12-205" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the tibble</span></span>
-<span id="cb12-206"><a href="#cb12-206" aria-hidden="true" tabindex="-1"></a>forecast_models <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-207"><a href="#cb12-207" aria-hidden="true" tabindex="-1"></a>     <span class="at">Model =</span> <span class="fu">c</span>(<span class="st">"GFS"</span>, <span class="st">"HRRR"</span>),</span>
-<span id="cb12-208"><a href="#cb12-208" aria-hidden="true" tabindex="-1"></a>     <span class="at">Developed_By =</span> <span class="fu">c</span>(</span>
-<span id="cb12-209"><a href="#cb12-209" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (National Oceanic and Atmospheric Administration)"</span>,</span>
-<span id="cb12-210"><a href="#cb12-210" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (specifically by the Earth System Research Laboratory)"</span></span>
-<span id="cb12-211"><a href="#cb12-211" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb12-212"><a href="#cb12-212" aria-hidden="true" tabindex="-1"></a>     <span class="at">Scope =</span> <span class="fu">c</span>(</span>
-<span id="cb12-213"><a href="#cb12-213" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Global"</span>,</span>
-<span id="cb12-214"><a href="#cb12-214" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regional (primarily focused on the contiguous United States)"</span></span>
-<span id="cb12-215"><a href="#cb12-215" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb12-216"><a href="#cb12-216" aria-hidden="true" tabindex="-1"></a>     <span class="at">Resolution =</span> <span class="fu">c</span>(</span>
-<span id="cb12-217"><a href="#cb12-217" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Lower resolution compared to HRRR (approximately 13 km as of recent updates)"</span>,</span>
-<span id="cb12-218"><a href="#cb12-218" aria-hidden="true" tabindex="-1"></a>          <span class="st">"High resolution (3 km)"</span></span>
-<span id="cb12-219"><a href="#cb12-219" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb12-220"><a href="#cb12-220" aria-hidden="true" tabindex="-1"></a>     <span class="at">Forecast_Range =</span> <span class="fu">c</span>(<span class="st">"Up to 16 days"</span>, <span class="st">"Up to 18 hours"</span>),</span>
-<span id="cb12-221"><a href="#cb12-221" aria-hidden="true" tabindex="-1"></a>     <span class="at">Updates =</span> <span class="fu">c</span>(<span class="st">"Runs four times a day (00Z, 06Z, 12Z, 18Z)"</span>, <span class="st">"Runs every hour"</span>),</span>
-<span id="cb12-222"><a href="#cb12-222" aria-hidden="true" tabindex="-1"></a>     <span class="at">Applications =</span> <span class="fu">c</span>(</span>
-<span id="cb12-223"><a href="#cb12-223" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Used for long-term weather forecasting, climate modeling, and global weather patterns."</span>,</span>
-<span id="cb12-224"><a href="#cb12-224" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."</span></span>
-<span id="cb12-225"><a href="#cb12-225" aria-hidden="true" tabindex="-1"></a>     )</span>
-<span id="cb12-226"><a href="#cb12-226" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-227"><a href="#cb12-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-228"><a href="#cb12-228" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_models)</span>
-<span id="cb12-229"><a href="#cb12-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-230"><a href="#cb12-230" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
-<span id="cb12-231"><a href="#cb12-231" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Organization or entity responsible for developing the model."</span>,</span>
-<span id="cb12-232"><a href="#cb12-232" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Geographical coverage of the model (e.g., global or regional)."</span>,</span>
-<span id="cb12-233"><a href="#cb12-233" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
-<span id="cb12-234"><a href="#cb12-234" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
-<span id="cb12-235"><a href="#cb12-235" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>,</span>
-<span id="cb12-236"><a href="#cb12-236" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span>,</span>
-<span id="cb12-237"><a href="#cb12-237" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Main distinctions between the models, highlighting their unique features and capabilities."</span></span>
-<span id="cb12-238"><a href="#cb12-238" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb12-239"><a href="#cb12-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-240"><a href="#cb12-240" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-241"><a href="#cb12-241" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
-<span id="cb12-242"><a href="#cb12-242" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
-<span id="cb12-243"><a href="#cb12-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-244"><a href="#cb12-244" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-245"><a href="#cb12-245" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
-<span id="cb12-246"><a href="#cb12-246" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
-<span id="cb12-247"><a href="#cb12-247" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-248"><a href="#cb12-248" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-249"><a href="#cb12-249" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
-<span id="cb12-250"><a href="#cb12-250" aria-hidden="true" tabindex="-1"></a>forecast_models,</span>
-<span id="cb12-251"><a href="#cb12-251" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Attributes"</span>,</span>
-<span id="cb12-252"><a href="#cb12-252" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
-<span id="cb12-253"><a href="#cb12-253" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
-<span id="cb12-254"><a href="#cb12-254" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
-<span id="cb12-255"><a href="#cb12-255" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
-<span id="cb12-256"><a href="#cb12-256" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-257"><a href="#cb12-257" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
-<span id="cb12-258"><a href="#cb12-258" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-259"><a href="#cb12-259" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="st">"Model"</span></span>
-<span id="cb12-260"><a href="#cb12-260" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-177"><a href="#cb12-177" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>KCS International Freight Gateway</span>
+<span id="cb12-178"><a href="#cb12-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-179"><a href="#cb12-179" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>3301 East 147th Street, Kansas City, MO 64147</span>
+<span id="cb12-180"><a href="#cb12-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-181"><a href="#cb12-181" aria-hidden="true" tabindex="-1"></a><span class="ss">        -   </span>38.84930037041913, -94.55499143307868</span>
+<span id="cb12-182"><a href="#cb12-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-183"><a href="#cb12-183" aria-hidden="true" tabindex="-1"></a><span class="fu">### Import Hourly Data</span></span>
+<span id="cb12-184"><a href="#cb12-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-185"><a href="#cb12-185" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-188"><a href="#cb12-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb12-189"><a href="#cb12-189" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: loadHourlyAPIscript</span></span>
+<span id="cb12-190"><a href="#cb12-190" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Run the API script to import the dataset."</span></span>
+<span id="cb12-191"><a href="#cb12-191" aria-hidden="true" tabindex="-1"></a><span class="co">#| file: "scripts/Import/API/Hourly/import_api_hourly.py"</span></span>
+<span id="cb12-192"><a href="#cb12-192" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-193"><a href="#cb12-193" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-194"><a href="#cb12-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-195"><a href="#cb12-195" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-198"><a href="#cb12-198" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-199"><a href="#cb12-199" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: registerHourlyAPIdata</span></span>
+<span id="cb12-200"><a href="#cb12-200" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Register hourly api results as a virtual table."</span></span>
+<span id="cb12-201"><a href="#cb12-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-202"><a href="#cb12-202" aria-hidden="true" tabindex="-1"></a><span class="fu">duckdb_register</span>(duckdb_con, </span>
+<span id="cb12-203"><a href="#cb12-203" aria-hidden="true" tabindex="-1"></a>                <span class="st">"hourly"</span>, </span>
+<span id="cb12-204"><a href="#cb12-204" aria-hidden="true" tabindex="-1"></a>                py<span class="sc">$</span><span class="fu">import_api_hourly</span>(<span class="fl">38.748</span>, <span class="sc">-</span><span class="fl">90.439</span>),</span>
+<span id="cb12-205"><a href="#cb12-205" aria-hidden="true" tabindex="-1"></a>                <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-206"><a href="#cb12-206" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-207"><a href="#cb12-207" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-208"><a href="#cb12-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-209"><a href="#cb12-209" aria-hidden="true" tabindex="-1"></a><span class="fu">## Model Background Info</span></span>
+<span id="cb12-210"><a href="#cb12-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-211"><a href="#cb12-211" aria-hidden="true" tabindex="-1"></a>::: p-1</span>
+<span id="cb12-212"><a href="#cb12-212" aria-hidden="true" tabindex="-1"></a>The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022</span>
+<span id="cb12-213"><a href="#cb12-213" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-214"><a href="#cb12-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-215"><a href="#cb12-215" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-218"><a href="#cb12-218" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-219"><a href="#cb12-219" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "forecastModelDescription"</span></span>
+<span id="cb12-220"><a href="#cb12-220" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
+<span id="cb12-221"><a href="#cb12-221" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-222"><a href="#cb12-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-223"><a href="#cb12-223" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the tibble</span></span>
+<span id="cb12-224"><a href="#cb12-224" aria-hidden="true" tabindex="-1"></a>forecast_models <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-225"><a href="#cb12-225" aria-hidden="true" tabindex="-1"></a>     <span class="at">Model =</span> <span class="fu">c</span>(<span class="st">"GFS"</span>, <span class="st">"HRRR"</span>),</span>
+<span id="cb12-226"><a href="#cb12-226" aria-hidden="true" tabindex="-1"></a>     <span class="at">Developed_By =</span> <span class="fu">c</span>(</span>
+<span id="cb12-227"><a href="#cb12-227" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (National Oceanic and Atmospheric Administration)"</span>,</span>
+<span id="cb12-228"><a href="#cb12-228" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (specifically by the Earth System Research Laboratory)"</span></span>
+<span id="cb12-229"><a href="#cb12-229" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb12-230"><a href="#cb12-230" aria-hidden="true" tabindex="-1"></a>     <span class="at">Scope =</span> <span class="fu">c</span>(</span>
+<span id="cb12-231"><a href="#cb12-231" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Global"</span>,</span>
+<span id="cb12-232"><a href="#cb12-232" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regional (primarily focused on the contiguous United States)"</span></span>
+<span id="cb12-233"><a href="#cb12-233" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb12-234"><a href="#cb12-234" aria-hidden="true" tabindex="-1"></a>     <span class="at">Resolution =</span> <span class="fu">c</span>(</span>
+<span id="cb12-235"><a href="#cb12-235" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Lower resolution compared to HRRR (approximately 13 km as of recent updates)"</span>,</span>
+<span id="cb12-236"><a href="#cb12-236" aria-hidden="true" tabindex="-1"></a>          <span class="st">"High resolution (3 km)"</span></span>
+<span id="cb12-237"><a href="#cb12-237" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb12-238"><a href="#cb12-238" aria-hidden="true" tabindex="-1"></a>     <span class="at">Forecast_Range =</span> <span class="fu">c</span>(<span class="st">"Up to 16 days"</span>, <span class="st">"Up to 18 hours"</span>),</span>
+<span id="cb12-239"><a href="#cb12-239" aria-hidden="true" tabindex="-1"></a>     <span class="at">Updates =</span> <span class="fu">c</span>(<span class="st">"Runs four times a day (00Z, 06Z, 12Z, 18Z)"</span>, <span class="st">"Runs every hour"</span>),</span>
+<span id="cb12-240"><a href="#cb12-240" aria-hidden="true" tabindex="-1"></a>     <span class="at">Applications =</span> <span class="fu">c</span>(</span>
+<span id="cb12-241"><a href="#cb12-241" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Used for long-term weather forecasting, climate modeling, and global weather patterns."</span>,</span>
+<span id="cb12-242"><a href="#cb12-242" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."</span></span>
+<span id="cb12-243"><a href="#cb12-243" aria-hidden="true" tabindex="-1"></a>     )</span>
+<span id="cb12-244"><a href="#cb12-244" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-245"><a href="#cb12-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-246"><a href="#cb12-246" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_models)</span>
+<span id="cb12-247"><a href="#cb12-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-248"><a href="#cb12-248" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
+<span id="cb12-249"><a href="#cb12-249" aria-hidden="true" tabindex="-1"></a>     <span class="st">""</span>,</span>
+<span id="cb12-250"><a href="#cb12-250" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Organization or entity responsible for developing the model."</span>,</span>
+<span id="cb12-251"><a href="#cb12-251" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Geographical coverage of the model (e.g., global or regional)."</span>,</span>
+<span id="cb12-252"><a href="#cb12-252" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
+<span id="cb12-253"><a href="#cb12-253" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
+<span id="cb12-254"><a href="#cb12-254" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>,</span>
+<span id="cb12-255"><a href="#cb12-255" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span></span>
+<span id="cb12-256"><a href="#cb12-256" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-257"><a href="#cb12-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-258"><a href="#cb12-258" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-259"><a href="#cb12-259" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
+<span id="cb12-260"><a href="#cb12-260" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
 <span id="cb12-261"><a href="#cb12-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-262"><a href="#cb12-262" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-263"><a href="#cb12-263" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-264"><a href="#cb12-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-267"><a href="#cb12-267" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-268"><a href="#cb12-268" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelAttributes"</span></span>
-<span id="cb12-269"><a href="#cb12-269" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-270"><a href="#cb12-270" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-271"><a href="#cb12-271" aria-hidden="true" tabindex="-1"></a>rTable</span>
-<span id="cb12-272"><a href="#cb12-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-273"><a href="#cb12-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-274"><a href="#cb12-274" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-277"><a href="#cb12-277" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-278"><a href="#cb12-278" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "modelDiffSetup"</span></span>
-<span id="cb12-279"><a href="#cb12-279" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
-<span id="cb12-280"><a href="#cb12-280" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-281"><a href="#cb12-281" aria-hidden="true" tabindex="-1"></a><span class="co">#| error: false</span></span>
+<span id="cb12-262"><a href="#cb12-262" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-263"><a href="#cb12-263" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
+<span id="cb12-264"><a href="#cb12-264" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
+<span id="cb12-265"><a href="#cb12-265" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-266"><a href="#cb12-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-267"><a href="#cb12-267" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
+<span id="cb12-268"><a href="#cb12-268" aria-hidden="true" tabindex="-1"></a>forecast_models,</span>
+<span id="cb12-269"><a href="#cb12-269" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Attributes"</span>,</span>
+<span id="cb12-270"><a href="#cb12-270" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
+<span id="cb12-271"><a href="#cb12-271" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
+<span id="cb12-272"><a href="#cb12-272" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
+<span id="cb12-273"><a href="#cb12-273" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
+<span id="cb12-274"><a href="#cb12-274" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-275"><a href="#cb12-275" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
+<span id="cb12-276"><a href="#cb12-276" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-277"><a href="#cb12-277" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="st">"Model"</span></span>
+<span id="cb12-278"><a href="#cb12-278" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-279"><a href="#cb12-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-280"><a href="#cb12-280" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-281"><a href="#cb12-281" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb12-282"><a href="#cb12-282" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-283"><a href="#cb12-283" aria-hidden="true" tabindex="-1"></a>forecast_model_differences <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-284"><a href="#cb12-284" aria-hidden="true" tabindex="-1"></a><span class="st">"Resolution"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb12-285"><a href="#cb12-285" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."</span></span>
-<span id="cb12-286"><a href="#cb12-286" aria-hidden="true" tabindex="-1"></a>),</span>
-<span id="cb12-287"><a href="#cb12-287" aria-hidden="true" tabindex="-1"></a><span class="st">"Forecast_Range"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"GFS provides forecasts for a much longer period compared to HRRR."</span>),</span>
-<span id="cb12-288"><a href="#cb12-288" aria-hidden="true" tabindex="-1"></a><span class="st">"Update_Frequency"</span> <span class="ot">=</span>  <span class="fu">c</span>(</span>
-<span id="cb12-289"><a href="#cb12-289" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."</span></span>
-<span id="cb12-290"><a href="#cb12-290" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-291"><a href="#cb12-291" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-292"><a href="#cb12-292" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-293"><a href="#cb12-293" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_model_differences)</span>
-<span id="cb12-294"><a href="#cb12-294" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-295"><a href="#cb12-295" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
-<span id="cb12-296"><a href="#cb12-296" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
-<span id="cb12-297"><a href="#cb12-297" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
-<span id="cb12-298"><a href="#cb12-298" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>)</span>
-<span id="cb12-299"><a href="#cb12-299" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-300"><a href="#cb12-300" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-301"><a href="#cb12-301" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
-<span id="cb12-302"><a href="#cb12-302" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
-<span id="cb12-303"><a href="#cb12-303" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-304"><a href="#cb12-304" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb12-305"><a href="#cb12-305" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
-<span id="cb12-306"><a href="#cb12-306" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
-<span id="cb12-307"><a href="#cb12-307" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-308"><a href="#cb12-308" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-309"><a href="#cb12-309" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
-<span id="cb12-310"><a href="#cb12-310" aria-hidden="true" tabindex="-1"></a>forecast_model_differences,</span>
-<span id="cb12-311"><a href="#cb12-311" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Differences"</span>,</span>
-<span id="cb12-312"><a href="#cb12-312" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
-<span id="cb12-313"><a href="#cb12-313" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
-<span id="cb12-314"><a href="#cb12-314" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: Kaggle"</span>),</span>
-<span id="cb12-315"><a href="#cb12-315" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
-<span id="cb12-316"><a href="#cb12-316" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-317"><a href="#cb12-317" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
-<span id="cb12-318"><a href="#cb12-318" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-319"><a href="#cb12-319" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="cn">NULL</span></span>
-<span id="cb12-320"><a href="#cb12-320" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-321"><a href="#cb12-321" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-322"><a href="#cb12-322" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-323"><a href="#cb12-323" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-326"><a href="#cb12-326" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-327"><a href="#cb12-327" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelDiffs"</span></span>
-<span id="cb12-328"><a href="#cb12-328" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-329"><a href="#cb12-329" aria-hidden="true" tabindex="-1"></a>rTable</span>
-<span id="cb12-330"><a href="#cb12-330" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-331"><a href="#cb12-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-332"><a href="#cb12-332" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weather Condition Analysis</span></span>
-<span id="cb12-333"><a href="#cb12-333" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-334"><a href="#cb12-334" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-337"><a href="#cb12-337" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-338"><a href="#cb12-338" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "loadPlots"</span></span>
-<span id="cb12-339"><a href="#cb12-339" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Plot load."</span></span>
-<span id="cb12-340"><a href="#cb12-340" aria-hidden="true" tabindex="-1"></a><span class="co">#| file: "scripts/Output/Plots/plot_load.R"</span></span>
-<span id="cb12-341"><a href="#cb12-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-342"><a href="#cb12-342" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-343"><a href="#cb12-343" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-344"><a href="#cb12-344" aria-hidden="true" tabindex="-1"></a>::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}</span>
-<span id="cb12-347"><a href="#cb12-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-348"><a href="#cb12-348" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-weather_codes"</span></span>
-<span id="cb12-349"><a href="#cb12-349" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-350"><a href="#cb12-350" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-351"><a href="#cb12-351" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
-<span id="cb12-352"><a href="#cb12-352" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Weather Codes"</span></span>
-<span id="cb12-353"><a href="#cb12-353" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-354"><a href="#cb12-354" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-355"><a href="#cb12-355" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-356"><a href="#cb12-356" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_weather_codes</span>(duckdb_con)</span>
-<span id="cb12-357"><a href="#cb12-357" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-358"><a href="#cb12-358" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-361"><a href="#cb12-361" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-362"><a href="#cb12-362" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-temperature_freezing"</span></span>
-<span id="cb12-363"><a href="#cb12-363" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-364"><a href="#cb12-364" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-365"><a href="#cb12-365" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Temperature with freezing point indicators." </span></span>
-<span id="cb12-366"><a href="#cb12-366" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-subcap: "Freezing/Non-Freezing Temperature"</span></span>
-<span id="cb12-367"><a href="#cb12-367" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-368"><a href="#cb12-368" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-369"><a href="#cb12-369" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-370"><a href="#cb12-370" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_temperature_trend</span>(duckdb_con)</span>
-<span id="cb12-371"><a href="#cb12-371" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-372"><a href="#cb12-372" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-375"><a href="#cb12-375" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-376"><a href="#cb12-376" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_km"</span></span>
-<span id="cb12-377"><a href="#cb12-377" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-378"><a href="#cb12-378" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-379"><a href="#cb12-379" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Visibility in kilometers." </span></span>
-<span id="cb12-380"><a href="#cb12-380" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility (km)"</span></span>
-<span id="cb12-381"><a href="#cb12-381" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-382"><a href="#cb12-382" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-383"><a href="#cb12-383" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-384"><a href="#cb12-384" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_heat</span>(duckdb_con)</span>
-<span id="cb12-385"><a href="#cb12-385" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-386"><a href="#cb12-386" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-389"><a href="#cb12-389" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-390"><a href="#cb12-390" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_categories"</span></span>
-<span id="cb12-391"><a href="#cb12-391" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-392"><a href="#cb12-392" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-393"><a href="#cb12-393" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
-<span id="cb12-394"><a href="#cb12-394" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility Categories"</span></span>
-<span id="cb12-395"><a href="#cb12-395" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-396"><a href="#cb12-396" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-397"><a href="#cb12-397" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-398"><a href="#cb12-398" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_categorical_heat</span>(duckdb_con)</span>
-<span id="cb12-399"><a href="#cb12-399" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-400"><a href="#cb12-400" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-403"><a href="#cb12-403" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-404"><a href="#cb12-404" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-precipitation"</span></span>
-<span id="cb12-405"><a href="#cb12-405" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-406"><a href="#cb12-406" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-407"><a href="#cb12-407" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Indicator for rain and or snowfall." </span></span>
-<span id="cb12-408"><a href="#cb12-408" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Precipitation (empty if no precipitation)"</span></span>
-<span id="cb12-409"><a href="#cb12-409" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-410"><a href="#cb12-410" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-411"><a href="#cb12-411" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-412"><a href="#cb12-412" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_precipitation</span>(duckdb_con)</span>
-<span id="cb12-413"><a href="#cb12-413" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-414"><a href="#cb12-414" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-417"><a href="#cb12-417" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-418"><a href="#cb12-418" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-wind_rose"</span></span>
-<span id="cb12-419"><a href="#cb12-419" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb12-420"><a href="#cb12-420" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb12-421"><a href="#cb12-421" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Wind direction and speed." </span></span>
-<span id="cb12-422"><a href="#cb12-422" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Wind Rose"</span></span>
-<span id="cb12-423"><a href="#cb12-423" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-424"><a href="#cb12-424" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-425"><a href="#cb12-425" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-426"><a href="#cb12-426" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_wind_rose_ggplot</span>(duckdb_con)</span>
-<span id="cb12-427"><a href="#cb12-427" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-428"><a href="#cb12-428" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb12-429"><a href="#cb12-429" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-430"><a href="#cb12-430" aria-hidden="true" tabindex="-1"></a>@fig-weather</span>
-<span id="cb12-431"><a href="#cb12-431" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-432"><a href="#cb12-432" aria-hidden="true" tabindex="-1"></a>@fig-weather_codes</span>
-<span id="cb12-433"><a href="#cb12-433" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-434"><a href="#cb12-434" aria-hidden="true" tabindex="-1"></a>@fig-temperature_freezing</span>
-<span id="cb12-435"><a href="#cb12-435" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-436"><a href="#cb12-436" aria-hidden="true" tabindex="-1"></a>@fig-visibility_km</span>
-<span id="cb12-437"><a href="#cb12-437" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-438"><a href="#cb12-438" aria-hidden="true" tabindex="-1"></a>@fig-visibility_categories</span>
-<span id="cb12-439"><a href="#cb12-439" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-440"><a href="#cb12-440" aria-hidden="true" tabindex="-1"></a>@fig-precipitation</span>
-<span id="cb12-441"><a href="#cb12-441" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-442"><a href="#cb12-442" aria-hidden="true" tabindex="-1"></a>@fig-wind_rose</span>
-<span id="cb12-443"><a href="#cb12-443" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-444"><a href="#cb12-444" aria-hidden="true" tabindex="-1"></a><span class="fu">## Disconnect From Databases</span></span>
-<span id="cb12-445"><a href="#cb12-445" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-446"><a href="#cb12-446" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb12-449"><a href="#cb12-449" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-450"><a href="#cb12-450" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "dbDisconnect"</span></span>
-<span id="cb12-451"><a href="#cb12-451" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Dereference memory from the in-memory database connections."</span></span>
-<span id="cb12-452"><a href="#cb12-452" aria-hidden="true" tabindex="-1"></a><span class="co">#| </span></span>
-<span id="cb12-453"><a href="#cb12-453" aria-hidden="true" tabindex="-1"></a><span class="co">#dbDisconnect(mssql_con)</span></span>
-<span id="cb12-454"><a href="#cb12-454" aria-hidden="true" tabindex="-1"></a><span class="fu">dbDisconnect</span>(duckdb_con)</span>
-<span id="cb12-455"><a href="#cb12-455" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb12-456"><a href="#cb12-456" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-285"><a href="#cb12-285" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-286"><a href="#cb12-286" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelAttributes"</span></span>
+<span id="cb12-287"><a href="#cb12-287" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-288"><a href="#cb12-288" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-289"><a href="#cb12-289" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb12-290"><a href="#cb12-290" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-291"><a href="#cb12-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-292"><a href="#cb12-292" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-295"><a href="#cb12-295" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-296"><a href="#cb12-296" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "modelDiffSetup"</span></span>
+<span id="cb12-297"><a href="#cb12-297" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
+<span id="cb12-298"><a href="#cb12-298" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-299"><a href="#cb12-299" aria-hidden="true" tabindex="-1"></a><span class="co">#| error: false</span></span>
+<span id="cb12-300"><a href="#cb12-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-301"><a href="#cb12-301" aria-hidden="true" tabindex="-1"></a>forecast_model_differences <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-302"><a href="#cb12-302" aria-hidden="true" tabindex="-1"></a><span class="st">"Resolution"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb12-303"><a href="#cb12-303" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."</span></span>
+<span id="cb12-304"><a href="#cb12-304" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb12-305"><a href="#cb12-305" aria-hidden="true" tabindex="-1"></a><span class="st">"Forecast_Range"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"GFS provides forecasts for a much longer period compared to HRRR."</span>),</span>
+<span id="cb12-306"><a href="#cb12-306" aria-hidden="true" tabindex="-1"></a><span class="st">"Update_Frequency"</span> <span class="ot">=</span>  <span class="fu">c</span>(</span>
+<span id="cb12-307"><a href="#cb12-307" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."</span></span>
+<span id="cb12-308"><a href="#cb12-308" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-309"><a href="#cb12-309" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-310"><a href="#cb12-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-311"><a href="#cb12-311" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_model_differences)</span>
+<span id="cb12-312"><a href="#cb12-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-313"><a href="#cb12-313" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
+<span id="cb12-314"><a href="#cb12-314" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
+<span id="cb12-315"><a href="#cb12-315" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
+<span id="cb12-316"><a href="#cb12-316" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>)</span>
+<span id="cb12-317"><a href="#cb12-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-318"><a href="#cb12-318" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-319"><a href="#cb12-319" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
+<span id="cb12-320"><a href="#cb12-320" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
+<span id="cb12-321"><a href="#cb12-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-322"><a href="#cb12-322" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb12-323"><a href="#cb12-323" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
+<span id="cb12-324"><a href="#cb12-324" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
+<span id="cb12-325"><a href="#cb12-325" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-326"><a href="#cb12-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-327"><a href="#cb12-327" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
+<span id="cb12-328"><a href="#cb12-328" aria-hidden="true" tabindex="-1"></a>forecast_model_differences,</span>
+<span id="cb12-329"><a href="#cb12-329" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Differences"</span>,</span>
+<span id="cb12-330"><a href="#cb12-330" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
+<span id="cb12-331"><a href="#cb12-331" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
+<span id="cb12-332"><a href="#cb12-332" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: Kaggle"</span>),</span>
+<span id="cb12-333"><a href="#cb12-333" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
+<span id="cb12-334"><a href="#cb12-334" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-335"><a href="#cb12-335" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
+<span id="cb12-336"><a href="#cb12-336" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-337"><a href="#cb12-337" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="cn">NULL</span></span>
+<span id="cb12-338"><a href="#cb12-338" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-339"><a href="#cb12-339" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-340"><a href="#cb12-340" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-341"><a href="#cb12-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-344"><a href="#cb12-344" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-345"><a href="#cb12-345" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelDiffs"</span></span>
+<span id="cb12-346"><a href="#cb12-346" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-347"><a href="#cb12-347" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb12-348"><a href="#cb12-348" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-349"><a href="#cb12-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-350"><a href="#cb12-350" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weather Condition Analysis</span></span>
+<span id="cb12-351"><a href="#cb12-351" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-352"><a href="#cb12-352" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-355"><a href="#cb12-355" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-356"><a href="#cb12-356" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "loadPlots"</span></span>
+<span id="cb12-357"><a href="#cb12-357" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Plot load."</span></span>
+<span id="cb12-358"><a href="#cb12-358" aria-hidden="true" tabindex="-1"></a><span class="co">#| file: "scripts/Output/Plots/plot_load.R"</span></span>
+<span id="cb12-359"><a href="#cb12-359" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-360"><a href="#cb12-360" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-361"><a href="#cb12-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-362"><a href="#cb12-362" aria-hidden="true" tabindex="-1"></a>::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}</span>
+<span id="cb12-365"><a href="#cb12-365" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-366"><a href="#cb12-366" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-weather_codes"</span></span>
+<span id="cb12-367"><a href="#cb12-367" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-368"><a href="#cb12-368" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-369"><a href="#cb12-369" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
+<span id="cb12-370"><a href="#cb12-370" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Weather Codes"</span></span>
+<span id="cb12-371"><a href="#cb12-371" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-372"><a href="#cb12-372" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-373"><a href="#cb12-373" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-374"><a href="#cb12-374" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_weather_codes</span>(duckdb_con)</span>
+<span id="cb12-375"><a href="#cb12-375" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-376"><a href="#cb12-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-379"><a href="#cb12-379" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-380"><a href="#cb12-380" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-temperature_freezing"</span></span>
+<span id="cb12-381"><a href="#cb12-381" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-382"><a href="#cb12-382" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-383"><a href="#cb12-383" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Temperature with freezing point indicators." </span></span>
+<span id="cb12-384"><a href="#cb12-384" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-subcap: "Freezing/Non-Freezing Temperature"</span></span>
+<span id="cb12-385"><a href="#cb12-385" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-386"><a href="#cb12-386" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-387"><a href="#cb12-387" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-388"><a href="#cb12-388" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_temperature_trend</span>(duckdb_con)</span>
+<span id="cb12-389"><a href="#cb12-389" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-390"><a href="#cb12-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-393"><a href="#cb12-393" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-394"><a href="#cb12-394" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_km"</span></span>
+<span id="cb12-395"><a href="#cb12-395" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-396"><a href="#cb12-396" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-397"><a href="#cb12-397" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Visibility in kilometers." </span></span>
+<span id="cb12-398"><a href="#cb12-398" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility (km)"</span></span>
+<span id="cb12-399"><a href="#cb12-399" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-400"><a href="#cb12-400" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-401"><a href="#cb12-401" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-402"><a href="#cb12-402" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_heat</span>(duckdb_con)</span>
+<span id="cb12-403"><a href="#cb12-403" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-404"><a href="#cb12-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-407"><a href="#cb12-407" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-408"><a href="#cb12-408" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_categories"</span></span>
+<span id="cb12-409"><a href="#cb12-409" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-410"><a href="#cb12-410" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-411"><a href="#cb12-411" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
+<span id="cb12-412"><a href="#cb12-412" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility Categories"</span></span>
+<span id="cb12-413"><a href="#cb12-413" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-414"><a href="#cb12-414" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-415"><a href="#cb12-415" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-416"><a href="#cb12-416" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_categorical_heat</span>(duckdb_con)</span>
+<span id="cb12-417"><a href="#cb12-417" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-418"><a href="#cb12-418" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-421"><a href="#cb12-421" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-422"><a href="#cb12-422" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-precipitation"</span></span>
+<span id="cb12-423"><a href="#cb12-423" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-424"><a href="#cb12-424" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-425"><a href="#cb12-425" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Indicator for rain and or snowfall." </span></span>
+<span id="cb12-426"><a href="#cb12-426" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Precipitation (empty if no precipitation)"</span></span>
+<span id="cb12-427"><a href="#cb12-427" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-428"><a href="#cb12-428" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-429"><a href="#cb12-429" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-430"><a href="#cb12-430" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_precipitation</span>(duckdb_con)</span>
+<span id="cb12-431"><a href="#cb12-431" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-432"><a href="#cb12-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-435"><a href="#cb12-435" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-436"><a href="#cb12-436" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-wind_rose"</span></span>
+<span id="cb12-437"><a href="#cb12-437" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb12-438"><a href="#cb12-438" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb12-439"><a href="#cb12-439" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Wind direction and speed." </span></span>
+<span id="cb12-440"><a href="#cb12-440" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Wind Rose"</span></span>
+<span id="cb12-441"><a href="#cb12-441" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb12-442"><a href="#cb12-442" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb12-443"><a href="#cb12-443" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb12-444"><a href="#cb12-444" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_wind_rose_ggplot</span>(duckdb_con)</span>
+<span id="cb12-445"><a href="#cb12-445" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-446"><a href="#cb12-446" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb12-447"><a href="#cb12-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-448"><a href="#cb12-448" aria-hidden="true" tabindex="-1"></a>@fig-weather</span>
+<span id="cb12-449"><a href="#cb12-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-450"><a href="#cb12-450" aria-hidden="true" tabindex="-1"></a>@fig-weather_codes</span>
+<span id="cb12-451"><a href="#cb12-451" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-452"><a href="#cb12-452" aria-hidden="true" tabindex="-1"></a>@fig-temperature_freezing</span>
+<span id="cb12-453"><a href="#cb12-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-454"><a href="#cb12-454" aria-hidden="true" tabindex="-1"></a>@fig-visibility_km</span>
+<span id="cb12-455"><a href="#cb12-455" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-456"><a href="#cb12-456" aria-hidden="true" tabindex="-1"></a>@fig-visibility_categories</span>
+<span id="cb12-457"><a href="#cb12-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-458"><a href="#cb12-458" aria-hidden="true" tabindex="-1"></a>@fig-precipitation</span>
+<span id="cb12-459"><a href="#cb12-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-460"><a href="#cb12-460" aria-hidden="true" tabindex="-1"></a>@fig-wind_rose</span>
+<span id="cb12-461"><a href="#cb12-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-462"><a href="#cb12-462" aria-hidden="true" tabindex="-1"></a><span class="fu">## Disconnect From Databases</span></span>
+<span id="cb12-463"><a href="#cb12-463" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-464"><a href="#cb12-464" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb12-467"><a href="#cb12-467" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-468"><a href="#cb12-468" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "dbDisconnect"</span></span>
+<span id="cb12-469"><a href="#cb12-469" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Dereference memory from the in-memory database connections."</span></span>
+<span id="cb12-470"><a href="#cb12-470" aria-hidden="true" tabindex="-1"></a><span class="co">#| </span></span>
+<span id="cb12-471"><a href="#cb12-471" aria-hidden="true" tabindex="-1"></a><span class="co">#dbDisconnect(mssql_con)</span></span>
+<span id="cb12-472"><a href="#cb12-472" aria-hidden="true" tabindex="-1"></a><span class="fu">dbDisconnect</span>(duckdb_con)</span>
+<span id="cb12-473"><a href="#cb12-473" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-474"><a href="#cb12-474" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

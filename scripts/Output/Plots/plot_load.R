@@ -298,7 +298,7 @@ plot_visibility_heat <- function(con) {
           geom_tile() +
           scale_fill_viridis_c(option = "magma") +
           labs(
-               title = "Visibility Line-Chart",
+               title = "Visibility (km)",
                x = "Time of Day",
                y = "Date",
                fill = "Visibility (km)"

@@ -136,17 +136,35 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 
 #### Realistic Coordinate Examples
 
--   Intersection of Hwy 70 & 270 38.748, -90.439
+-   Intersection of Hwy 70 & 270
 
--   The St. Louis Regional Freightway 38.627480, -90.189781
+    -   38.748, -90.439
 
--   Port of St. Louis 38.609215, -90.204275
+-   The St. Louis Regional Freightway
 
--   USPS Office Kansas City International Airport, KC, MO 39.304413, -94.720711
+    -   38.627480, -90.189781
 
--   Walmart Distribution Center, 1100 Matlock Dr, Saint James, MO 65559-9026 38.002338, -91.634422
+-   Port of St. Louis
 
--   KCS International Freight Gateway, MO, 3301 East 147th Street, Kansas City, MO 64147 38.84930037041913, -94.55499143307868
+    -   38.609215, -90.204275
+
+-   USPS Office Kansas City International Airport
+
+    -   KC, MO
+
+        -   39.304413, -94.720711
+
+-   Walmart Distribution Center
+
+    -   1100 Matlock Dr, Saint James, MO 65559-9026
+
+        -   38.002338, -91.634422
+
+-   KCS International Freight Gateway
+
+    -   3301 East 147th Street, Kansas City, MO 64147
+
+        -   38.84930037041913, -94.55499143307868
 
 ### Import Hourly Data
 
@@ -208,13 +226,13 @@ forecast_models <- tibble(
 locations_list = colnames(forecast_models)
 
 notes_list =  list(
+     "",
   "Organization or entity responsible for developing the model.",
   "Geographical coverage of the model (e.g., global or regional).",
   "Spatial resolution of the model, indicating the level of detail in the forecasts.",
   "Time period for which the model provides forecasts.",
   "Frequency at which the model is updated with new data.",
-  "Primary uses and strengths of the model in weather forecasting.",
-  "Main distinctions between the models, highlighting their unique features and capabilities."
+  "Primary uses and strengths of the model in weather forecasting."
   )
 
 footnotes_df <- tibble(
