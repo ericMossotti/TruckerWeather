@@ -1,15 +1,12 @@
 
-
-
 # Load necessary libraries
 library(DBI)
 library(ggplot2)
 library(scales)
 library(paletteer)
 library(openair)
-source("./scripts/Output/Plots/plot_output.R")
+source("./scripts/Output/Plots/plot_themer.R")
 source("./scripts/Setup/Enum/create_enum_and_associate.R")
-
 
 # Helper function to execute a query and return the result
 execute_query <- function(con, query) {
@@ -25,7 +22,7 @@ plot_temperature_trend <- function(con, freezing_threshold = 32) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -101,7 +98,7 @@ plot_precipitation <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -153,11 +150,6 @@ plot_precipitation <- function(con) {
      ggsave(plot_path, plot = rPlot, scale = 1.5)
      
      # Read the PNG file
-     #readPNG(plot_path) |>
-          # Display the image
-      #    grid::grid.raster()
-     
-     # Read the PNG file
      img <- readPNG(plot_path)
      # Display the image
      grid::grid.raster(img)
@@ -174,7 +166,7 @@ plot_wind_rose <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -188,8 +180,6 @@ plot_wind_rose <- function(con) {
           cols = paletteer_d("ggsci::springfield_simpsons", n = 3),
           key.position = "left"
      )
-     
-     
 }
 
 # ggplot Wind Rose ----
@@ -202,7 +192,7 @@ plot_wind_rose_ggplot <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -248,7 +238,7 @@ plot_visibility_line <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -285,7 +275,7 @@ plot_visibility_heat <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -330,7 +320,7 @@ plot_visibility_categorical_heat <- function(con) {
       strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
       strftime(date, '%b %d') AS day
     FROM
-      hourly;
+      hourly_day_forecast;
   "
      
      data <- execute_query(con, query)
@@ -382,73 +372,10 @@ plot_visibility_categorical_heat <- function(con) {
      img <- readPNG(plot_path)
      # Display the image
      grid::grid.raster(img)
-     
 }
 
 # Weather Codes ----
 plot_weather_codes <- function(con) {
-     codes <- c(
-          '0',
-          '1',
-          '2',
-          '3',
-          '45',
-          '48',
-          '51',
-          '53',
-          '55',
-          '56',
-          '57',
-          '61',
-          '63',
-          '65',
-          '66',
-          '67',
-          '71',
-          '73',
-          '75',
-          '77',
-          '80',
-          '81',
-          '82',
-          '85',
-          '86',
-          '95',
-          '96',
-          '99'
-     )
-     descriptions <- c(
-          'Clear sky',
-          'Mainly clear',
-          'Partly cloudy',
-          'Overcast',
-          'Fog',
-          'Depositing rime fog',
-          'Drizzle: light',
-          'Drizzle: moderate',
-          'Drizzle: dense',
-          'Freezing drizzle: light',
-          'Freezing drizzle: dense',
-          'Rain: slight',
-          'Rain: moderate',
-          'Rain: heavy',
-          'Freezing rain: light',
-          'Freezing rain: heavy',
-          'Snow fall: slight',
-          'Snow fall: moderate',
-          'Snow fall: heavy',
-          'Snow grains',
-          'Rain showers: slight',
-          'Rain showers: moderate',
-          'Rain showers: violent',
-          'Snow showers: slight',
-          'Snow showers: heavy',
-          'Thunderstorm: slight or moderate',
-          'Thunderstorm with slight hail',
-          'Thunderstorm with heavy hail'
-     )
-     
-     result <- create_enum_and_associate(con, "WeatherCode", codes, descriptions)
      
      query <- "
     SELECT
@@ -457,7 +384,7 @@ plot_weather_codes <- function(con) {
       strftime(hr.date, '%H:%M:%S') AS time_only,
       strftime(hr.date, '%b %d') AS day
     FROM
-      hourly hr
+      hourly_day_forecast hr
     LEFT JOIN WeatherCode wc ON wc.Code == hr.weather_code;
   "
      

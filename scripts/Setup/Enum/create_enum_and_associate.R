@@ -2,7 +2,7 @@
 #' Create ENUM Type and Associate Codes with Descriptions
 #'
 #' This function creates an ENUM type in DuckDB and associates codes with their descriptions.
-#' It can be used to create other ENUM types and associations in a modular way.
+#' It can be used to create other ENUM types and associations
 #'
 #' @param duckdb_conn A DuckDB connection object.
 #' @param enum_name A string specifying the name of the ENUM type to be created.
@@ -30,7 +30,7 @@
 #' print(result)
 #' }
 #' @export
-create_enum_and_associate <- function(duckduckdb_con, enum_name, codes, descriptions) {
+create_enum_and_associate <- function(duckdb_con, enum_name, codes, descriptions) {
      
      # Attempt to drop the ENUM type if it exists
      drop_query <- paste0("DROP TYPE IF EXISTS ", enum_name, ";")
@@ -38,8 +38,8 @@ create_enum_and_associate <- function(duckduckdb_con, enum_name, codes, descript
      tryCatch({
           dbExecute(duckdb_con, drop_query)
           message(paste("Dropped existing ENUM type:", enum_name))
-     }, error = function(e) {
-          message(paste("No existing ENUM type to drop:", enum_name))
+     }, error = \(e) {
+          message(paste0("No existing ENUM type to drop: ", enum_name))
      })
      
      # Create the ENUM type
@@ -50,7 +50,7 @@ create_enum_and_associate <- function(duckduckdb_con, enum_name, codes, descript
      # Create a data frame to associate codes with descriptions
      #association_df <- data.frame(Code = codes, Description = descriptions, stringsAsFactors = FALSE)
      
-     duckdb_register(
+     dbWriteTable(
           duckdb_con,
           "WeatherCode",
           data.frame(

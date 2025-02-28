@@ -33,17 +33,15 @@ r_table_theming <- function(r_df,
                        )
      }
      
-     r_table <- r_table |>
-          tab_header(title = title, subtitle = subtitle)
-     
      if (nrow(r_df) > 1 && target_everything == FALSE) {
           # Formatted rows are added to the accumulator, 
           # building up to the final result
           r_table <- seq_len(nrow(pal_df)) |>
                reduce(\(acc, i) {
                     data_color(acc,
-                               palette = pal_df$pals[[i]],
-                               columns = pal_df$cols[[i]])
+                               columns = pal_df$cols[[i]],
+                               palette = pal_df$pals[[i]]
+                               )
                }, .init = r_table)
      }
      else if (nrow(r_df) > 1 && target_everything == TRUE) {
@@ -86,6 +84,10 @@ r_table_theming <- function(r_df,
                     )
                }, .init = r_table)
      }
+     
+     r_table <- r_table |>
+          tab_header(title = title, subtitle = subtitle)
+     
      
      r_table <- r_table |>
           tab_source_note(source_note = source_note)
@@ -134,10 +136,6 @@ r_table_theming <- function(r_df,
                table_body.border.bottom.width = px(0),
                table_body.border.top.width = px(0)
           )
-     
-     
- 
-     
      
      return(r_table)
 }

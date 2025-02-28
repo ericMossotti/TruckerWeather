@@ -12,7 +12,7 @@ Click `New Project`
 
 Select `Version Control`
 
-Paste the gh repo link.
+Paste this repo's code link
 
 in R console:
 

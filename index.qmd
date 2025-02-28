@@ -1,5 +1,5 @@
 ---
-title: "TruckerWeather"
+title: "Broker Bid Assistant"
 
 bibliography: bibliography/references.bib
 
@@ -72,13 +72,14 @@ from retry_requests import retry
 #| include: false
 #| eval: false
 #| echo: false
-#| code-summary: "What you would execute in your terminal if on Ubuntu to get the odbc drivers for mssql connections."
+#| code-summary: "Optional: One would execute something like this in their bash terminal if on Ubuntu to get the odbc drivers for mssql connections."
 ##| file: "practice/Bash/mssql_odbc_driver.sh"
 ```
 
+::: code-fold-flex
 ```{r}
 #| label: "mssqlconnect"
-#| code-summary: "Connects to a dockerized mssql database."
+#| code-summary: "Currently optional: Connects to a dockerized mssql database."
 #| eval: false
 #| echo: true
 
@@ -92,10 +93,8 @@ mssql_con <- dbConnect(
   pwd = "MyStr@ngPassw0rd11",             
   TrustServerCertificate = "yes"
 )
-
-# Test the connection
-#dbListTables(con)  # List tables in the database to verify the connection
 ```
+:::
 
 ### DuckDB
 
@@ -115,8 +114,8 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 ::: code-fold-flex
 ```{r}
 #| label: "loadTableOutput"
-#| code-summary: "Table formatting code."
-#| file: "scripts/Output/Tables/table_output.R"
+#| code-summary: "table building and theming"
+#| file: "scripts/Output/Tables/table_workshop.R"
 ```
 :::
 
@@ -125,8 +124,16 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 ::: code-fold-flex
 ```{r}
 #| label: "loadPlotOutput"
-#| code-summary: "Plot theming code."
-#| file: "scripts/Output/Plots/plot_output.R"
+#| code-summary: "plot theming"
+#| file: "scripts/Output/Plots/plot_themer.R"
+```
+:::
+
+::: code-fold-flex
+```{r}
+#| label: "loadPlotWorkshop"
+#| code-summary: "plot building"
+#| file: "scripts/Output/Plots/plot_workshop.R"
 ```
 :::
 
@@ -178,17 +185,177 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 
 ::: code-fold-flex
 ```{r}
-#| label: registerHourlyAPIdata
-#| code-summary: "Register hourly api results as a virtual table."
+#| label: writeHourlyForecastAPIdata
+#| code-summary: "Write hourly api results."
 
-duckdb_register(duckdb_con, 
-                "hourly", 
-                py$import_api_hourly(38.748, -90.439),
-                overwrite = TRUE)
+dbWriteTable(
+duckdb_con, 
+"hourly_day_forecast", 
+py$import_api_hourly(38.748, -90.439), 
+overwrite = TRUE
+)
 ```
 :::
 
-## Model Background Info
+::: code-fold-flex
+```{python}
+#| label: loadHourlyHistoricalAPIscript
+#| code-summary: "Run the API script to import the dataset."
+#| file: "scripts/Import/API/Hourly/import_api_hourly_historical.py"
+```
+:::
+
+::: code-fold-flex
+```{r}
+#| label: writeHourlyAPIdata
+#| code-summary: "Write hourly api historical data."
+
+dbWriteTable(
+duckdb_con, 
+"hourly_historical_weather",
+py$import_api_hourly_historical(38.748, -90.439),
+overwrite = TRUE
+)
+```
+:::
+
+### Enum
+
+::: code-fold-flex
+```{r}
+#| label: "setEnumsFile"
+#| code-summary: "load enum file"
+#| file: "scripts/Setup/Enum/create_enum_and_associate.R"
+```
+:::
+
+::: code-fold-flex
+```{r}
+#| label: "setEnums"
+#| code-summary: "Sets the custom data types in the database."
+
+codes <- c(
+'0',
+'1',
+'2',
+'3',
+'45',
+'48',
+'51',
+'53',
+'55',
+'56',
+'57',
+'61',
+'63',
+'65',
+'66',
+'67',
+'71',
+'73',
+'75',
+'77',
+'80',
+'81',
+'82',
+'85',
+'86',
+'95',
+'96',
+'99'
+)
+
+descriptions <- c(
+'Clear sky',
+'Mainly clear',
+'Partly cloudy',
+'Overcast',
+'Fog',
+'Depositing rime fog',
+'Drizzle: light',
+'Drizzle: moderate',
+'Drizzle: dense',
+'Freezing drizzle: light',
+'Freezing drizzle: dense',
+'Rain: slight',
+'Rain: moderate',
+'Rain: heavy',
+'Freezing rain: light',
+'Freezing rain: heavy',
+'Snow fall: slight',
+'Snow fall: moderate',
+'Snow fall: heavy',
+'Snow grains',
+'Rain showers: slight',
+'Rain showers: moderate',
+'Rain showers: violent',
+'Snow showers: slight',
+'Snow showers: heavy',
+'Thunderstorm: slight or moderate',
+'Thunderstorm with slight hail',
+'Thunderstorm with heavy hail'
+)
+
+create_enum_and_associate(duckdb_con, "WeatherCode", codes, descriptions)
+
+```
+:::
+
+::: code-fold-flex
+```{r}
+#| label: "wcSetup"
+#| code-summary: "table setup"
+
+rTable <- tbl(duckdb_con, "WeatherCode") |> collect()
+
+locations_list = colnames(rTable)
+
+notes_list =  list(
+"World Meteorlogical Organization (WMO) code.", 
+"Type of meterological event.")
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list,
+  pals = list(eval_palette("basetheme::brutal", 7, 'd', 1))
+)
+
+rTable <- r_table_theming(
+rTable,
+title = "Weather Code: As Data Type",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: World Meteorlogical Organization"),
+pal_df,
+multiline_feet = TRUE,
+tbl_font_size = pct(85),
+target_everything = TRUE,
+color_by_columns = "Code"
+#row_name_col = "Model"
+)
+
+```
+:::
+
+:::: {#enum style="max-width: 20vw; display: flex; justify-self: center; margin-bottom: 1rem; flex-shrink: 1"}
+
+::: table-flex
+```{r}
+#| label: "tbl-wc"
+#| echo: false
+#| tbl-cap: "How the WMO codes are\n associated to weather events."
+##| tbl-subcap: "Custom data types to potentially speed up computations."
+
+rTable
+
+```
+:::
+::::
+
+# Modeling Weather
 
 ::: p-1
 The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022
@@ -305,7 +472,7 @@ forecast_model_differences,
 title = "Forecast Models: Differences",
 subtitle = NULL,
 footnotes_df,
-source_note = md("**source**: Kaggle"),
+source_note = md("**source**: "),
 pal_df,
 multiline_feet = TRUE,
 tbl_font_size = pct(85),
@@ -323,13 +490,71 @@ rTable
 
 ## Weather Condition Analysis
 
+### FROM to Table
+
 ::: code-fold-flex
 ```{r}
-#| label: "loadPlots"
-#| code-summary: "Plot load."
-#| file: "scripts/Output/Plots/plot_load.R"
+#| label: "historicalSampleSetup"
+#| code-summary: "table setup"
+
+r_df <- tbl(
+duckdb_con, "hourly_historical_weather") |>
+dplyr::select(!'visibility') |>
+dplyr::slice_sample(n = 20) |>
+dplyr::collect() |>
+dplyr::mutate(
+date = as.character.POSIXt(date),
+date = forcats::as_factor(date)
+)
+
+locations_list = colnames(r_df)
+
+notes_list <- c(
+  "Date and time in POSIXt.",
+  "Temperature at 2 meters above the ground in Fahrenheit.",
+  "Total precipitation in inches.",
+  "Rain precipitation in inches.",
+  "Snowfall in inches.",
+  "Snow depth in inches.",
+  #"Visibility in miles.",
+  "Weather code indicating the current weather condition.",
+  "Wind speed at 10 meters above the ground in miles per hour.",
+  "Wind direction at 10 meters above the ground in degrees."
+)
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list
+)
+
+pal_df <- tibble(
+  cols = locations_list,
+  pals = list(eval_palette("grDevices::Greens 3", , 'c', -1))
+)
+
+rTable <- r_table_theming(
+r_df,
+title = "Historical View",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+multiline_feet = TRUE,
+tbl_font_size = pct(85)
+)
 ```
 :::
+
+::: table-flex
+```{r}
+#| label: "tbl-historicalSample"
+#| echo: false
+#| column: page
+rTable
+```
+:::
+
+### GGplot Testing
 
 ::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}
 ```{r}
@@ -372,7 +597,7 @@ plot_visibility_heat(duckdb_con)
 #| label: "fig-visibility_categories"
 #| lightbox: 
 #|   group: weather
-#|   description: "Simple weather codes for simple insights." 
+#|   description: "Simple visiblity categories." 
 #| fig-cap: "Visibility Categories"
 #| echo: false
 #| warning: false
@@ -419,7 +644,7 @@ plot_wind_rose_ggplot(duckdb_con)
 
 @fig-wind_rose
 
-## Disconnect From Databases
+# Disconnect From Databases
 
 ::: code-fold-flex
 ```{r}
