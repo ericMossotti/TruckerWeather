@@ -141,38 +141,6 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 
 [@openMeteo_2025]
 
-#### Realistic Coordinate Examples
-
--   Intersection of Hwy 70 & 270
-
-    -   38.748, -90.439
-
--   The St. Louis Regional Freightway
-
-    -   38.627480, -90.189781
-
--   Port of St. Louis
-
-    -   38.609215, -90.204275
-
--   USPS Office Kansas City International Airport
-
-    -   KC, MO
-
-        -   39.304413, -94.720711
-
--   Walmart Distribution Center
-
-    -   1100 Matlock Dr, Saint James, MO 65559-9026
-
-        -   38.002338, -91.634422
-
--   KCS International Freight Gateway
-
-    -   3301 East 147th Street, Kansas City, MO 64147
-
-        -   38.84930037041913, -94.55499143307868
-
 ### Import Hourly Data
 
 ::: code-fold-flex
@@ -219,9 +187,41 @@ overwrite = TRUE
 ```
 :::
 
+### Realistic Coordinate Examples
+
+-   Intersection of Hwy 70 & 270
+
+    -   38.748, -90.439
+
+-   The St. Louis Regional Freightway
+
+    -   38.627480, -90.189781
+
+-   Port of St. Louis
+
+    -   38.609215, -90.204275
+
+-   USPS Office Kansas City International Airport
+
+    -   KC, MO
+
+        -   39.304413, -94.720711
+
+-   Walmart Distribution Center
+
+    -   1100 Matlock Dr, Saint James, MO 65559-9026
+
+        -   38.002338, -91.634422
+
+-   KCS International Freight Gateway
+
+    -   3301 East 147th Street, Kansas City, MO 64147
+
+        -   38.84930037041913, -94.55499143307868
+
 ### Enum
 
-::: code-fold-flex
+::: {.code-fold-flex}
 ```{r}
 #| label: "setEnumsFile"
 #| code-summary: "load enum file"
@@ -229,7 +229,7 @@ overwrite = TRUE
 ```
 :::
 
-::: code-fold-flex
+::: {.code-fold-flex}
 ```{r}
 #| label: "setEnums"
 #| code-summary: "Sets the custom data types in the database."
@@ -301,7 +301,7 @@ create_enum_and_associate(duckdb_con, "WeatherCode", codes, descriptions)
 ```
 :::
 
-::: code-fold-flex
+::: {.code-fold-flex}
 ```{r}
 #| label: "wcSetup"
 #| code-summary: "table setup"
@@ -340,13 +340,13 @@ color_by_columns = "Code"
 ```
 :::
 
-:::: {#enum style="max-width: 20vw; display: flex; justify-self: center; margin-bottom: 1rem; flex-shrink: 1"}
-
-::: table-flex
+:::: {.skinny-tables}
+::: {.table-flex}
 ```{r}
 #| label: "tbl-wc"
 #| echo: false
 #| tbl-cap: "How the WMO codes are\n associated to weather events."
+##| width: 100%
 ##| tbl-subcap: "Custom data types to potentially speed up computations."
 
 rTable
@@ -427,12 +427,18 @@ row_name_col = "Model"
 ```
 :::
 
+:::: {.medium-large-tables}
+::: {.table-flex}
 ```{r}
 #| label: "tbl-modelAttributes"
 #| warning: false
 #| echo: false
+#| column: body-outset-right
+
 rTable
 ```
+:::
+::::
 
 ::: code-fold-flex
 ```{r}
@@ -482,11 +488,13 @@ row_name_col = NULL
 ```
 :::
 
+::: {.table-flex}
 ```{r}
 #| label: "tbl-modelDiffs"
 #| echo: false
 rTable
 ```
+:::
 
 ## Weather Condition Analysis
 
@@ -540,16 +548,16 @@ footnotes_df,
 source_note = md("**source**: "),
 pal_df,
 multiline_feet = TRUE,
-tbl_font_size = pct(85)
+tbl_font_size = pct(80)
 )
 ```
 :::
 
-::: table-flex
+::: {.table-flex}
 ```{r}
 #| label: "tbl-historicalSample"
 #| echo: false
-#| column: page
+#| column: screen-inset-right
 rTable
 ```
 :::

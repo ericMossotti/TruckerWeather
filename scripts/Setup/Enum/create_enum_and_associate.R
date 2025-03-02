@@ -61,8 +61,8 @@ create_enum_and_associate <- function(duckdb_con, enum_name, codes, descriptions
           overwrite = TRUE
      )
      
-     association_tbl <- tbl(duckdb_con, "WeatherCode")
+     #association_tbl <- tbl(duckdb_con, "WeatherCode")
      
      # Return the data frame
-     return(association_tbl)
+     #return(association_tbl)
 }

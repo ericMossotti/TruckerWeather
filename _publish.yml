@@ -1,0 +1,4 @@
+- source: project
+  quarto-pub:
+    - id: 8de78aaf-5d80-45a7-bad1-01f39f0d02d8
+      url: https://eric-mossotti.quarto.pub/weather_assistant
