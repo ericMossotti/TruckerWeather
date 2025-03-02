@@ -6,7 +6,6 @@ library(scales)
 library(paletteer)
 library(openair)
 source("./scripts/Output/Plots/plot_themer.R")
-source("./scripts/Setup/Enum/create_enum_and_associate.R")
 
 # Helper function to execute a query and return the result
 execute_query <- function(con, query) {
@@ -42,38 +41,45 @@ plot_temperature_trend <- function(con, freezing_threshold = 32) {
                          temperature_2m > freezing_threshold,
                          temperature_2m,
                          freezing_threshold
-                    )
+                    ),
+                    fill = "above freezing"
                ),
-               fill = "green",
                alpha = 0.5,
                na.rm = TRUE
           ) +
           geom_ribbon(
                aes(
                     ymin = ifelse(
-                         temperature_2m < freezing_threshold,
+                         temperature_2m <= freezing_threshold,
                          temperature_2m,
                          freezing_threshold
                     ),
-                    ymax = freezing_threshold
+                    ymax = freezing_threshold,
+                    fill = "at/below freezing"
                ),
-               fill = "lightblue",
                alpha = 0.5,
                na.rm = TRUE
           ) +
           labs(
                title = "Temperature Forecast",
                x = "",
-               y = "° F",
-               caption = "Green fill indicates temperatures above freezing; light blue fill indicates below freezing."
+               y = "° F"
           ) +
           scale_x_datetime(
                labels = label_date("%l %p"),
-               breaks = "7 day",
-               minor_breaks = "1 hour",
-               guide = guide_axis(n.dodge = 2)
+               breaks = "6 hours",
+               minor_breaks = "2 hours",
+               guide = guide_axis(n.dodge = 1)
           ) +
-          facet_grid(. ~ day) +
+          scale_y_continuous(sec.axis = dup_axis(name = "")) +
+          scale_fill_manual(
+               name = "Freezing Indicators",
+               values = c(
+                    "above freezing" = "green",
+                    "below freezing" = "lightblue"
+               )
+          ) +
+          facet_grid(~ day) +
           ggplot_theming()
      
      base_path <- "data/plots/"
@@ -103,7 +109,9 @@ plot_precipitation <- function(con) {
      
      data <- execute_query(con, query)
      
-     scale_factor <- max(data$precipitation_probability, na.rm = TRUE) / max(data$rain, data$snowfall, na.rm = TRUE)
+     scale_factor <- max(data$precipitation_probability, 
+                         na.rm = TRUE) / max(data$rain, 
+                                             data$snowfall, na.rm = TRUE)
      
      rPlot <- ggplot(data, aes(x = as.POSIXct(common_date))) +
           geom_area(
@@ -139,9 +147,11 @@ plot_precipitation <- function(con) {
                     "Snowfall (inches)" = "snow"
                )
           ) +
-          scale_fill_manual(name = "Chance of %",
+          scale_fill_manual(name = "Chance of",
                             values = c("Precipitation Probability" = "gray20")) +
-          labs(title = "Precipitation Forecast", x = "Time of Day", y = "Precipitation Probability (%)") +
+          labs(title = "Precipitation Forecast", 
+               x = "Time of Day", 
+               y = "Precipitation Probability (%)") +
           facet_grid(~ day) +
           ggplot_theming()
      

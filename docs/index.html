@@ -87,7 +87,7 @@ div.csl-indent {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-6561bbde787c299e21493071c8edc6ff.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e2028ac55bc9c90e94566d9d0700e0ef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-2438ec843f7367038805fa048d08e03e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
@@ -205,7 +205,8 @@ div.csl-indent {
 <span>                            <span class="va">color_by_columns</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                            <span class="va">row_name_col</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                            <span class="va">do_col_labels</span> <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                            <span class="va">target_everything</span> <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>                            <span class="va">target_everything</span> <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                            <span class="va">doBodyShadows</span> <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span> <span class="op">{</span></span>
 <span>     <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">row_name_col</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>          <span class="va">r_table</span> <span class="op">&lt;-</span> <span class="fu">gt</span><span class="op">(</span><span class="va">r_df</span><span class="op">)</span></span>
@@ -215,6 +216,38 @@ div.csl-indent {
 <span>                        rowname_col <span class="op">=</span> <span class="va">row_name_col</span>,</span>
 <span>                       <span class="op">)</span></span>
 <span>     <span class="op">}</span></span>
+<span>     </span>
+<span>     <span class="co"># Flexible CSS customization can probably be done better here</span></span>
+<span>     <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html">isTRUE</a></span><span class="op">(</span><span class="va">doBodyShadows</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="va">r_table</span> <span class="op">&lt;-</span> <span class="va">r_table</span> <span class="op">|&gt;</span></span>
+<span>               <span class="fu">opt_css</span><span class="op">(</span></span>
+<span>                    <span class="st">'</span></span>
+<span><span class="st">                    .gt_footnote, .gt_sourcenote {</span></span>
+<span><span class="st">                      text-align: left;</span></span>
+<span><span class="st">                    }</span></span>
+<span><span class="st">                    </span></span>
+<span><span class="st">                    .gt_col_headings th.gt_col_heading {</span></span>
+<span><span class="st">                      box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;</span></span>
+<span><span class="st">                    }</span></span>
+<span><span class="st">                    .gt_table_body td.gt_row {</span></span>
+<span><span class="st">                         box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset; </span></span>
+<span><span class="st">                         }</span></span>
+<span><span class="st">                    '</span></span>
+<span>                    <span class="op">)</span></span>
+<span>          <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>               <span class="va">r_table</span> <span class="op">&lt;-</span> <span class="va">r_table</span> <span class="op">|&gt;</span></span>
+<span>                    <span class="fu">opt_css</span><span class="op">(</span></span>
+<span>                         <span class="st">'</span></span>
+<span><span class="st">                         .gt_footnote, .gt_sourcenote {</span></span>
+<span><span class="st">                           text-align: left;</span></span>
+<span><span class="st">                         }</span></span>
+<span><span class="st">                         </span></span>
+<span><span class="st">                         .gt_col_headings th.gt_col_heading {</span></span>
+<span><span class="st">                           box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;</span></span>
+<span><span class="st">                         }</span></span>
+<span><span class="st">                         '</span></span>
+<span>                    <span class="op">)</span></span>
+<span>               <span class="op">}</span></span>
 <span>     </span>
 <span>     <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">r_df</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="va">target_everything</span> <span class="op">==</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span>          <span class="co"># Formatted rows are added to the accumulator, </span></span>
@@ -410,7 +443,6 @@ div.csl-indent {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/EmilHvitfeldt/paletteer">paletteer</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://davidcarslaw.github.io/openair/">openair</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"./scripts/Output/Plots/plot_themer.R"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"./scripts/Setup/Enum/create_enum_and_associate.R"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Helper function to execute a query and return the result</span></span>
 <span><span class="va">execute_query</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">con</span>, <span class="va">query</span><span class="op">)</span> <span class="op">{</span></span>
@@ -446,38 +478,45 @@ div.csl-indent {
 <span>                         <span class="va">temperature_2m</span> <span class="op">&gt;</span> <span class="va">freezing_threshold</span>,</span>
 <span>                         <span class="va">temperature_2m</span>,</span>
 <span>                         <span class="va">freezing_threshold</span></span>
-<span>                    <span class="op">)</span></span>
+<span>                    <span class="op">)</span>,</span>
+<span>                    fill <span class="op">=</span> <span class="st">"above freezing"</span></span>
 <span>               <span class="op">)</span>,</span>
-<span>               fill <span class="op">=</span> <span class="st">"green"</span>,</span>
 <span>               alpha <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>               na.rm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html">geom_ribbon</a></span><span class="op">(</span></span>
 <span>               <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
 <span>                    ymin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span></span>
-<span>                         <span class="va">temperature_2m</span> <span class="op">&lt;</span> <span class="va">freezing_threshold</span>,</span>
+<span>                         <span class="va">temperature_2m</span> <span class="op">&lt;=</span> <span class="va">freezing_threshold</span>,</span>
 <span>                         <span class="va">temperature_2m</span>,</span>
 <span>                         <span class="va">freezing_threshold</span></span>
 <span>                    <span class="op">)</span>,</span>
-<span>                    ymax <span class="op">=</span> <span class="va">freezing_threshold</span></span>
+<span>                    ymax <span class="op">=</span> <span class="va">freezing_threshold</span>,</span>
+<span>                    fill <span class="op">=</span> <span class="st">"at/below freezing"</span></span>
 <span>               <span class="op">)</span>,</span>
-<span>               fill <span class="op">=</span> <span class="st">"lightblue"</span>,</span>
 <span>               alpha <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>               na.rm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
 <span>               title <span class="op">=</span> <span class="st">"Temperature Forecast"</span>,</span>
 <span>               x <span class="op">=</span> <span class="st">""</span>,</span>
-<span>               y <span class="op">=</span> <span class="st">"° F"</span>,</span>
-<span>               caption <span class="op">=</span> <span class="st">"Green fill indicates temperatures above freezing; light blue fill indicates below freezing."</span></span>
+<span>               y <span class="op">=</span> <span class="st">"° F"</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html">scale_x_datetime</a></span><span class="op">(</span></span>
 <span>               labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_date.html">label_date</a></span><span class="op">(</span><span class="st">"%l %p"</span><span class="op">)</span>,</span>
-<span>               breaks <span class="op">=</span> <span class="st">"7 day"</span>,</span>
-<span>               minor_breaks <span class="op">=</span> <span class="st">"1 hour"</span>,</span>
-<span>               guide <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_axis.html">guide_axis</a></span><span class="op">(</span>n.dodge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>               breaks <span class="op">=</span> <span class="st">"6 hours"</span>,</span>
+<span>               minor_breaks <span class="op">=</span> <span class="st">"2 hours"</span>,</span>
+<span>               guide <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_axis.html">guide_axis</a></span><span class="op">(</span>n.dodge <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
-<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html">facet_grid</a></span><span class="op">(</span><span class="va">.</span> <span class="op">~</span> <span class="va">day</span><span class="op">)</span> <span class="op">+</span></span>
+<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>sec.axis <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/sec_axis.html">dup_axis</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span></span>
+<span>               name <span class="op">=</span> <span class="st">"Freezing Indicators"</span>,</span>
+<span>               values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>                    <span class="st">"above freezing"</span> <span class="op">=</span> <span class="st">"green"</span>,</span>
+<span>                    <span class="st">"below freezing"</span> <span class="op">=</span> <span class="st">"lightblue"</span></span>
+<span>               <span class="op">)</span></span>
+<span>          <span class="op">)</span> <span class="op">+</span></span>
+<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html">facet_grid</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu">ggplot_theming</span><span class="op">(</span><span class="op">)</span></span>
 <span>     </span>
 <span>     <span class="va">base_path</span> <span class="op">&lt;-</span> <span class="st">"data/plots/"</span></span>
@@ -507,7 +546,9 @@ div.csl-indent {
 <span>     </span>
 <span>     <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">execute_query</span><span class="op">(</span><span class="va">con</span>, <span class="va">query</span><span class="op">)</span></span>
 <span>     </span>
-<span>     <span class="va">scale_factor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">precipitation_probability</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">rain</span>, <span class="va">data</span><span class="op">$</span><span class="va">snowfall</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>     <span class="va">scale_factor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">precipitation_probability</span>, </span>
+<span>                         na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">rain</span>, </span>
+<span>                                             <span class="va">data</span><span class="op">$</span><span class="va">snowfall</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>     </span>
 <span>     <span class="va">rPlot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html">as.POSIXct</a></span><span class="op">(</span><span class="va">common_date</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html">geom_area</a></span><span class="op">(</span></span>
@@ -543,9 +584,11 @@ div.csl-indent {
 <span>                    <span class="st">"Snowfall (inches)"</span> <span class="op">=</span> <span class="st">"snow"</span></span>
 <span>               <span class="op">)</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
-<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Chance of %"</span>,</span>
+<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Chance of"</span>,</span>
 <span>                            values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Precipitation Probability"</span> <span class="op">=</span> <span class="st">"gray20"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Precipitation Forecast"</span>, x <span class="op">=</span> <span class="st">"Time of Day"</span>, y <span class="op">=</span> <span class="st">"Precipitation Probability (%)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Precipitation Forecast"</span>, </span>
+<span>               x <span class="op">=</span> <span class="st">"Time of Day"</span>, </span>
+<span>               y <span class="op">=</span> <span class="st">"Precipitation Probability (%)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html">facet_grid</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span><span class="op">)</span> <span class="op">+</span></span>
 <span>          <span class="fu">ggplot_theming</span><span class="op">(</span><span class="op">)</span></span>
 <span>     </span>
@@ -1080,7 +1123,7 @@ Timezone difference to GMT+0 -21600 s</code></pre>
 </li>
 </ul>
 </li>
-</ul></section><section id="enum" class="level3"><h3 class="anchored" data-anchor-id="enum">Enum</h3>
+</ul></section><section id="enum" class="level3 page-columns page-full"><h3 class="anchored" data-anchor-id="enum">Enum</h3>
 <div class="code-fold-flex">
 <div class="cell">
 <details class="code-fold"><summary>load enum file</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#' Create ENUM Type and Associate Codes with Descriptions</span></span>
@@ -1258,7 +1301,10 @@ Timezone difference to GMT+0 -21600 s</code></pre>
 </details>
 </div>
 </div>
-<div class="skinny-tables">
+<p><span class="citation" data-cites="noaa_wmo_2025">(<a href="#ref-noaa_wmo_2025" role="doc-biblioref"><span>“<span>WMO</span> <span>CODE</span> <span>TABLE</span> 4677”</span> 2025</a>)</span></p>
+<div class="no-row-height column-margin column-container"><div id="ref-noaa_wmo_2025" class="csl-entry" role="listitem">
+<span>“<span>WMO</span> <span>CODE</span> <span>TABLE</span> 4677.”</span> 2025. <a href="https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM">https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM</a>.
+</div></div><div class="skinny-tables">
 <div class="table-flex">
 <div class="cell">
 <div id="tbl-wc" class="cell quarto-float quarto-figure quarto-figure-center anchored">
@@ -1266,23 +1312,23 @@ Timezone difference to GMT+0 -21600 s</code></pre>
 Table&nbsp;1: How the WMO codes are associated to weather events.
 </figcaption><div aria-describedby="tbl-wc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="awxdoilwcy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#awxdoilwcy table {
+<div id="samfdsosof" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#samfdsosof table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#awxdoilwcy thead, #awxdoilwcy tbody, #awxdoilwcy tfoot, #awxdoilwcy tr, #awxdoilwcy td, #awxdoilwcy th {
+#samfdsosof thead, #samfdsosof tbody, #samfdsosof tfoot, #samfdsosof tr, #samfdsosof td, #samfdsosof th {
   border-style: none;
 }
 
-#awxdoilwcy p {
+#samfdsosof p {
   margin: 0;
   padding: 0;
 }
 
-#awxdoilwcy .gt_table {
+#samfdsosof .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1308,12 +1354,12 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-left-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_caption {
+#samfdsosof .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#awxdoilwcy .gt_title {
+#samfdsosof .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -1325,7 +1371,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-bottom-width: 0;
 }
 
-#awxdoilwcy .gt_subtitle {
+#samfdsosof .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -1337,7 +1383,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-top-width: 0;
 }
 
-#awxdoilwcy .gt_heading {
+#samfdsosof .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -1349,13 +1395,13 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-right-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_bottom_border {
+#samfdsosof .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_col_headings {
+#samfdsosof .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1370,7 +1416,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-right-color: #000000;
 }
 
-#awxdoilwcy .gt_col_heading {
+#samfdsosof .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -1390,7 +1436,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   overflow-x: hidden;
 }
 
-#awxdoilwcy .gt_column_spanner_outer {
+#samfdsosof .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -1402,15 +1448,15 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 4px;
 }
 
-#awxdoilwcy .gt_column_spanner_outer:first-child {
+#samfdsosof .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#awxdoilwcy .gt_column_spanner_outer:last-child {
+#samfdsosof .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#awxdoilwcy .gt_column_spanner {
+#samfdsosof .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -1422,11 +1468,11 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   width: 100%;
 }
 
-#awxdoilwcy .gt_spanner_row {
+#samfdsosof .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#awxdoilwcy .gt_group_heading {
+#samfdsosof .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1452,7 +1498,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   text-align: left;
 }
 
-#awxdoilwcy .gt_empty_group_heading {
+#samfdsosof .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -1467,15 +1513,15 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   vertical-align: middle;
 }
 
-#awxdoilwcy .gt_from_md > :first-child {
+#samfdsosof .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#awxdoilwcy .gt_from_md > :last-child {
+#samfdsosof .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#awxdoilwcy .gt_row {
+#samfdsosof .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1494,7 +1540,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   overflow-x: hidden;
 }
 
-#awxdoilwcy .gt_stub {
+#samfdsosof .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -1507,7 +1553,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 5px;
 }
 
-#awxdoilwcy .gt_stub_row_group {
+#samfdsosof .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -1521,15 +1567,15 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   vertical-align: top;
 }
 
-#awxdoilwcy .gt_row_group_first td {
+#samfdsosof .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#awxdoilwcy .gt_row_group_first th {
+#samfdsosof .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#awxdoilwcy .gt_summary_row {
+#samfdsosof .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -1539,16 +1585,16 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 5px;
 }
 
-#awxdoilwcy .gt_first_summary_row {
+#samfdsosof .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_first_summary_row.thick {
+#samfdsosof .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#awxdoilwcy .gt_last_summary_row {
+#samfdsosof .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1558,7 +1604,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-bottom-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_grand_summary_row {
+#samfdsosof .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -1568,7 +1614,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 5px;
 }
 
-#awxdoilwcy .gt_first_grand_summary_row {
+#samfdsosof .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1578,7 +1624,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-top-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_last_grand_summary_row_top {
+#samfdsosof .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1588,11 +1634,11 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-bottom-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_striped {
+#samfdsosof .gt_striped {
   background-color: #333333;
 }
 
-#awxdoilwcy .gt_table_body {
+#samfdsosof .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -1601,7 +1647,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-bottom-color: #000000;
 }
 
-#awxdoilwcy .gt_footnotes {
+#samfdsosof .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -1615,7 +1661,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-right-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_footnote {
+#samfdsosof .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -1624,7 +1670,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 5px;
 }
 
-#awxdoilwcy .gt_sourcenotes {
+#samfdsosof .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -1638,7 +1684,7 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   border-right-color: #D3D3D3;
 }
 
-#awxdoilwcy .gt_sourcenote {
+#samfdsosof .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1646,73 +1692,81 @@ Table&nbsp;1: How the WMO codes are associated to weather events.
   padding-right: 5px;
 }
 
-#awxdoilwcy .gt_left {
+#samfdsosof .gt_left {
   text-align: left;
 }
 
-#awxdoilwcy .gt_center {
+#samfdsosof .gt_center {
   text-align: center;
 }
 
-#awxdoilwcy .gt_right {
+#samfdsosof .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#awxdoilwcy .gt_font_normal {
+#samfdsosof .gt_font_normal {
   font-weight: normal;
 }
 
-#awxdoilwcy .gt_font_bold {
+#samfdsosof .gt_font_bold {
   font-weight: bold;
 }
 
-#awxdoilwcy .gt_font_italic {
+#samfdsosof .gt_font_italic {
   font-style: italic;
 }
 
-#awxdoilwcy .gt_super {
+#samfdsosof .gt_super {
   font-size: 65%;
 }
 
-#awxdoilwcy .gt_footnote_marks {
+#samfdsosof .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#awxdoilwcy .gt_asterisk {
+#samfdsosof .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#awxdoilwcy .gt_indent_1 {
+#samfdsosof .gt_indent_1 {
   text-indent: 5px;
 }
 
-#awxdoilwcy .gt_indent_2 {
+#samfdsosof .gt_indent_2 {
   text-indent: 10px;
 }
 
-#awxdoilwcy .gt_indent_3 {
+#samfdsosof .gt_indent_3 {
   text-indent: 15px;
 }
 
-#awxdoilwcy .gt_indent_4 {
+#samfdsosof .gt_indent_4 {
   text-indent: 20px;
 }
 
-#awxdoilwcy .gt_indent_5 {
+#samfdsosof .gt_indent_5 {
   text-indent: 25px;
 }
 
-#awxdoilwcy .katex-display {
+#samfdsosof .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#awxdoilwcy div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#samfdsosof div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
+}
+
+.gt_footnote, .gt_sourcenote {
+  text-align: left;
+}
+
+.gt_col_headings th.gt_col_heading {
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
@@ -1925,7 +1979,8 @@ Dowell, David C., Curtis R. Alexander, Eric P. James, Stephen S. Weygandt, Stanl
 <span>multiline_feet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>tbl_font_size <span class="op">=</span> <span class="fu">pct</span><span class="op">(</span><span class="fl">85</span><span class="op">)</span>,</span>
 <span>target_everything <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>row_name_col <span class="op">=</span> <span class="st">"Model"</span></span>
+<span>row_name_col <span class="op">=</span> <span class="st">"Model"</span>,</span>
+<span>doBodyShadows <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -1938,23 +1993,23 @@ Dowell, David C., Curtis R. Alexander, Eric P. James, Stephen S. Weygandt, Stanl
 Table&nbsp;2
 </figcaption><div aria-describedby="tbl-modelAttributes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="cell-output-display column-body-outset-right">
-<div id="wvodiwxupt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#wvodiwxupt table {
+<div id="jowxjdosfz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jowxjdosfz table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#wvodiwxupt thead, #wvodiwxupt tbody, #wvodiwxupt tfoot, #wvodiwxupt tr, #wvodiwxupt td, #wvodiwxupt th {
+#jowxjdosfz thead, #jowxjdosfz tbody, #jowxjdosfz tfoot, #jowxjdosfz tr, #jowxjdosfz td, #jowxjdosfz th {
   border-style: none;
 }
 
-#wvodiwxupt p {
+#jowxjdosfz p {
   margin: 0;
   padding: 0;
 }
 
-#wvodiwxupt .gt_table {
+#jowxjdosfz .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1980,12 +2035,12 @@ Table&nbsp;2
   border-left-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_caption {
+#jowxjdosfz .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#wvodiwxupt .gt_title {
+#jowxjdosfz .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -1997,7 +2052,7 @@ Table&nbsp;2
   border-bottom-width: 0;
 }
 
-#wvodiwxupt .gt_subtitle {
+#jowxjdosfz .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -2009,7 +2064,7 @@ Table&nbsp;2
   border-top-width: 0;
 }
 
-#wvodiwxupt .gt_heading {
+#jowxjdosfz .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -2021,13 +2076,13 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_bottom_border {
+#jowxjdosfz .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_col_headings {
+#jowxjdosfz .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2042,7 +2097,7 @@ Table&nbsp;2
   border-right-color: #000000;
 }
 
-#wvodiwxupt .gt_col_heading {
+#jowxjdosfz .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -2062,7 +2117,7 @@ Table&nbsp;2
   overflow-x: hidden;
 }
 
-#wvodiwxupt .gt_column_spanner_outer {
+#jowxjdosfz .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -2074,15 +2129,15 @@ Table&nbsp;2
   padding-right: 4px;
 }
 
-#wvodiwxupt .gt_column_spanner_outer:first-child {
+#jowxjdosfz .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#wvodiwxupt .gt_column_spanner_outer:last-child {
+#jowxjdosfz .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#wvodiwxupt .gt_column_spanner {
+#jowxjdosfz .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -2094,11 +2149,11 @@ Table&nbsp;2
   width: 100%;
 }
 
-#wvodiwxupt .gt_spanner_row {
+#jowxjdosfz .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#wvodiwxupt .gt_group_heading {
+#jowxjdosfz .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2124,7 +2179,7 @@ Table&nbsp;2
   text-align: left;
 }
 
-#wvodiwxupt .gt_empty_group_heading {
+#jowxjdosfz .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -2139,15 +2194,15 @@ Table&nbsp;2
   vertical-align: middle;
 }
 
-#wvodiwxupt .gt_from_md > :first-child {
+#jowxjdosfz .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#wvodiwxupt .gt_from_md > :last-child {
+#jowxjdosfz .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#wvodiwxupt .gt_row {
+#jowxjdosfz .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2166,7 +2221,7 @@ Table&nbsp;2
   overflow-x: hidden;
 }
 
-#wvodiwxupt .gt_stub {
+#jowxjdosfz .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -2179,7 +2234,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#wvodiwxupt .gt_stub_row_group {
+#jowxjdosfz .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -2193,15 +2248,15 @@ Table&nbsp;2
   vertical-align: top;
 }
 
-#wvodiwxupt .gt_row_group_first td {
+#jowxjdosfz .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#wvodiwxupt .gt_row_group_first th {
+#jowxjdosfz .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#wvodiwxupt .gt_summary_row {
+#jowxjdosfz .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -2211,16 +2266,16 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#wvodiwxupt .gt_first_summary_row {
+#jowxjdosfz .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_first_summary_row.thick {
+#jowxjdosfz .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#wvodiwxupt .gt_last_summary_row {
+#jowxjdosfz .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2230,7 +2285,7 @@ Table&nbsp;2
   border-bottom-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_grand_summary_row {
+#jowxjdosfz .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -2240,7 +2295,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#wvodiwxupt .gt_first_grand_summary_row {
+#jowxjdosfz .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2250,7 +2305,7 @@ Table&nbsp;2
   border-top-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_last_grand_summary_row_top {
+#jowxjdosfz .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2260,11 +2315,11 @@ Table&nbsp;2
   border-bottom-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_striped {
+#jowxjdosfz .gt_striped {
   background-color: #333333;
 }
 
-#wvodiwxupt .gt_table_body {
+#jowxjdosfz .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -2273,7 +2328,7 @@ Table&nbsp;2
   border-bottom-color: #000000;
 }
 
-#wvodiwxupt .gt_footnotes {
+#jowxjdosfz .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -2287,7 +2342,7 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_footnote {
+#jowxjdosfz .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -2296,7 +2351,7 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#wvodiwxupt .gt_sourcenotes {
+#jowxjdosfz .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -2310,7 +2365,7 @@ Table&nbsp;2
   border-right-color: #D3D3D3;
 }
 
-#wvodiwxupt .gt_sourcenote {
+#jowxjdosfz .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2318,73 +2373,85 @@ Table&nbsp;2
   padding-right: 5px;
 }
 
-#wvodiwxupt .gt_left {
+#jowxjdosfz .gt_left {
   text-align: left;
 }
 
-#wvodiwxupt .gt_center {
+#jowxjdosfz .gt_center {
   text-align: center;
 }
 
-#wvodiwxupt .gt_right {
+#jowxjdosfz .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#wvodiwxupt .gt_font_normal {
+#jowxjdosfz .gt_font_normal {
   font-weight: normal;
 }
 
-#wvodiwxupt .gt_font_bold {
+#jowxjdosfz .gt_font_bold {
   font-weight: bold;
 }
 
-#wvodiwxupt .gt_font_italic {
+#jowxjdosfz .gt_font_italic {
   font-style: italic;
 }
 
-#wvodiwxupt .gt_super {
+#jowxjdosfz .gt_super {
   font-size: 65%;
 }
 
-#wvodiwxupt .gt_footnote_marks {
+#jowxjdosfz .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#wvodiwxupt .gt_asterisk {
+#jowxjdosfz .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#wvodiwxupt .gt_indent_1 {
+#jowxjdosfz .gt_indent_1 {
   text-indent: 5px;
 }
 
-#wvodiwxupt .gt_indent_2 {
+#jowxjdosfz .gt_indent_2 {
   text-indent: 10px;
 }
 
-#wvodiwxupt .gt_indent_3 {
+#jowxjdosfz .gt_indent_3 {
   text-indent: 15px;
 }
 
-#wvodiwxupt .gt_indent_4 {
+#jowxjdosfz .gt_indent_4 {
   text-indent: 20px;
 }
 
-#wvodiwxupt .gt_indent_5 {
+#jowxjdosfz .gt_indent_5 {
   text-indent: 25px;
 }
 
-#wvodiwxupt .katex-display {
+#jowxjdosfz .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#wvodiwxupt div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#jowxjdosfz div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
+}
+
+.gt_footnote, .gt_sourcenote {
+  text-align: left;
+}
+
+.gt_col_headings th.gt_col_heading {
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+}
+
+.gt_table_body td.gt_row {
+  box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
@@ -2504,7 +2571,8 @@ Table&nbsp;2
 <span>multiline_feet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>tbl_font_size <span class="op">=</span> <span class="fu">pct</span><span class="op">(</span><span class="fl">85</span><span class="op">)</span>,</span>
 <span>target_everything <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>row_name_col <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>row_name_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>doBodyShadows <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -2516,23 +2584,23 @@ Table&nbsp;2
 Table&nbsp;3
 </figcaption><div aria-describedby="tbl-modelDiffs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="limblrvcbe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#limblrvcbe table {
+<div id="iwtbgfvsfs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#iwtbgfvsfs table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#limblrvcbe thead, #limblrvcbe tbody, #limblrvcbe tfoot, #limblrvcbe tr, #limblrvcbe td, #limblrvcbe th {
+#iwtbgfvsfs thead, #iwtbgfvsfs tbody, #iwtbgfvsfs tfoot, #iwtbgfvsfs tr, #iwtbgfvsfs td, #iwtbgfvsfs th {
   border-style: none;
 }
 
-#limblrvcbe p {
+#iwtbgfvsfs p {
   margin: 0;
   padding: 0;
 }
 
-#limblrvcbe .gt_table {
+#iwtbgfvsfs .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2558,12 +2626,12 @@ Table&nbsp;3
   border-left-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_caption {
+#iwtbgfvsfs .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#limblrvcbe .gt_title {
+#iwtbgfvsfs .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -2575,7 +2643,7 @@ Table&nbsp;3
   border-bottom-width: 0;
 }
 
-#limblrvcbe .gt_subtitle {
+#iwtbgfvsfs .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -2587,7 +2655,7 @@ Table&nbsp;3
   border-top-width: 0;
 }
 
-#limblrvcbe .gt_heading {
+#iwtbgfvsfs .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -2599,13 +2667,13 @@ Table&nbsp;3
   border-right-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_bottom_border {
+#iwtbgfvsfs .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_col_headings {
+#iwtbgfvsfs .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -2620,7 +2688,7 @@ Table&nbsp;3
   border-right-color: #000000;
 }
 
-#limblrvcbe .gt_col_heading {
+#iwtbgfvsfs .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -2640,7 +2708,7 @@ Table&nbsp;3
   overflow-x: hidden;
 }
 
-#limblrvcbe .gt_column_spanner_outer {
+#iwtbgfvsfs .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -2652,15 +2720,15 @@ Table&nbsp;3
   padding-right: 4px;
 }
 
-#limblrvcbe .gt_column_spanner_outer:first-child {
+#iwtbgfvsfs .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#limblrvcbe .gt_column_spanner_outer:last-child {
+#iwtbgfvsfs .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#limblrvcbe .gt_column_spanner {
+#iwtbgfvsfs .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -2672,11 +2740,11 @@ Table&nbsp;3
   width: 100%;
 }
 
-#limblrvcbe .gt_spanner_row {
+#iwtbgfvsfs .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#limblrvcbe .gt_group_heading {
+#iwtbgfvsfs .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2702,7 +2770,7 @@ Table&nbsp;3
   text-align: left;
 }
 
-#limblrvcbe .gt_empty_group_heading {
+#iwtbgfvsfs .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -2717,15 +2785,15 @@ Table&nbsp;3
   vertical-align: middle;
 }
 
-#limblrvcbe .gt_from_md > :first-child {
+#iwtbgfvsfs .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#limblrvcbe .gt_from_md > :last-child {
+#iwtbgfvsfs .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#limblrvcbe .gt_row {
+#iwtbgfvsfs .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2744,7 +2812,7 @@ Table&nbsp;3
   overflow-x: hidden;
 }
 
-#limblrvcbe .gt_stub {
+#iwtbgfvsfs .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -2757,7 +2825,7 @@ Table&nbsp;3
   padding-right: 5px;
 }
 
-#limblrvcbe .gt_stub_row_group {
+#iwtbgfvsfs .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -2771,15 +2839,15 @@ Table&nbsp;3
   vertical-align: top;
 }
 
-#limblrvcbe .gt_row_group_first td {
+#iwtbgfvsfs .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#limblrvcbe .gt_row_group_first th {
+#iwtbgfvsfs .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#limblrvcbe .gt_summary_row {
+#iwtbgfvsfs .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -2789,16 +2857,16 @@ Table&nbsp;3
   padding-right: 5px;
 }
 
-#limblrvcbe .gt_first_summary_row {
+#iwtbgfvsfs .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_first_summary_row.thick {
+#iwtbgfvsfs .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#limblrvcbe .gt_last_summary_row {
+#iwtbgfvsfs .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2808,7 +2876,7 @@ Table&nbsp;3
   border-bottom-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_grand_summary_row {
+#iwtbgfvsfs .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -2818,7 +2886,7 @@ Table&nbsp;3
   padding-right: 5px;
 }
 
-#limblrvcbe .gt_first_grand_summary_row {
+#iwtbgfvsfs .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2828,7 +2896,7 @@ Table&nbsp;3
   border-top-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_last_grand_summary_row_top {
+#iwtbgfvsfs .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2838,11 +2906,11 @@ Table&nbsp;3
   border-bottom-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_striped {
+#iwtbgfvsfs .gt_striped {
   background-color: #333333;
 }
 
-#limblrvcbe .gt_table_body {
+#iwtbgfvsfs .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -2851,7 +2919,7 @@ Table&nbsp;3
   border-bottom-color: #000000;
 }
 
-#limblrvcbe .gt_footnotes {
+#iwtbgfvsfs .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -2865,7 +2933,7 @@ Table&nbsp;3
   border-right-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_footnote {
+#iwtbgfvsfs .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -2874,7 +2942,7 @@ Table&nbsp;3
   padding-right: 5px;
 }
 
-#limblrvcbe .gt_sourcenotes {
+#iwtbgfvsfs .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -2888,7 +2956,7 @@ Table&nbsp;3
   border-right-color: #D3D3D3;
 }
 
-#limblrvcbe .gt_sourcenote {
+#iwtbgfvsfs .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2896,73 +2964,85 @@ Table&nbsp;3
   padding-right: 5px;
 }
 
-#limblrvcbe .gt_left {
+#iwtbgfvsfs .gt_left {
   text-align: left;
 }
 
-#limblrvcbe .gt_center {
+#iwtbgfvsfs .gt_center {
   text-align: center;
 }
 
-#limblrvcbe .gt_right {
+#iwtbgfvsfs .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#limblrvcbe .gt_font_normal {
+#iwtbgfvsfs .gt_font_normal {
   font-weight: normal;
 }
 
-#limblrvcbe .gt_font_bold {
+#iwtbgfvsfs .gt_font_bold {
   font-weight: bold;
 }
 
-#limblrvcbe .gt_font_italic {
+#iwtbgfvsfs .gt_font_italic {
   font-style: italic;
 }
 
-#limblrvcbe .gt_super {
+#iwtbgfvsfs .gt_super {
   font-size: 65%;
 }
 
-#limblrvcbe .gt_footnote_marks {
+#iwtbgfvsfs .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#limblrvcbe .gt_asterisk {
+#iwtbgfvsfs .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#limblrvcbe .gt_indent_1 {
+#iwtbgfvsfs .gt_indent_1 {
   text-indent: 5px;
 }
 
-#limblrvcbe .gt_indent_2 {
+#iwtbgfvsfs .gt_indent_2 {
   text-indent: 10px;
 }
 
-#limblrvcbe .gt_indent_3 {
+#iwtbgfvsfs .gt_indent_3 {
   text-indent: 15px;
 }
 
-#limblrvcbe .gt_indent_4 {
+#iwtbgfvsfs .gt_indent_4 {
   text-indent: 20px;
 }
 
-#limblrvcbe .gt_indent_5 {
+#iwtbgfvsfs .gt_indent_5 {
   text-indent: 25px;
 }
 
-#limblrvcbe .katex-display {
+#iwtbgfvsfs .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#limblrvcbe div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#iwtbgfvsfs div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
+}
+
+.gt_footnote, .gt_sourcenote {
+  text-align: left;
+}
+
+.gt_col_headings th.gt_col_heading {
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+}
+
+.gt_table_body td.gt_row {
+  box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
@@ -3056,7 +3136,8 @@ Table&nbsp;3
 <span>source_note <span class="op">=</span> <span class="fu">md</span><span class="op">(</span><span class="st">"**source**: "</span><span class="op">)</span>,</span>
 <span><span class="va">pal_df</span>,</span>
 <span>multiline_feet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>tbl_font_size <span class="op">=</span> <span class="fu">pct</span><span class="op">(</span><span class="fl">80</span><span class="op">)</span></span>
+<span>tbl_font_size <span class="op">=</span> <span class="fu">pct</span><span class="op">(</span><span class="fl">80</span><span class="op">)</span>,</span>
+<span>doBodyShadows <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -3068,23 +3149,23 @@ Table&nbsp;3
 Table&nbsp;4
 </figcaption><div aria-describedby="tbl-historicalSample-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="cell-output-display column-screen-inset-right">
-<div id="tekmrfgeru" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#tekmrfgeru table {
+<div id="czgxvjwnzf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#czgxvjwnzf table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#tekmrfgeru thead, #tekmrfgeru tbody, #tekmrfgeru tfoot, #tekmrfgeru tr, #tekmrfgeru td, #tekmrfgeru th {
+#czgxvjwnzf thead, #czgxvjwnzf tbody, #czgxvjwnzf tfoot, #czgxvjwnzf tr, #czgxvjwnzf td, #czgxvjwnzf th {
   border-style: none;
 }
 
-#tekmrfgeru p {
+#czgxvjwnzf p {
   margin: 0;
   padding: 0;
 }
 
-#tekmrfgeru .gt_table {
+#czgxvjwnzf .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3110,12 +3191,12 @@ Table&nbsp;4
   border-left-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_caption {
+#czgxvjwnzf .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#tekmrfgeru .gt_title {
+#czgxvjwnzf .gt_title {
   color: #FFFFFF;
   font-size: 125%;
   font-weight: initial;
@@ -3127,7 +3208,7 @@ Table&nbsp;4
   border-bottom-width: 0;
 }
 
-#tekmrfgeru .gt_subtitle {
+#czgxvjwnzf .gt_subtitle {
   color: #FFFFFF;
   font-size: 110%;
   font-weight: initial;
@@ -3139,7 +3220,7 @@ Table&nbsp;4
   border-top-width: 0;
 }
 
-#tekmrfgeru .gt_heading {
+#czgxvjwnzf .gt_heading {
   background-color: #222222;
   text-align: center;
   border-bottom-color: #222222;
@@ -3151,13 +3232,13 @@ Table&nbsp;4
   border-right-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_bottom_border {
+#czgxvjwnzf .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_col_headings {
+#czgxvjwnzf .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -3172,7 +3253,7 @@ Table&nbsp;4
   border-right-color: #000000;
 }
 
-#tekmrfgeru .gt_col_heading {
+#czgxvjwnzf .gt_col_heading {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -3192,7 +3273,7 @@ Table&nbsp;4
   overflow-x: hidden;
 }
 
-#tekmrfgeru .gt_column_spanner_outer {
+#czgxvjwnzf .gt_column_spanner_outer {
   color: #FFFFFF;
   background-color: #333333;
   font-size: 100%;
@@ -3204,15 +3285,15 @@ Table&nbsp;4
   padding-right: 4px;
 }
 
-#tekmrfgeru .gt_column_spanner_outer:first-child {
+#czgxvjwnzf .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#tekmrfgeru .gt_column_spanner_outer:last-child {
+#czgxvjwnzf .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#tekmrfgeru .gt_column_spanner {
+#czgxvjwnzf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #000000;
@@ -3224,11 +3305,11 @@ Table&nbsp;4
   width: 100%;
 }
 
-#tekmrfgeru .gt_spanner_row {
+#czgxvjwnzf .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#tekmrfgeru .gt_group_heading {
+#czgxvjwnzf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3254,7 +3335,7 @@ Table&nbsp;4
   text-align: left;
 }
 
-#tekmrfgeru .gt_empty_group_heading {
+#czgxvjwnzf .gt_empty_group_heading {
   padding: 0.5px;
   color: #FFFFFF;
   background-color: #222222;
@@ -3269,15 +3350,15 @@ Table&nbsp;4
   vertical-align: middle;
 }
 
-#tekmrfgeru .gt_from_md > :first-child {
+#czgxvjwnzf .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#tekmrfgeru .gt_from_md > :last-child {
+#czgxvjwnzf .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#tekmrfgeru .gt_row {
+#czgxvjwnzf .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3296,7 +3377,7 @@ Table&nbsp;4
   overflow-x: hidden;
 }
 
-#tekmrfgeru .gt_stub {
+#czgxvjwnzf .gt_stub {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -3309,7 +3390,7 @@ Table&nbsp;4
   padding-right: 5px;
 }
 
-#tekmrfgeru .gt_stub_row_group {
+#czgxvjwnzf .gt_stub_row_group {
   color: #FFFFFF;
   background-color: #222222;
   font-size: 100%;
@@ -3323,15 +3404,15 @@ Table&nbsp;4
   vertical-align: top;
 }
 
-#tekmrfgeru .gt_row_group_first td {
+#czgxvjwnzf .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#tekmrfgeru .gt_row_group_first th {
+#czgxvjwnzf .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#tekmrfgeru .gt_summary_row {
+#czgxvjwnzf .gt_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -3341,16 +3422,16 @@ Table&nbsp;4
   padding-right: 5px;
 }
 
-#tekmrfgeru .gt_first_summary_row {
+#czgxvjwnzf .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_first_summary_row.thick {
+#czgxvjwnzf .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#tekmrfgeru .gt_last_summary_row {
+#czgxvjwnzf .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3360,7 +3441,7 @@ Table&nbsp;4
   border-bottom-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_grand_summary_row {
+#czgxvjwnzf .gt_grand_summary_row {
   color: #FFFFFF;
   background-color: #222222;
   text-transform: inherit;
@@ -3370,7 +3451,7 @@ Table&nbsp;4
   padding-right: 5px;
 }
 
-#tekmrfgeru .gt_first_grand_summary_row {
+#czgxvjwnzf .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3380,7 +3461,7 @@ Table&nbsp;4
   border-top-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_last_grand_summary_row_top {
+#czgxvjwnzf .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3390,11 +3471,11 @@ Table&nbsp;4
   border-bottom-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_striped {
+#czgxvjwnzf .gt_striped {
   background-color: #333333;
 }
 
-#tekmrfgeru .gt_table_body {
+#czgxvjwnzf .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #000000;
@@ -3403,7 +3484,7 @@ Table&nbsp;4
   border-bottom-color: #000000;
 }
 
-#tekmrfgeru .gt_footnotes {
+#czgxvjwnzf .gt_footnotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -3417,7 +3498,7 @@ Table&nbsp;4
   border-right-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_footnote {
+#czgxvjwnzf .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 5px;
@@ -3426,7 +3507,7 @@ Table&nbsp;4
   padding-right: 5px;
 }
 
-#tekmrfgeru .gt_sourcenotes {
+#czgxvjwnzf .gt_sourcenotes {
   color: #FFFFFF;
   background-color: #222222;
   border-bottom-style: none;
@@ -3440,7 +3521,7 @@ Table&nbsp;4
   border-right-color: #D3D3D3;
 }
 
-#tekmrfgeru .gt_sourcenote {
+#czgxvjwnzf .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3448,73 +3529,85 @@ Table&nbsp;4
   padding-right: 5px;
 }
 
-#tekmrfgeru .gt_left {
+#czgxvjwnzf .gt_left {
   text-align: left;
 }
 
-#tekmrfgeru .gt_center {
+#czgxvjwnzf .gt_center {
   text-align: center;
 }
 
-#tekmrfgeru .gt_right {
+#czgxvjwnzf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#tekmrfgeru .gt_font_normal {
+#czgxvjwnzf .gt_font_normal {
   font-weight: normal;
 }
 
-#tekmrfgeru .gt_font_bold {
+#czgxvjwnzf .gt_font_bold {
   font-weight: bold;
 }
 
-#tekmrfgeru .gt_font_italic {
+#czgxvjwnzf .gt_font_italic {
   font-style: italic;
 }
 
-#tekmrfgeru .gt_super {
+#czgxvjwnzf .gt_super {
   font-size: 65%;
 }
 
-#tekmrfgeru .gt_footnote_marks {
+#czgxvjwnzf .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#tekmrfgeru .gt_asterisk {
+#czgxvjwnzf .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#tekmrfgeru .gt_indent_1 {
+#czgxvjwnzf .gt_indent_1 {
   text-indent: 5px;
 }
 
-#tekmrfgeru .gt_indent_2 {
+#czgxvjwnzf .gt_indent_2 {
   text-indent: 10px;
 }
 
-#tekmrfgeru .gt_indent_3 {
+#czgxvjwnzf .gt_indent_3 {
   text-indent: 15px;
 }
 
-#tekmrfgeru .gt_indent_4 {
+#czgxvjwnzf .gt_indent_4 {
   text-indent: 20px;
 }
 
-#tekmrfgeru .gt_indent_5 {
+#czgxvjwnzf .gt_indent_5 {
   text-indent: 25px;
 }
 
-#tekmrfgeru .katex-display {
+#czgxvjwnzf .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#tekmrfgeru div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#czgxvjwnzf div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
+}
+
+.gt_footnote, .gt_sourcenote {
+  text-align: left;
+}
+
+.gt_col_headings th.gt_col_heading {
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+}
+
+.gt_table_body td.gt_row {
+  box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
@@ -3545,224 +3638,224 @@ Table&nbsp;4
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #F9F9F9; color: #000000;">2008-02-24 08:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #EFF7F0; color: #000000;">29.8166</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #9FD7AA; color: #000000;">0.02362205</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">0.1653543</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #B5E2BE; color: #000000;">0.09842519</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">73</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #ECF7EE; color: #000000;">3.202897</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #72C185; color: #000000;">167.905258</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #F0F8F1; color: #000000;">2021-12-28 08:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #BFE6C6; color: #000000;">41.9360</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F2F8F3; color: #000000;">3</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #29A352; color: #FFFFFF;">8.204027</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #B6E2BF; color: #000000;">101.003494</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #E7F6EA; color: #000000;">2007-08-06 14:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #004918; color: #FFFFFF;">84.4466</td>
+<td headers="date" class="gt_row gt_center" style="background-color: #F9F9F9; color: #000000;">1997-02-15 22:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #C1E7C8; color: #000000;">41.0666</td>
 <td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #E8F6EB; color: #000000;">0.03280840</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #F3F8F4; color: #000000;">2</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #D6F0DB; color: #000000;">4.589940</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #A1D8AC; color: #000000;">133.02507</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #F0F8F1; color: #000000;">1989-11-11 03:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #BAE4C2; color: #000000;">42.6866</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F6F9F6; color: #000000;">1</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #DEF3E1; color: #000000;">3.957657</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #9DD6A9; color: #000000;">137.29063</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #E7F6EA; color: #000000;">2019-08-14 11:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #1F9F4D; color: #FFFFFF;">69.1160</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
 <td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #4EB069; color: #FFFFFF;">7.635350</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #1B9246; color: #FFFFFF;">238.172592</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #DFF3E3; color: #000000;">3.829127</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #107A38; color: #FFFFFF;">276.70975</td>
 </tr>
 <tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #DBF2DF; color: #000000;">2023-08-12 09:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #04682D; color: #FFFFFF;">77.9360</td>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #DBF2DF; color: #000000;">1985-03-12 02:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #7DC78E; color: #000000;">55.5566</td>
 <td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
 <td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F2F8F3; color: #000000;">3</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #27A351; color: #FFFFFF;">8.225348</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #44AC62; color: #FFFFFF;">202.380173</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">21.280914</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #025F27; color: #FFFFFF;">309.88263</td>
 </tr>
 <tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #CEEDD4; color: #000000;">2018-08-12 12:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #178A41; color: #FFFFFF;">70.5560</td>
+<td headers="date" class="gt_row gt_center" style="background-color: #CEEDD4; color: #000000;">2018-08-12 04:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #1A9245; color: #FFFFFF;">72.4460</td>
 <td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
 <td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">2.530877</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #01511E; color: #FFFFFF;">315.000092</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #D9F1DD; color: #000000;">4.343469</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #AADCB4; color: #000000;">124.50858</td>
 </tr>
 <tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #C0E6C7; color: #000000;">1988-12-07 01:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #98D3A4; color: #000000;">49.6166</td>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #C0E6C7; color: #000000;">1993-08-19 18:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">91.1966</td>
 <td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
 <td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #4AAE66; color: #FFFFFF;">7.713597</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #1A9044; color: #FFFFFF;">240.461304</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #F8F9F8; color: #000000;">1.140651</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #62B978; color: #000000;">191.30989</td>
 </tr>
 <tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #B1DFBA; color: #000000;">2015-12-15 19:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #8ACD98; color: #000000;">52.1366</td>
+<td headers="date" class="gt_row gt_center" style="background-color: #B1DFBA; color: #000000;">2007-07-21 18:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #107A37; color: #FFFFFF;">78.4166</td>
 <td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #F3F8F4; color: #000000;">2</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #CFEED5; color: #000000;">5.164515</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #D5F0DA; color: #000000;">72.34979</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #A1D8AC; color: #000000;">2010-06-11 02:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #0B7233; color: #FFFFFF;">80.3966</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F3F8F4; color: #000000;">2</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #93D1A0; color: #000000;">9.344664</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #7CC68D; color: #000000;">168.95911</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #90D09D; color: #000000;">2012-08-14 01:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #16863F; color: #FFFFFF;">75.3566</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #ADDDB7; color: #000000;">7.697361</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #01521E; color: #FFFFFF;">324.46225</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #7DC68E; color: #000000;">1984-08-21 11:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #54B26D; color: #FFFFFF;">62.6666</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #D2EFD7; color: #000000;">4.926481</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #9AD4A6; color: #000000;">140.52757</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #69BD7E; color: #000000;">2009-12-19 19:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #E2F4E5; color: #000000;">32.2466</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #D0EED6; color: #000000;">0.06561679</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #6CBE80; color: #000000;">11.548207</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #025A23; color: #FFFFFF;">315.78473</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #53B26D; color: #FFFFFF;">1998-01-13 20:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">23.5166</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #97D3A3; color: #000000;">0.13123359</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #D4EFD9; color: #000000;">4.755928</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #EBF7ED; color: #000000;">41.18584</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #39A85A; color: #FFFFFF;">1995-10-20 08:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #9CD5A8; color: #000000;">49.5266</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #F6F9F6; color: #000000;">1</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #A5DAB0; color: #000000;">8.213173</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #04682D; color: #FFFFFF;">299.35767</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #1E9C4B; color: #FFFFFF;">2004-04-04 03:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #9BD5A7; color: #000000;">49.6166</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #7EC78F; color: #000000;">10.551908</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">338.87521</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #198E43; color: #FFFFFF;">2016-07-22 23:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #01511E; color: #FFFFFF;">88.4066</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">1.000417</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #DCF2E0; color: #000000;">63.43501</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #13803B; color: #FFFFFF;">1981-12-27 18:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #DDF3E1; color: #000000;">33.5966</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0.16404200</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #F3F8F4; color: #000000;">1.703648</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #076D30; color: #FFFFFF;">293.19861</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #0A7132; color: #FFFFFF;">2006-06-22 10:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #127D39; color: #FFFFFF;">77.6066</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right" style="background-color: #EFF8F1; color: #000000;">3</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #CCECD2; color: #000000;">5.405955</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #50B16A; color: #FFFFFF;">204.44394</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #03632A; color: #FFFFFF;">2013-11-21 03:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #AEDEB7; color: #000000;">45.6566</td>
+<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">0.03149606</td>
+<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">0.03149606</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">53</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #79C48A; color: #000000;">10.851179</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #80C890; color: #000000;">165.67725</td>
+</tr>
+<tr>
+<td headers="date" class="gt_row gt_center" style="background-color: #015420; color: #FFFFFF;">2000-08-10 22:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #025A24; color: #FFFFFF;">86.2466</td>
+<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right" style="background-color: #74C286; color: #000000;">0</td>
 <td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #5CB673; color: #000000;">7.385489</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #8CCE9A; color: #000000;">144.865723</td>
+<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #BBE4C3; color: #000000;">6.673613</td>
+<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">13.57046</td>
 </tr>
 <tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #A1D8AC; color: #000000;">1992-03-07 01:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #65BA7A; color: #000000;">57.8966</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #3CA95D; color: #FFFFFF;">0.03937008</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #3CA95D; color: #FFFFFF;">0.03937008</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #178941; color: #FFFFFF;">55</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #92D1A0; color: #000000;">6.105822</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #3AA85B; color: #FFFFFF;">208.442825</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #90D09D; color: #000000;">1989-11-29 06:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">26.3966</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #75C287; color: #000000;">6.829264</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">328.392548</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #7DC68E; color: #000000;">2010-07-22 15:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">85.0766</td>
+<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #004616; color: #FFFFFF;">2001-01-06 16:00:00</td>
+<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #DBF2DF; color: #000000;">34.1366</td>
 <td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
 <td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F2F8F3; color: #000000;">3</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #34A657; color: #FFFFFF;">8.068720</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #1E9C4B; color: #FFFFFF;">226.123215</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #69BD7E; color: #000000;">2005-11-09</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #15833D; color: #FFFFFF;">71.9366</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #F7F9F7; color: #000000;">1</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #127E3A; color: #FFFFFF;">9.406046</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #60B877; color: #000000;">182.726257</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #53B26D; color: #FFFFFF;">2003-10-03 01:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #A2D8AD; color: #000000;">47.7266</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
+<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #74C286; color: #000000;">0</td>
+<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #004616; color: #FFFFFF;">0.32808399</td>
 <td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #D5F0D9; color: #000000;">4.112674</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #ACDDB6; color: #000000;">112.380180</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #39A85A; color: #FFFFFF;">1999-12-04 12:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #65BA7A; color: #000000;">57.9866</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">0.06299213</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">0.06299213</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #0C7334; color: #FFFFFF;">61</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #BBE4C3; color: #000000;">4.966946</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #8CCE9B; color: #000000;">144.162262</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #1E9C4B; color: #FFFFFF;">2017-01-01 01:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #D8F1DD; color: #000000;">36.1760</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #A5DAB0; color: #000000;">5.610367</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">4.573841</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #198E43; color: #FFFFFF;">1987-09-22 07:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #6BBD7F; color: #000000;">56.9966</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #7BC68C; color: #000000;">6.673612</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #015621; color: #FFFFFF;">309.559631</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #13803B; color: #FFFFFF;">1995-02-10 10:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #EAF7ED; color: #000000;">31.3466</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #B5E2BE; color: #000000;">0.09842519</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #4FB16A; color: #FFFFFF;">7.618947</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #21A14E; color: #FFFFFF;">220.236282</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #0A7132; color: #FFFFFF;">2004-02-09</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #EEF7F0; color: #000000;">30.0866</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">0.32808399</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #004616; color: #FFFFFF;">11.184999</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #77C388; color: #000000;">163.739716</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #03632A; color: #FFFFFF;">2010-03-05 11:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">26.3066</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #E1F4E5; color: #000000;">3.668953</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #DDF3E1; color: #000000;">52.431335</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center" style="background-color: #015420; color: #FFFFFF;">2007-03-24 15:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right" style="background-color: #1F9F4D; color: #FFFFFF;">65.8166</td>
-<td headers="precipitation" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right" style="background-color: #F2F8F3; color: #000000;">3</td>
-<td headers="wind_speed_10m" class="gt_row gt_right" style="background-color: #ACDDB6; color: #000000;">5.410581</td>
-<td headers="wind_direction_10m" class="gt_row gt_right" style="background-color: #37A85A; color: #FFFFFF;">209.744797</td>
-</tr>
-<tr>
-<td headers="date" class="gt_row gt_center gt_striped" style="background-color: #004616; color: #FFFFFF;">2009-08-25 13:00:00</td>
-<td headers="temperature_2m" class="gt_row gt_right gt_striped" style="background-color: #2FA555; color: #FFFFFF;">64.2866</td>
-<td headers="precipitation" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="rain" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="snowfall" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.0000000</td>
-<td headers="snow_depth" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0.00000000</td>
-<td headers="weather_code" class="gt_row gt_right gt_striped" style="background-color: #F9F9F9; color: #000000;">0</td>
-<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #C2E7C9; color: #000000;">4.745393</td>
-<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #6DBE81; color: #000000;">171.869980</td>
+<td headers="wind_speed_10m" class="gt_row gt_right gt_striped" style="background-color: #97D3A3; color: #000000;">9.108739</td>
+<td headers="wind_direction_10m" class="gt_row gt_right gt_striped" style="background-color: #4FB16A; color: #FFFFFF;">204.67685</td>
 </tr>
 </tbody>
 <tfoot class="gt_sourcenotes"><tr>
@@ -4061,7 +4154,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/eric-mossotti\.quarto\.pub\/weather_assistant");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -4612,7 +4705,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb20-245"><a href="#cb20-245" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-246"><a href="#cb20-246" aria-hidden="true" tabindex="-1"></a><span class="fu">### Enum</span></span>
 <span id="cb20-247"><a href="#cb20-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-248"><a href="#cb20-248" aria-hidden="true" tabindex="-1"></a>::: {.code-fold-flex}</span>
+<span id="cb20-248"><a href="#cb20-248" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
 <span id="cb20-251"><a href="#cb20-251" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
 <span id="cb20-252"><a href="#cb20-252" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "setEnumsFile"</span></span>
 <span id="cb20-253"><a href="#cb20-253" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "load enum file"</span></span>
@@ -4620,7 +4713,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb20-255"><a href="#cb20-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb20-256"><a href="#cb20-256" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb20-257"><a href="#cb20-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-258"><a href="#cb20-258" aria-hidden="true" tabindex="-1"></a>::: {.code-fold-flex}</span>
+<span id="cb20-258"><a href="#cb20-258" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
 <span id="cb20-261"><a href="#cb20-261" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
 <span id="cb20-262"><a href="#cb20-262" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "setEnums"</span></span>
 <span id="cb20-263"><a href="#cb20-263" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Sets the custom data types in the database."</span></span>
@@ -4692,7 +4785,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb20-329"><a href="#cb20-329" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb20-330"><a href="#cb20-330" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb20-331"><a href="#cb20-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-332"><a href="#cb20-332" aria-hidden="true" tabindex="-1"></a>::: {.code-fold-flex}</span>
+<span id="cb20-332"><a href="#cb20-332" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
 <span id="cb20-335"><a href="#cb20-335" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
 <span id="cb20-336"><a href="#cb20-336" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "wcSetup"</span></span>
 <span id="cb20-337"><a href="#cb20-337" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
@@ -4731,329 +4824,334 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb20-370"><a href="#cb20-370" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb20-371"><a href="#cb20-371" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb20-372"><a href="#cb20-372" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-373"><a href="#cb20-373" aria-hidden="true" tabindex="-1"></a>:::: {.skinny-tables}</span>
-<span id="cb20-374"><a href="#cb20-374" aria-hidden="true" tabindex="-1"></a>::: {.table-flex}</span>
-<span id="cb20-377"><a href="#cb20-377" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-378"><a href="#cb20-378" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-wc"</span></span>
-<span id="cb20-379"><a href="#cb20-379" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-380"><a href="#cb20-380" aria-hidden="true" tabindex="-1"></a><span class="co">#| tbl-cap: "How the WMO codes are\n associated to weather events."</span></span>
-<span id="cb20-381"><a href="#cb20-381" aria-hidden="true" tabindex="-1"></a><span class="do">##| width: 100%</span></span>
-<span id="cb20-382"><a href="#cb20-382" aria-hidden="true" tabindex="-1"></a><span class="do">##| tbl-subcap: "Custom data types to potentially speed up computations."</span></span>
-<span id="cb20-383"><a href="#cb20-383" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-384"><a href="#cb20-384" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb20-373"><a href="#cb20-373" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">@noaa_wmo_2025</span><span class="co">]</span></span>
+<span id="cb20-374"><a href="#cb20-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-375"><a href="#cb20-375" aria-hidden="true" tabindex="-1"></a>:::: skinny-tables</span>
+<span id="cb20-376"><a href="#cb20-376" aria-hidden="true" tabindex="-1"></a>::: table-flex</span>
+<span id="cb20-379"><a href="#cb20-379" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-380"><a href="#cb20-380" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-wc"</span></span>
+<span id="cb20-381"><a href="#cb20-381" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-382"><a href="#cb20-382" aria-hidden="true" tabindex="-1"></a><span class="co">#| tbl-cap: "How the WMO codes are\n associated to weather events."</span></span>
+<span id="cb20-383"><a href="#cb20-383" aria-hidden="true" tabindex="-1"></a><span class="do">##| width: 100%</span></span>
+<span id="cb20-384"><a href="#cb20-384" aria-hidden="true" tabindex="-1"></a><span class="do">##| tbl-subcap: "Custom data types to potentially speed up computations."</span></span>
 <span id="cb20-385"><a href="#cb20-385" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-386"><a href="#cb20-386" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-387"><a href="#cb20-387" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-388"><a href="#cb20-388" aria-hidden="true" tabindex="-1"></a>::::</span>
-<span id="cb20-389"><a href="#cb20-389" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-390"><a href="#cb20-390" aria-hidden="true" tabindex="-1"></a><span class="fu"># Modeling Weather</span></span>
+<span id="cb20-386"><a href="#cb20-386" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb20-387"><a href="#cb20-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-388"><a href="#cb20-388" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-389"><a href="#cb20-389" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-390"><a href="#cb20-390" aria-hidden="true" tabindex="-1"></a>::::</span>
 <span id="cb20-391"><a href="#cb20-391" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-392"><a href="#cb20-392" aria-hidden="true" tabindex="-1"></a>::: p-1</span>
-<span id="cb20-393"><a href="#cb20-393" aria-hidden="true" tabindex="-1"></a>The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022</span>
-<span id="cb20-394"><a href="#cb20-394" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-395"><a href="#cb20-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-396"><a href="#cb20-396" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb20-399"><a href="#cb20-399" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-400"><a href="#cb20-400" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "forecastModelDescription"</span></span>
-<span id="cb20-401"><a href="#cb20-401" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
-<span id="cb20-402"><a href="#cb20-402" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-403"><a href="#cb20-403" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-404"><a href="#cb20-404" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the tibble</span></span>
-<span id="cb20-405"><a href="#cb20-405" aria-hidden="true" tabindex="-1"></a>forecast_models <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-406"><a href="#cb20-406" aria-hidden="true" tabindex="-1"></a>     <span class="at">Model =</span> <span class="fu">c</span>(<span class="st">"GFS"</span>, <span class="st">"HRRR"</span>),</span>
-<span id="cb20-407"><a href="#cb20-407" aria-hidden="true" tabindex="-1"></a>     <span class="at">Developed_By =</span> <span class="fu">c</span>(</span>
-<span id="cb20-408"><a href="#cb20-408" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (National Oceanic and Atmospheric Administration)"</span>,</span>
-<span id="cb20-409"><a href="#cb20-409" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (specifically by the Earth System Research Laboratory)"</span></span>
-<span id="cb20-410"><a href="#cb20-410" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb20-411"><a href="#cb20-411" aria-hidden="true" tabindex="-1"></a>     <span class="at">Scope =</span> <span class="fu">c</span>(</span>
-<span id="cb20-412"><a href="#cb20-412" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Global"</span>,</span>
-<span id="cb20-413"><a href="#cb20-413" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regional (primarily focused on the contiguous United States)"</span></span>
-<span id="cb20-414"><a href="#cb20-414" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb20-415"><a href="#cb20-415" aria-hidden="true" tabindex="-1"></a>     <span class="at">Resolution =</span> <span class="fu">c</span>(</span>
-<span id="cb20-416"><a href="#cb20-416" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Lower resolution compared to HRRR (approximately 13 km as of recent updates)"</span>,</span>
-<span id="cb20-417"><a href="#cb20-417" aria-hidden="true" tabindex="-1"></a>          <span class="st">"High resolution (3 km)"</span></span>
-<span id="cb20-418"><a href="#cb20-418" aria-hidden="true" tabindex="-1"></a>     ),</span>
-<span id="cb20-419"><a href="#cb20-419" aria-hidden="true" tabindex="-1"></a>     <span class="at">Forecast_Range =</span> <span class="fu">c</span>(<span class="st">"Up to 16 days"</span>, <span class="st">"Up to 18 hours"</span>),</span>
-<span id="cb20-420"><a href="#cb20-420" aria-hidden="true" tabindex="-1"></a>     <span class="at">Updates =</span> <span class="fu">c</span>(<span class="st">"Runs four times a day (00Z, 06Z, 12Z, 18Z)"</span>, <span class="st">"Runs every hour"</span>),</span>
-<span id="cb20-421"><a href="#cb20-421" aria-hidden="true" tabindex="-1"></a>     <span class="at">Applications =</span> <span class="fu">c</span>(</span>
-<span id="cb20-422"><a href="#cb20-422" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Used for long-term weather forecasting, climate modeling, and global weather patterns."</span>,</span>
-<span id="cb20-423"><a href="#cb20-423" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."</span></span>
-<span id="cb20-424"><a href="#cb20-424" aria-hidden="true" tabindex="-1"></a>     )</span>
-<span id="cb20-425"><a href="#cb20-425" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-426"><a href="#cb20-426" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-427"><a href="#cb20-427" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_models)</span>
+<span id="cb20-392"><a href="#cb20-392" aria-hidden="true" tabindex="-1"></a><span class="fu"># Modeling Weather</span></span>
+<span id="cb20-393"><a href="#cb20-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-394"><a href="#cb20-394" aria-hidden="true" tabindex="-1"></a>::: p-1</span>
+<span id="cb20-395"><a href="#cb20-395" aria-hidden="true" tabindex="-1"></a>The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022</span>
+<span id="cb20-396"><a href="#cb20-396" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-397"><a href="#cb20-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-398"><a href="#cb20-398" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb20-401"><a href="#cb20-401" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-402"><a href="#cb20-402" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "forecastModelDescription"</span></span>
+<span id="cb20-403"><a href="#cb20-403" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
+<span id="cb20-404"><a href="#cb20-404" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-405"><a href="#cb20-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-406"><a href="#cb20-406" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the tibble</span></span>
+<span id="cb20-407"><a href="#cb20-407" aria-hidden="true" tabindex="-1"></a>forecast_models <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-408"><a href="#cb20-408" aria-hidden="true" tabindex="-1"></a>     <span class="at">Model =</span> <span class="fu">c</span>(<span class="st">"GFS"</span>, <span class="st">"HRRR"</span>),</span>
+<span id="cb20-409"><a href="#cb20-409" aria-hidden="true" tabindex="-1"></a>     <span class="at">Developed_By =</span> <span class="fu">c</span>(</span>
+<span id="cb20-410"><a href="#cb20-410" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (National Oceanic and Atmospheric Administration)"</span>,</span>
+<span id="cb20-411"><a href="#cb20-411" aria-hidden="true" tabindex="-1"></a>          <span class="st">"NOAA (specifically by the Earth System Research Laboratory)"</span></span>
+<span id="cb20-412"><a href="#cb20-412" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb20-413"><a href="#cb20-413" aria-hidden="true" tabindex="-1"></a>     <span class="at">Scope =</span> <span class="fu">c</span>(</span>
+<span id="cb20-414"><a href="#cb20-414" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Global"</span>,</span>
+<span id="cb20-415"><a href="#cb20-415" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Regional (primarily focused on the contiguous United States)"</span></span>
+<span id="cb20-416"><a href="#cb20-416" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb20-417"><a href="#cb20-417" aria-hidden="true" tabindex="-1"></a>     <span class="at">Resolution =</span> <span class="fu">c</span>(</span>
+<span id="cb20-418"><a href="#cb20-418" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Lower resolution compared to HRRR (approximately 13 km as of recent updates)"</span>,</span>
+<span id="cb20-419"><a href="#cb20-419" aria-hidden="true" tabindex="-1"></a>          <span class="st">"High resolution (3 km)"</span></span>
+<span id="cb20-420"><a href="#cb20-420" aria-hidden="true" tabindex="-1"></a>     ),</span>
+<span id="cb20-421"><a href="#cb20-421" aria-hidden="true" tabindex="-1"></a>     <span class="at">Forecast_Range =</span> <span class="fu">c</span>(<span class="st">"Up to 16 days"</span>, <span class="st">"Up to 18 hours"</span>),</span>
+<span id="cb20-422"><a href="#cb20-422" aria-hidden="true" tabindex="-1"></a>     <span class="at">Updates =</span> <span class="fu">c</span>(<span class="st">"Runs four times a day (00Z, 06Z, 12Z, 18Z)"</span>, <span class="st">"Runs every hour"</span>),</span>
+<span id="cb20-423"><a href="#cb20-423" aria-hidden="true" tabindex="-1"></a>     <span class="at">Applications =</span> <span class="fu">c</span>(</span>
+<span id="cb20-424"><a href="#cb20-424" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Used for long-term weather forecasting, climate modeling, and global weather patterns."</span>,</span>
+<span id="cb20-425"><a href="#cb20-425" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."</span></span>
+<span id="cb20-426"><a href="#cb20-426" aria-hidden="true" tabindex="-1"></a>     )</span>
+<span id="cb20-427"><a href="#cb20-427" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb20-428"><a href="#cb20-428" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-429"><a href="#cb20-429" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
-<span id="cb20-430"><a href="#cb20-430" aria-hidden="true" tabindex="-1"></a>     <span class="st">""</span>,</span>
-<span id="cb20-431"><a href="#cb20-431" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Organization or entity responsible for developing the model."</span>,</span>
-<span id="cb20-432"><a href="#cb20-432" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Geographical coverage of the model (e.g., global or regional)."</span>,</span>
-<span id="cb20-433"><a href="#cb20-433" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
-<span id="cb20-434"><a href="#cb20-434" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
-<span id="cb20-435"><a href="#cb20-435" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>,</span>
-<span id="cb20-436"><a href="#cb20-436" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span></span>
-<span id="cb20-437"><a href="#cb20-437" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb20-438"><a href="#cb20-438" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-439"><a href="#cb20-439" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-440"><a href="#cb20-440" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
-<span id="cb20-441"><a href="#cb20-441" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
-<span id="cb20-442"><a href="#cb20-442" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-443"><a href="#cb20-443" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-444"><a href="#cb20-444" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
-<span id="cb20-445"><a href="#cb20-445" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
-<span id="cb20-446"><a href="#cb20-446" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-447"><a href="#cb20-447" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-448"><a href="#cb20-448" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
-<span id="cb20-449"><a href="#cb20-449" aria-hidden="true" tabindex="-1"></a>forecast_models,</span>
-<span id="cb20-450"><a href="#cb20-450" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Attributes"</span>,</span>
-<span id="cb20-451"><a href="#cb20-451" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
-<span id="cb20-452"><a href="#cb20-452" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
-<span id="cb20-453"><a href="#cb20-453" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
-<span id="cb20-454"><a href="#cb20-454" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
-<span id="cb20-455"><a href="#cb20-455" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb20-456"><a href="#cb20-456" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
-<span id="cb20-457"><a href="#cb20-457" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb20-458"><a href="#cb20-458" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="st">"Model"</span></span>
-<span id="cb20-459"><a href="#cb20-459" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-460"><a href="#cb20-460" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-461"><a href="#cb20-461" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-462"><a href="#cb20-462" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-429"><a href="#cb20-429" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_models)</span>
+<span id="cb20-430"><a href="#cb20-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-431"><a href="#cb20-431" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
+<span id="cb20-432"><a href="#cb20-432" aria-hidden="true" tabindex="-1"></a>     <span class="st">""</span>,</span>
+<span id="cb20-433"><a href="#cb20-433" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Organization or entity responsible for developing the model."</span>,</span>
+<span id="cb20-434"><a href="#cb20-434" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Geographical coverage of the model (e.g., global or regional)."</span>,</span>
+<span id="cb20-435"><a href="#cb20-435" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
+<span id="cb20-436"><a href="#cb20-436" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
+<span id="cb20-437"><a href="#cb20-437" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>,</span>
+<span id="cb20-438"><a href="#cb20-438" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Primary uses and strengths of the model in weather forecasting."</span></span>
+<span id="cb20-439"><a href="#cb20-439" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb20-440"><a href="#cb20-440" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-441"><a href="#cb20-441" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-442"><a href="#cb20-442" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
+<span id="cb20-443"><a href="#cb20-443" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
+<span id="cb20-444"><a href="#cb20-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-445"><a href="#cb20-445" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-446"><a href="#cb20-446" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
+<span id="cb20-447"><a href="#cb20-447" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
+<span id="cb20-448"><a href="#cb20-448" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-449"><a href="#cb20-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-450"><a href="#cb20-450" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
+<span id="cb20-451"><a href="#cb20-451" aria-hidden="true" tabindex="-1"></a>forecast_models,</span>
+<span id="cb20-452"><a href="#cb20-452" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Attributes"</span>,</span>
+<span id="cb20-453"><a href="#cb20-453" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
+<span id="cb20-454"><a href="#cb20-454" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
+<span id="cb20-455"><a href="#cb20-455" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
+<span id="cb20-456"><a href="#cb20-456" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
+<span id="cb20-457"><a href="#cb20-457" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-458"><a href="#cb20-458" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
+<span id="cb20-459"><a href="#cb20-459" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-460"><a href="#cb20-460" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="st">"Model"</span>,</span>
+<span id="cb20-461"><a href="#cb20-461" aria-hidden="true" tabindex="-1"></a><span class="at">doBodyShadows =</span> <span class="cn">TRUE</span></span>
+<span id="cb20-462"><a href="#cb20-462" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb20-463"><a href="#cb20-463" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-464"><a href="#cb20-464" aria-hidden="true" tabindex="-1"></a>:::: {.medium-large-tables}</span>
-<span id="cb20-465"><a href="#cb20-465" aria-hidden="true" tabindex="-1"></a>::: {.table-flex}</span>
-<span id="cb20-468"><a href="#cb20-468" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-469"><a href="#cb20-469" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelAttributes"</span></span>
-<span id="cb20-470"><a href="#cb20-470" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-471"><a href="#cb20-471" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-472"><a href="#cb20-472" aria-hidden="true" tabindex="-1"></a><span class="co">#| column: body-outset-right</span></span>
-<span id="cb20-473"><a href="#cb20-473" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-474"><a href="#cb20-474" aria-hidden="true" tabindex="-1"></a>rTable</span>
-<span id="cb20-475"><a href="#cb20-475" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-476"><a href="#cb20-476" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-477"><a href="#cb20-477" aria-hidden="true" tabindex="-1"></a>::::</span>
-<span id="cb20-478"><a href="#cb20-478" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-479"><a href="#cb20-479" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb20-482"><a href="#cb20-482" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-483"><a href="#cb20-483" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "modelDiffSetup"</span></span>
-<span id="cb20-484"><a href="#cb20-484" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
-<span id="cb20-485"><a href="#cb20-485" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-486"><a href="#cb20-486" aria-hidden="true" tabindex="-1"></a><span class="co">#| error: false</span></span>
-<span id="cb20-487"><a href="#cb20-487" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-488"><a href="#cb20-488" aria-hidden="true" tabindex="-1"></a>forecast_model_differences <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-489"><a href="#cb20-489" aria-hidden="true" tabindex="-1"></a><span class="st">"Resolution"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb20-490"><a href="#cb20-490" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."</span></span>
-<span id="cb20-491"><a href="#cb20-491" aria-hidden="true" tabindex="-1"></a>),</span>
-<span id="cb20-492"><a href="#cb20-492" aria-hidden="true" tabindex="-1"></a><span class="st">"Forecast_Range"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"GFS provides forecasts for a much longer period compared to HRRR."</span>),</span>
-<span id="cb20-493"><a href="#cb20-493" aria-hidden="true" tabindex="-1"></a><span class="st">"Update_Frequency"</span> <span class="ot">=</span>  <span class="fu">c</span>(</span>
-<span id="cb20-494"><a href="#cb20-494" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."</span></span>
-<span id="cb20-495"><a href="#cb20-495" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-496"><a href="#cb20-496" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-497"><a href="#cb20-497" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-498"><a href="#cb20-498" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_model_differences)</span>
-<span id="cb20-499"><a href="#cb20-499" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-500"><a href="#cb20-500" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
-<span id="cb20-501"><a href="#cb20-501" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
-<span id="cb20-502"><a href="#cb20-502" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
-<span id="cb20-503"><a href="#cb20-503" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>)</span>
-<span id="cb20-504"><a href="#cb20-504" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-505"><a href="#cb20-505" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-506"><a href="#cb20-506" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
-<span id="cb20-507"><a href="#cb20-507" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
-<span id="cb20-508"><a href="#cb20-508" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-509"><a href="#cb20-509" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-510"><a href="#cb20-510" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
-<span id="cb20-511"><a href="#cb20-511" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
-<span id="cb20-512"><a href="#cb20-512" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-513"><a href="#cb20-513" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-514"><a href="#cb20-514" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
-<span id="cb20-515"><a href="#cb20-515" aria-hidden="true" tabindex="-1"></a>forecast_model_differences,</span>
-<span id="cb20-516"><a href="#cb20-516" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Differences"</span>,</span>
-<span id="cb20-517"><a href="#cb20-517" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
-<span id="cb20-518"><a href="#cb20-518" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
-<span id="cb20-519"><a href="#cb20-519" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
-<span id="cb20-520"><a href="#cb20-520" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
-<span id="cb20-521"><a href="#cb20-521" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb20-522"><a href="#cb20-522" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
-<span id="cb20-523"><a href="#cb20-523" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb20-524"><a href="#cb20-524" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="cn">NULL</span></span>
-<span id="cb20-525"><a href="#cb20-525" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-526"><a href="#cb20-526" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-527"><a href="#cb20-527" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-528"><a href="#cb20-528" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-529"><a href="#cb20-529" aria-hidden="true" tabindex="-1"></a>::: {.table-flex}</span>
-<span id="cb20-532"><a href="#cb20-532" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-533"><a href="#cb20-533" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelDiffs"</span></span>
-<span id="cb20-534"><a href="#cb20-534" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-535"><a href="#cb20-535" aria-hidden="true" tabindex="-1"></a>rTable</span>
-<span id="cb20-536"><a href="#cb20-536" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-537"><a href="#cb20-537" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-538"><a href="#cb20-538" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-539"><a href="#cb20-539" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weather Condition Analysis</span></span>
-<span id="cb20-540"><a href="#cb20-540" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-541"><a href="#cb20-541" aria-hidden="true" tabindex="-1"></a><span class="fu">### FROM to Table</span></span>
+<span id="cb20-464"><a href="#cb20-464" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-465"><a href="#cb20-465" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-466"><a href="#cb20-466" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-467"><a href="#cb20-467" aria-hidden="true" tabindex="-1"></a>:::: medium-large-tables</span>
+<span id="cb20-468"><a href="#cb20-468" aria-hidden="true" tabindex="-1"></a>::: table-flex</span>
+<span id="cb20-471"><a href="#cb20-471" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-472"><a href="#cb20-472" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelAttributes"</span></span>
+<span id="cb20-473"><a href="#cb20-473" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-474"><a href="#cb20-474" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-475"><a href="#cb20-475" aria-hidden="true" tabindex="-1"></a><span class="co">#| column: body-outset-right</span></span>
+<span id="cb20-476"><a href="#cb20-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-477"><a href="#cb20-477" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb20-478"><a href="#cb20-478" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-479"><a href="#cb20-479" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-480"><a href="#cb20-480" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb20-481"><a href="#cb20-481" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-482"><a href="#cb20-482" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb20-485"><a href="#cb20-485" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-486"><a href="#cb20-486" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "modelDiffSetup"</span></span>
+<span id="cb20-487"><a href="#cb20-487" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
+<span id="cb20-488"><a href="#cb20-488" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-489"><a href="#cb20-489" aria-hidden="true" tabindex="-1"></a><span class="co">#| error: false</span></span>
+<span id="cb20-490"><a href="#cb20-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-491"><a href="#cb20-491" aria-hidden="true" tabindex="-1"></a>forecast_model_differences <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-492"><a href="#cb20-492" aria-hidden="true" tabindex="-1"></a><span class="st">"Resolution"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb20-493"><a href="#cb20-493" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."</span></span>
+<span id="cb20-494"><a href="#cb20-494" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb20-495"><a href="#cb20-495" aria-hidden="true" tabindex="-1"></a><span class="st">"Forecast_Range"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"GFS provides forecasts for a much longer period compared to HRRR."</span>),</span>
+<span id="cb20-496"><a href="#cb20-496" aria-hidden="true" tabindex="-1"></a><span class="st">"Update_Frequency"</span> <span class="ot">=</span>  <span class="fu">c</span>(</span>
+<span id="cb20-497"><a href="#cb20-497" aria-hidden="true" tabindex="-1"></a><span class="st">"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."</span></span>
+<span id="cb20-498"><a href="#cb20-498" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-499"><a href="#cb20-499" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-500"><a href="#cb20-500" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-501"><a href="#cb20-501" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(forecast_model_differences)</span>
+<span id="cb20-502"><a href="#cb20-502" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-503"><a href="#cb20-503" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">=</span>  <span class="fu">list</span>(</span>
+<span id="cb20-504"><a href="#cb20-504" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Spatial resolution of the model, indicating the level of detail in the forecasts."</span>,</span>
+<span id="cb20-505"><a href="#cb20-505" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Time period for which the model provides forecasts."</span>,</span>
+<span id="cb20-506"><a href="#cb20-506" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Frequency at which the model is updated with new data."</span>)</span>
+<span id="cb20-507"><a href="#cb20-507" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-508"><a href="#cb20-508" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-509"><a href="#cb20-509" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
+<span id="cb20-510"><a href="#cb20-510" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list)</span>
+<span id="cb20-511"><a href="#cb20-511" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-512"><a href="#cb20-512" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-513"><a href="#cb20-513" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list</span>
+<span id="cb20-514"><a href="#cb20-514" aria-hidden="true" tabindex="-1"></a><span class="co">#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))</span></span>
+<span id="cb20-515"><a href="#cb20-515" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-516"><a href="#cb20-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-517"><a href="#cb20-517" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
+<span id="cb20-518"><a href="#cb20-518" aria-hidden="true" tabindex="-1"></a>forecast_model_differences,</span>
+<span id="cb20-519"><a href="#cb20-519" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Forecast Models: Differences"</span>,</span>
+<span id="cb20-520"><a href="#cb20-520" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
+<span id="cb20-521"><a href="#cb20-521" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
+<span id="cb20-522"><a href="#cb20-522" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
+<span id="cb20-523"><a href="#cb20-523" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
+<span id="cb20-524"><a href="#cb20-524" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-525"><a href="#cb20-525" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">85</span>),</span>
+<span id="cb20-526"><a href="#cb20-526" aria-hidden="true" tabindex="-1"></a><span class="at">target_everything =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-527"><a href="#cb20-527" aria-hidden="true" tabindex="-1"></a><span class="at">row_name_col =</span> <span class="cn">NULL</span>,</span>
+<span id="cb20-528"><a href="#cb20-528" aria-hidden="true" tabindex="-1"></a><span class="at">doBodyShadows =</span> <span class="cn">TRUE</span></span>
+<span id="cb20-529"><a href="#cb20-529" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-530"><a href="#cb20-530" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-531"><a href="#cb20-531" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-532"><a href="#cb20-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-533"><a href="#cb20-533" aria-hidden="true" tabindex="-1"></a>::: table-flex</span>
+<span id="cb20-536"><a href="#cb20-536" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-537"><a href="#cb20-537" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-modelDiffs"</span></span>
+<span id="cb20-538"><a href="#cb20-538" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-539"><a href="#cb20-539" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb20-540"><a href="#cb20-540" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-541"><a href="#cb20-541" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb20-542"><a href="#cb20-542" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-543"><a href="#cb20-543" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb20-546"><a href="#cb20-546" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-547"><a href="#cb20-547" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "historicalSampleSetup"</span></span>
-<span id="cb20-548"><a href="#cb20-548" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
-<span id="cb20-549"><a href="#cb20-549" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-550"><a href="#cb20-550" aria-hidden="true" tabindex="-1"></a>r_df <span class="ot">&lt;-</span> <span class="fu">tbl</span>(</span>
-<span id="cb20-551"><a href="#cb20-551" aria-hidden="true" tabindex="-1"></a>duckdb_con, <span class="st">"hourly_historical_weather"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-552"><a href="#cb20-552" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span><span class="st">'visibility'</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-553"><a href="#cb20-553" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">20</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-554"><a href="#cb20-554" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb20-555"><a href="#cb20-555" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
-<span id="cb20-556"><a href="#cb20-556" aria-hidden="true" tabindex="-1"></a><span class="at">date =</span> <span class="fu">as.character.POSIXt</span>(date),</span>
-<span id="cb20-557"><a href="#cb20-557" aria-hidden="true" tabindex="-1"></a><span class="at">date =</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(date)</span>
-<span id="cb20-558"><a href="#cb20-558" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-559"><a href="#cb20-559" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-560"><a href="#cb20-560" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(r_df)</span>
-<span id="cb20-561"><a href="#cb20-561" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-562"><a href="#cb20-562" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb20-563"><a href="#cb20-563" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Date and time in POSIXt."</span>,</span>
-<span id="cb20-564"><a href="#cb20-564" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Temperature at 2 meters above the ground in Fahrenheit."</span>,</span>
-<span id="cb20-565"><a href="#cb20-565" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Total precipitation in inches."</span>,</span>
-<span id="cb20-566"><a href="#cb20-566" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Rain precipitation in inches."</span>,</span>
-<span id="cb20-567"><a href="#cb20-567" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Snowfall in inches."</span>,</span>
-<span id="cb20-568"><a href="#cb20-568" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Snow depth in inches."</span>,</span>
-<span id="cb20-569"><a href="#cb20-569" aria-hidden="true" tabindex="-1"></a>  <span class="co">#"Visibility in miles.",</span></span>
-<span id="cb20-570"><a href="#cb20-570" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Weather code indicating the current weather condition."</span>,</span>
-<span id="cb20-571"><a href="#cb20-571" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Wind speed at 10 meters above the ground in miles per hour."</span>,</span>
-<span id="cb20-572"><a href="#cb20-572" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Wind direction at 10 meters above the ground in degrees."</span></span>
-<span id="cb20-573"><a href="#cb20-573" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-574"><a href="#cb20-574" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-575"><a href="#cb20-575" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-576"><a href="#cb20-576" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
-<span id="cb20-577"><a href="#cb20-577" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list</span>
-<span id="cb20-578"><a href="#cb20-578" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-579"><a href="#cb20-579" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-580"><a href="#cb20-580" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb20-581"><a href="#cb20-581" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list,</span>
-<span id="cb20-582"><a href="#cb20-582" aria-hidden="true" tabindex="-1"></a>  <span class="at">pals =</span> <span class="fu">list</span>(<span class="fu">eval_palette</span>(<span class="st">"grDevices::Greens 3"</span>, , <span class="st">'c'</span>, <span class="sc">-</span><span class="dv">1</span>))</span>
-<span id="cb20-583"><a href="#cb20-583" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-584"><a href="#cb20-584" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-585"><a href="#cb20-585" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
-<span id="cb20-586"><a href="#cb20-586" aria-hidden="true" tabindex="-1"></a>r_df,</span>
-<span id="cb20-587"><a href="#cb20-587" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Historical View"</span>,</span>
-<span id="cb20-588"><a href="#cb20-588" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
-<span id="cb20-589"><a href="#cb20-589" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
-<span id="cb20-590"><a href="#cb20-590" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
-<span id="cb20-591"><a href="#cb20-591" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
-<span id="cb20-592"><a href="#cb20-592" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb20-593"><a href="#cb20-593" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">80</span>)</span>
-<span id="cb20-594"><a href="#cb20-594" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-595"><a href="#cb20-595" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-596"><a href="#cb20-596" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-597"><a href="#cb20-597" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-598"><a href="#cb20-598" aria-hidden="true" tabindex="-1"></a>::: {.table-flex}</span>
-<span id="cb20-601"><a href="#cb20-601" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-602"><a href="#cb20-602" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-historicalSample"</span></span>
-<span id="cb20-603"><a href="#cb20-603" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-604"><a href="#cb20-604" aria-hidden="true" tabindex="-1"></a><span class="co">#| column: screen-inset-right</span></span>
-<span id="cb20-605"><a href="#cb20-605" aria-hidden="true" tabindex="-1"></a>rTable</span>
-<span id="cb20-606"><a href="#cb20-606" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-607"><a href="#cb20-607" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-608"><a href="#cb20-608" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-609"><a href="#cb20-609" aria-hidden="true" tabindex="-1"></a><span class="fu">### GGplot Testing</span></span>
-<span id="cb20-610"><a href="#cb20-610" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-611"><a href="#cb20-611" aria-hidden="true" tabindex="-1"></a>::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}</span>
-<span id="cb20-614"><a href="#cb20-614" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-615"><a href="#cb20-615" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-weather_codes"</span></span>
-<span id="cb20-616"><a href="#cb20-616" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-617"><a href="#cb20-617" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-618"><a href="#cb20-618" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
-<span id="cb20-619"><a href="#cb20-619" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Weather Codes"</span></span>
-<span id="cb20-620"><a href="#cb20-620" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-621"><a href="#cb20-621" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-622"><a href="#cb20-622" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-623"><a href="#cb20-623" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_weather_codes</span>(duckdb_con)</span>
-<span id="cb20-624"><a href="#cb20-624" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-625"><a href="#cb20-625" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-628"><a href="#cb20-628" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-629"><a href="#cb20-629" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-temperature_freezing"</span></span>
-<span id="cb20-630"><a href="#cb20-630" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-631"><a href="#cb20-631" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-632"><a href="#cb20-632" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Temperature with freezing point indicators." </span></span>
-<span id="cb20-633"><a href="#cb20-633" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-subcap: "Freezing/Non-Freezing Temperature"</span></span>
-<span id="cb20-634"><a href="#cb20-634" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-635"><a href="#cb20-635" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-636"><a href="#cb20-636" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-637"><a href="#cb20-637" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_temperature_trend</span>(duckdb_con)</span>
-<span id="cb20-638"><a href="#cb20-638" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-639"><a href="#cb20-639" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-642"><a href="#cb20-642" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-643"><a href="#cb20-643" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_km"</span></span>
-<span id="cb20-644"><a href="#cb20-644" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-645"><a href="#cb20-645" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-646"><a href="#cb20-646" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Visibility in kilometers." </span></span>
-<span id="cb20-647"><a href="#cb20-647" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility (km)"</span></span>
-<span id="cb20-648"><a href="#cb20-648" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-649"><a href="#cb20-649" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-650"><a href="#cb20-650" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-651"><a href="#cb20-651" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_heat</span>(duckdb_con)</span>
-<span id="cb20-652"><a href="#cb20-652" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-653"><a href="#cb20-653" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-656"><a href="#cb20-656" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-657"><a href="#cb20-657" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_categories"</span></span>
-<span id="cb20-658"><a href="#cb20-658" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-659"><a href="#cb20-659" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-660"><a href="#cb20-660" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple visiblity categories." </span></span>
-<span id="cb20-661"><a href="#cb20-661" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility Categories"</span></span>
-<span id="cb20-662"><a href="#cb20-662" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-663"><a href="#cb20-663" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-664"><a href="#cb20-664" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-665"><a href="#cb20-665" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_categorical_heat</span>(duckdb_con)</span>
-<span id="cb20-666"><a href="#cb20-666" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-667"><a href="#cb20-667" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-670"><a href="#cb20-670" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-671"><a href="#cb20-671" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-precipitation"</span></span>
-<span id="cb20-672"><a href="#cb20-672" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-673"><a href="#cb20-673" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-674"><a href="#cb20-674" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Indicator for rain and or snowfall." </span></span>
-<span id="cb20-675"><a href="#cb20-675" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Precipitation (empty if no precipitation)"</span></span>
-<span id="cb20-676"><a href="#cb20-676" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-677"><a href="#cb20-677" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-678"><a href="#cb20-678" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-679"><a href="#cb20-679" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_precipitation</span>(duckdb_con)</span>
-<span id="cb20-680"><a href="#cb20-680" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-681"><a href="#cb20-681" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-684"><a href="#cb20-684" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-685"><a href="#cb20-685" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-wind_rose"</span></span>
-<span id="cb20-686"><a href="#cb20-686" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
-<span id="cb20-687"><a href="#cb20-687" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
-<span id="cb20-688"><a href="#cb20-688" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Wind direction and speed." </span></span>
-<span id="cb20-689"><a href="#cb20-689" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Wind Rose"</span></span>
-<span id="cb20-690"><a href="#cb20-690" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb20-691"><a href="#cb20-691" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb20-692"><a href="#cb20-692" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb20-693"><a href="#cb20-693" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_wind_rose_ggplot</span>(duckdb_con)</span>
-<span id="cb20-694"><a href="#cb20-694" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-695"><a href="#cb20-695" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb20-696"><a href="#cb20-696" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-697"><a href="#cb20-697" aria-hidden="true" tabindex="-1"></a>@fig-weather</span>
-<span id="cb20-698"><a href="#cb20-698" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-699"><a href="#cb20-699" aria-hidden="true" tabindex="-1"></a>@fig-weather_codes</span>
-<span id="cb20-700"><a href="#cb20-700" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-701"><a href="#cb20-701" aria-hidden="true" tabindex="-1"></a>@fig-temperature_freezing</span>
-<span id="cb20-702"><a href="#cb20-702" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-703"><a href="#cb20-703" aria-hidden="true" tabindex="-1"></a>@fig-visibility_km</span>
-<span id="cb20-704"><a href="#cb20-704" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-705"><a href="#cb20-705" aria-hidden="true" tabindex="-1"></a>@fig-visibility_categories</span>
-<span id="cb20-706"><a href="#cb20-706" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-707"><a href="#cb20-707" aria-hidden="true" tabindex="-1"></a>@fig-precipitation</span>
-<span id="cb20-708"><a href="#cb20-708" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-709"><a href="#cb20-709" aria-hidden="true" tabindex="-1"></a>@fig-wind_rose</span>
-<span id="cb20-710"><a href="#cb20-710" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-711"><a href="#cb20-711" aria-hidden="true" tabindex="-1"></a><span class="fu"># Disconnect From Databases</span></span>
-<span id="cb20-712"><a href="#cb20-712" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-713"><a href="#cb20-713" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
-<span id="cb20-716"><a href="#cb20-716" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb20-717"><a href="#cb20-717" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "dbDisconnect"</span></span>
-<span id="cb20-718"><a href="#cb20-718" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Dereference memory from the in-memory database connections."</span></span>
-<span id="cb20-719"><a href="#cb20-719" aria-hidden="true" tabindex="-1"></a><span class="co">#| </span></span>
-<span id="cb20-720"><a href="#cb20-720" aria-hidden="true" tabindex="-1"></a><span class="co">#dbDisconnect(mssql_con)</span></span>
-<span id="cb20-721"><a href="#cb20-721" aria-hidden="true" tabindex="-1"></a><span class="fu">dbDisconnect</span>(duckdb_con)</span>
-<span id="cb20-722"><a href="#cb20-722" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb20-723"><a href="#cb20-723" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-543"><a href="#cb20-543" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weather Condition Analysis</span></span>
+<span id="cb20-544"><a href="#cb20-544" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-545"><a href="#cb20-545" aria-hidden="true" tabindex="-1"></a><span class="fu">### FROM to Table</span></span>
+<span id="cb20-546"><a href="#cb20-546" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-547"><a href="#cb20-547" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb20-550"><a href="#cb20-550" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-551"><a href="#cb20-551" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "historicalSampleSetup"</span></span>
+<span id="cb20-552"><a href="#cb20-552" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "table setup"</span></span>
+<span id="cb20-553"><a href="#cb20-553" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-554"><a href="#cb20-554" aria-hidden="true" tabindex="-1"></a>r_df <span class="ot">&lt;-</span> <span class="fu">tbl</span>(</span>
+<span id="cb20-555"><a href="#cb20-555" aria-hidden="true" tabindex="-1"></a>duckdb_con, <span class="st">"hourly_historical_weather"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-556"><a href="#cb20-556" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">!</span><span class="st">'visibility'</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-557"><a href="#cb20-557" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">20</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-558"><a href="#cb20-558" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-559"><a href="#cb20-559" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb20-560"><a href="#cb20-560" aria-hidden="true" tabindex="-1"></a><span class="at">date =</span> <span class="fu">as.character.POSIXt</span>(date),</span>
+<span id="cb20-561"><a href="#cb20-561" aria-hidden="true" tabindex="-1"></a><span class="at">date =</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(date)</span>
+<span id="cb20-562"><a href="#cb20-562" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-563"><a href="#cb20-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-564"><a href="#cb20-564" aria-hidden="true" tabindex="-1"></a>locations_list <span class="ot">=</span> <span class="fu">colnames</span>(r_df)</span>
+<span id="cb20-565"><a href="#cb20-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-566"><a href="#cb20-566" aria-hidden="true" tabindex="-1"></a>notes_list <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb20-567"><a href="#cb20-567" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Date and time in POSIXt."</span>,</span>
+<span id="cb20-568"><a href="#cb20-568" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Temperature at 2 meters above the ground in Fahrenheit."</span>,</span>
+<span id="cb20-569"><a href="#cb20-569" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Total precipitation in inches."</span>,</span>
+<span id="cb20-570"><a href="#cb20-570" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Rain precipitation in inches."</span>,</span>
+<span id="cb20-571"><a href="#cb20-571" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Snowfall in inches."</span>,</span>
+<span id="cb20-572"><a href="#cb20-572" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Snow depth in inches."</span>,</span>
+<span id="cb20-573"><a href="#cb20-573" aria-hidden="true" tabindex="-1"></a>  <span class="co">#"Visibility in miles.",</span></span>
+<span id="cb20-574"><a href="#cb20-574" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Weather code indicating the current weather condition."</span>,</span>
+<span id="cb20-575"><a href="#cb20-575" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Wind speed at 10 meters above the ground in miles per hour."</span>,</span>
+<span id="cb20-576"><a href="#cb20-576" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Wind direction at 10 meters above the ground in degrees."</span></span>
+<span id="cb20-577"><a href="#cb20-577" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-578"><a href="#cb20-578" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-579"><a href="#cb20-579" aria-hidden="true" tabindex="-1"></a>footnotes_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-580"><a href="#cb20-580" aria-hidden="true" tabindex="-1"></a>  <span class="at">notes =</span> notes_list, </span>
+<span id="cb20-581"><a href="#cb20-581" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> locations_list</span>
+<span id="cb20-582"><a href="#cb20-582" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-583"><a href="#cb20-583" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-584"><a href="#cb20-584" aria-hidden="true" tabindex="-1"></a>pal_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb20-585"><a href="#cb20-585" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> locations_list,</span>
+<span id="cb20-586"><a href="#cb20-586" aria-hidden="true" tabindex="-1"></a>  <span class="at">pals =</span> <span class="fu">list</span>(<span class="fu">eval_palette</span>(<span class="st">"grDevices::Greens 3"</span>, , <span class="st">'c'</span>, <span class="sc">-</span><span class="dv">1</span>))</span>
+<span id="cb20-587"><a href="#cb20-587" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-588"><a href="#cb20-588" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-589"><a href="#cb20-589" aria-hidden="true" tabindex="-1"></a>rTable <span class="ot">&lt;-</span> <span class="fu">r_table_theming</span>(</span>
+<span id="cb20-590"><a href="#cb20-590" aria-hidden="true" tabindex="-1"></a>r_df,</span>
+<span id="cb20-591"><a href="#cb20-591" aria-hidden="true" tabindex="-1"></a><span class="at">title =</span> <span class="st">"Historical View"</span>,</span>
+<span id="cb20-592"><a href="#cb20-592" aria-hidden="true" tabindex="-1"></a><span class="at">subtitle =</span> <span class="cn">NULL</span>,</span>
+<span id="cb20-593"><a href="#cb20-593" aria-hidden="true" tabindex="-1"></a>footnotes_df,</span>
+<span id="cb20-594"><a href="#cb20-594" aria-hidden="true" tabindex="-1"></a><span class="at">source_note =</span> <span class="fu">md</span>(<span class="st">"**source**: "</span>),</span>
+<span id="cb20-595"><a href="#cb20-595" aria-hidden="true" tabindex="-1"></a>pal_df,</span>
+<span id="cb20-596"><a href="#cb20-596" aria-hidden="true" tabindex="-1"></a><span class="at">multiline_feet =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-597"><a href="#cb20-597" aria-hidden="true" tabindex="-1"></a><span class="at">tbl_font_size =</span> <span class="fu">pct</span>(<span class="dv">80</span>),</span>
+<span id="cb20-598"><a href="#cb20-598" aria-hidden="true" tabindex="-1"></a><span class="at">doBodyShadows =</span> <span class="cn">TRUE</span></span>
+<span id="cb20-599"><a href="#cb20-599" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-600"><a href="#cb20-600" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-601"><a href="#cb20-601" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-602"><a href="#cb20-602" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-603"><a href="#cb20-603" aria-hidden="true" tabindex="-1"></a>::: table-flex</span>
+<span id="cb20-606"><a href="#cb20-606" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-607"><a href="#cb20-607" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "tbl-historicalSample"</span></span>
+<span id="cb20-608"><a href="#cb20-608" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-609"><a href="#cb20-609" aria-hidden="true" tabindex="-1"></a><span class="co">#| column: screen-inset-right</span></span>
+<span id="cb20-610"><a href="#cb20-610" aria-hidden="true" tabindex="-1"></a>rTable</span>
+<span id="cb20-611"><a href="#cb20-611" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-612"><a href="#cb20-612" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-613"><a href="#cb20-613" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-614"><a href="#cb20-614" aria-hidden="true" tabindex="-1"></a><span class="fu">### GGplot Testing</span></span>
+<span id="cb20-615"><a href="#cb20-615" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-616"><a href="#cb20-616" aria-hidden="true" tabindex="-1"></a>::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}</span>
+<span id="cb20-619"><a href="#cb20-619" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-620"><a href="#cb20-620" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-weather_codes"</span></span>
+<span id="cb20-621"><a href="#cb20-621" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-622"><a href="#cb20-622" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-623"><a href="#cb20-623" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple weather codes for simple insights." </span></span>
+<span id="cb20-624"><a href="#cb20-624" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Weather Codes"</span></span>
+<span id="cb20-625"><a href="#cb20-625" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-626"><a href="#cb20-626" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-627"><a href="#cb20-627" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-628"><a href="#cb20-628" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_weather_codes</span>(duckdb_con)</span>
+<span id="cb20-629"><a href="#cb20-629" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-630"><a href="#cb20-630" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-633"><a href="#cb20-633" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-634"><a href="#cb20-634" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-temperature_freezing"</span></span>
+<span id="cb20-635"><a href="#cb20-635" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-636"><a href="#cb20-636" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-637"><a href="#cb20-637" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Temperature with freezing point indicators." </span></span>
+<span id="cb20-638"><a href="#cb20-638" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-subcap: "Freezing/Non-Freezing Temperature"</span></span>
+<span id="cb20-639"><a href="#cb20-639" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-640"><a href="#cb20-640" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-641"><a href="#cb20-641" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-642"><a href="#cb20-642" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_temperature_trend</span>(duckdb_con)</span>
+<span id="cb20-643"><a href="#cb20-643" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-644"><a href="#cb20-644" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-647"><a href="#cb20-647" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-648"><a href="#cb20-648" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_km"</span></span>
+<span id="cb20-649"><a href="#cb20-649" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-650"><a href="#cb20-650" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-651"><a href="#cb20-651" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Visibility in kilometers." </span></span>
+<span id="cb20-652"><a href="#cb20-652" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility (km)"</span></span>
+<span id="cb20-653"><a href="#cb20-653" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-654"><a href="#cb20-654" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-655"><a href="#cb20-655" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-656"><a href="#cb20-656" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_heat</span>(duckdb_con)</span>
+<span id="cb20-657"><a href="#cb20-657" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-658"><a href="#cb20-658" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-661"><a href="#cb20-661" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-662"><a href="#cb20-662" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-visibility_categories"</span></span>
+<span id="cb20-663"><a href="#cb20-663" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-664"><a href="#cb20-664" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-665"><a href="#cb20-665" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Simple visiblity categories." </span></span>
+<span id="cb20-666"><a href="#cb20-666" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Visibility Categories"</span></span>
+<span id="cb20-667"><a href="#cb20-667" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-668"><a href="#cb20-668" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-669"><a href="#cb20-669" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-670"><a href="#cb20-670" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_visibility_categorical_heat</span>(duckdb_con)</span>
+<span id="cb20-671"><a href="#cb20-671" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-672"><a href="#cb20-672" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-675"><a href="#cb20-675" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-676"><a href="#cb20-676" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-precipitation"</span></span>
+<span id="cb20-677"><a href="#cb20-677" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-678"><a href="#cb20-678" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-679"><a href="#cb20-679" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Indicator for rain and or snowfall." </span></span>
+<span id="cb20-680"><a href="#cb20-680" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Precipitation (empty if no precipitation)"</span></span>
+<span id="cb20-681"><a href="#cb20-681" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-682"><a href="#cb20-682" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-683"><a href="#cb20-683" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-684"><a href="#cb20-684" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_precipitation</span>(duckdb_con)</span>
+<span id="cb20-685"><a href="#cb20-685" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-686"><a href="#cb20-686" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-689"><a href="#cb20-689" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-690"><a href="#cb20-690" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "fig-wind_rose"</span></span>
+<span id="cb20-691"><a href="#cb20-691" aria-hidden="true" tabindex="-1"></a><span class="co">#| lightbox: </span></span>
+<span id="cb20-692"><a href="#cb20-692" aria-hidden="true" tabindex="-1"></a><span class="co">#|   group: weather</span></span>
+<span id="cb20-693"><a href="#cb20-693" aria-hidden="true" tabindex="-1"></a><span class="co">#|   description: "Wind direction and speed." </span></span>
+<span id="cb20-694"><a href="#cb20-694" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Wind Rose"</span></span>
+<span id="cb20-695"><a href="#cb20-695" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb20-696"><a href="#cb20-696" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-697"><a href="#cb20-697" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-698"><a href="#cb20-698" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_wind_rose_ggplot</span>(duckdb_con)</span>
+<span id="cb20-699"><a href="#cb20-699" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-700"><a href="#cb20-700" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb20-701"><a href="#cb20-701" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-702"><a href="#cb20-702" aria-hidden="true" tabindex="-1"></a>@fig-weather</span>
+<span id="cb20-703"><a href="#cb20-703" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-704"><a href="#cb20-704" aria-hidden="true" tabindex="-1"></a>@fig-weather_codes</span>
+<span id="cb20-705"><a href="#cb20-705" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-706"><a href="#cb20-706" aria-hidden="true" tabindex="-1"></a>@fig-temperature_freezing</span>
+<span id="cb20-707"><a href="#cb20-707" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-708"><a href="#cb20-708" aria-hidden="true" tabindex="-1"></a>@fig-visibility_km</span>
+<span id="cb20-709"><a href="#cb20-709" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-710"><a href="#cb20-710" aria-hidden="true" tabindex="-1"></a>@fig-visibility_categories</span>
+<span id="cb20-711"><a href="#cb20-711" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-712"><a href="#cb20-712" aria-hidden="true" tabindex="-1"></a>@fig-precipitation</span>
+<span id="cb20-713"><a href="#cb20-713" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-714"><a href="#cb20-714" aria-hidden="true" tabindex="-1"></a>@fig-wind_rose</span>
+<span id="cb20-715"><a href="#cb20-715" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-716"><a href="#cb20-716" aria-hidden="true" tabindex="-1"></a><span class="fu"># Disconnect From Databases</span></span>
+<span id="cb20-717"><a href="#cb20-717" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-718"><a href="#cb20-718" aria-hidden="true" tabindex="-1"></a>::: code-fold-flex</span>
+<span id="cb20-721"><a href="#cb20-721" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb20-722"><a href="#cb20-722" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: "dbDisconnect"</span></span>
+<span id="cb20-723"><a href="#cb20-723" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Dereference memory from the in-memory database connections."</span></span>
+<span id="cb20-724"><a href="#cb20-724" aria-hidden="true" tabindex="-1"></a><span class="co">#| </span></span>
+<span id="cb20-725"><a href="#cb20-725" aria-hidden="true" tabindex="-1"></a><span class="co">#dbDisconnect(mssql_con)</span></span>
+<span id="cb20-726"><a href="#cb20-726" aria-hidden="true" tabindex="-1"></a><span class="fu">dbDisconnect</span>(duckdb_con)</span>
+<span id="cb20-727"><a href="#cb20-727" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-728"><a href="#cb20-728" aria-hidden="true" tabindex="-1"></a>:::</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

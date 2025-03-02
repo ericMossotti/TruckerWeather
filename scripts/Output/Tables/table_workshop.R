@@ -22,7 +22,8 @@ r_table_theming <- function(r_df,
                             color_by_columns = NULL,
                             row_name_col = NULL,
                             do_col_labels = FALSE,
-                            target_everything = FALSE
+                            target_everything = FALSE,
+                            doBodyShadows = FALSE
 ) {
      if(is.null(row_name_col)) {
           r_table <- gt(r_df)
@@ -32,6 +33,38 @@ r_table_theming <- function(r_df,
                         rowname_col = row_name_col,
                        )
      }
+     
+     # Flexible CSS customization can probably be done better here
+     if(isTRUE(doBodyShadows)) {
+          r_table <- r_table |>
+               opt_css(
+                    '
+                    .gt_footnote, .gt_sourcenote {
+                      text-align: left;
+                    }
+                    
+                    .gt_col_headings th.gt_col_heading {
+                      box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+                    }
+                    .gt_table_body td.gt_row {
+                         box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset; 
+                         }
+                    '
+                    )
+          } else {
+               r_table <- r_table |>
+                    opt_css(
+                         '
+                         .gt_footnote, .gt_sourcenote {
+                           text-align: left;
+                         }
+                         
+                         .gt_col_headings th.gt_col_heading {
+                           box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.2) inset;
+                         }
+                         '
+                    )
+               }
      
      if (nrow(r_df) > 1 && target_everything == FALSE) {
           # Formatted rows are added to the accumulator, 

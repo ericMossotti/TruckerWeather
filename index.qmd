@@ -221,7 +221,7 @@ overwrite = TRUE
 
 ### Enum
 
-::: {.code-fold-flex}
+::: code-fold-flex
 ```{r}
 #| label: "setEnumsFile"
 #| code-summary: "load enum file"
@@ -229,7 +229,7 @@ overwrite = TRUE
 ```
 :::
 
-::: {.code-fold-flex}
+::: code-fold-flex
 ```{r}
 #| label: "setEnums"
 #| code-summary: "Sets the custom data types in the database."
@@ -301,7 +301,7 @@ create_enum_and_associate(duckdb_con, "WeatherCode", codes, descriptions)
 ```
 :::
 
-::: {.code-fold-flex}
+::: code-fold-flex
 ```{r}
 #| label: "wcSetup"
 #| code-summary: "table setup"
@@ -340,8 +340,10 @@ color_by_columns = "Code"
 ```
 :::
 
-:::: {.skinny-tables}
-::: {.table-flex}
+[@noaa_wmo_2025]
+
+:::: skinny-tables
+::: table-flex
 ```{r}
 #| label: "tbl-wc"
 #| echo: false
@@ -421,14 +423,15 @@ pal_df,
 multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
-row_name_col = "Model"
+row_name_col = "Model",
+doBodyShadows = TRUE
 )
 
 ```
 :::
 
-:::: {.medium-large-tables}
-::: {.table-flex}
+:::: medium-large-tables
+::: table-flex
 ```{r}
 #| label: "tbl-modelAttributes"
 #| warning: false
@@ -483,12 +486,13 @@ pal_df,
 multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
-row_name_col = NULL
+row_name_col = NULL,
+doBodyShadows = TRUE
 )
 ```
 :::
 
-::: {.table-flex}
+::: table-flex
 ```{r}
 #| label: "tbl-modelDiffs"
 #| echo: false
@@ -548,12 +552,13 @@ footnotes_df,
 source_note = md("**source**: "),
 pal_df,
 multiline_feet = TRUE,
-tbl_font_size = pct(80)
+tbl_font_size = pct(80),
+doBodyShadows = TRUE
 )
 ```
 :::
 
-::: {.table-flex}
+::: table-flex
 ```{r}
 #| label: "tbl-historicalSample"
 #| echo: false
