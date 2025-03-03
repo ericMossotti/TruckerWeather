@@ -350,12 +350,8 @@ color_by_columns = "Code",
 #| label: "tbl-wc"
 #| echo: false
 #| tbl-cap: "How the WMO codes are\n associated to weather events."
-##| width: 100%
-##| tbl-subcap: "Custom data types to potentially speed up computations."
 
 rTable
-
-
 ```
 :::
 ::::
@@ -505,13 +501,25 @@ doBodyShadows = TRUE
 ```
 :::
 
-::: table-flex
+::::: {#two}
+:::: {.medium-large-tables}
+::: {.table-flex}
 ```{r}
 #| label: "tbl-modelDiffs"
 #| echo: false
-rTable
+rTable |>
+opt_css(
+css = '
+#two .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+
 ```
 :::
+::::
+:::::
 
 ## Weather Condition Analysis
 
@@ -571,7 +579,8 @@ doBodyShadows = TRUE
 ```
 :::
 
-::: table-flex
+:::: {.large-tables}
+::: {.table-flex}
 ```{r}
 #| label: "tbl-historicalSample"
 #| echo: false
@@ -579,6 +588,7 @@ doBodyShadows = TRUE
 rTable
 ```
 :::
+::::
 
 ### GGplot Testing
 
