@@ -1,5 +1,5 @@
 ---
-title: "Broker Bid Assistant"
+title: "Weather Assistant"
 
 bibliography: bibliography/references.bib
 
@@ -43,6 +43,7 @@ library(purrr)
 library(paletteer)
 #library(plotly)
 #library(plumber)
+library(polars)
 library(png)
 #library(profvis)
 library(readr)
@@ -159,7 +160,7 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 dbWriteTable(
 duckdb_con, 
 "hourly_day_forecast", 
-py$import_api_hourly(38.748, -90.439), 
+data.frame(py$import_api_hourly(38.748, -90.439)),
 overwrite = TRUE
 )
 ```
@@ -333,7 +334,8 @@ pal_df,
 multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
-color_by_columns = "Code"
+color_by_columns = "Code",
+#doBodyShadows = FALSE
 #row_name_col = "Model"
 )
 
@@ -352,6 +354,7 @@ color_by_columns = "Code"
 ##| tbl-subcap: "Custom data types to potentially speed up computations."
 
 rTable
+
 
 ```
 :::
@@ -424,12 +427,13 @@ multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
 row_name_col = "Model",
-doBodyShadows = TRUE
+#doBodyShadows = TRUE
 )
 
 ```
 :::
 
+::::: {#one}
 :::: medium-large-tables
 ::: table-flex
 ```{r}
@@ -438,10 +442,19 @@ doBodyShadows = TRUE
 #| echo: false
 #| column: body-outset-right
 
-rTable
+rTable |>
+opt_css(
+css = '
+#one .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+
 ```
 :::
 ::::
+:::::
 
 ::: code-fold-flex
 ```{r}
@@ -609,7 +622,7 @@ plot_visibility_heat(duckdb_con)
 ```{r}
 #| label: "fig-visibility_categories"
 #| lightbox: 
-#|   group: weather
+#|   group: 
 #|   description: "Simple visiblity categories." 
 #| fig-cap: "Visibility Categories"
 #| echo: false
@@ -663,8 +676,6 @@ plot_wind_rose_ggplot(duckdb_con)
 ```{r}
 #| label: "dbDisconnect"
 #| code-summary: "Dereference memory from the in-memory database connections."
-#| 
-#dbDisconnect(mssql_con)
 dbDisconnect(duckdb_con)
 ```
 :::
