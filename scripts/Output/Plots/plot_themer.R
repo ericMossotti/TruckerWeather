@@ -1,6 +1,5 @@
-###----  Plot output script
-
-# normal axes
+#  Plot output script ----
+# normal axes ----
 ggplot_theming <- function(...) {
      theme_minimal() +
           theme(
@@ -50,7 +49,7 @@ ggplot_theming <- function(...) {
           )
 }
 
-# flipped axes
+# flipped axes ----
 ggplot_theming_flipped_axes <- function(...) {
      theme_minimal() +
           theme(

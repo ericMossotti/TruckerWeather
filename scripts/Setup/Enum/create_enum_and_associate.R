@@ -1,4 +1,3 @@
-
 #' Create ENUM Type and Associate Codes with Descriptions
 #'
 #' This function creates an ENUM type in DuckDB and associates codes with their descriptions.
@@ -8,8 +7,7 @@
 #' @param enum_name A string specifying the name of the ENUM type to be created.
 #' @param codes A character vector of codes to be included in the ENUM type.
 #' @param descriptions A character vector of descriptions corresponding to the codes.
-#' @return A data frame associating the codes with their descriptions.
-#' @examples
+#' @example
 #' \dontrun{
 #' library(DBI)
 #' 
@@ -46,10 +44,9 @@ create_enum_and_associate <- function(duckdb_con, enum_name, codes, descriptions
      enum_query <- paste0("CREATE TYPE ", enum_name, " AS ENUM (", 
                           paste0("'", codes, "'", collapse = ", "), ");")
      dbExecute(duckdb_con, enum_query)
+     message(paste0("Created ENUM type: ", enum_name))
      
-     # Create a data frame to associate codes with descriptions
-     #association_df <- data.frame(Code = codes, Description = descriptions, stringsAsFactors = FALSE)
-     
+     # Write an association table for reference
      dbWriteTable(
           duckdb_con,
           "WeatherCode",
@@ -60,9 +57,4 @@ create_enum_and_associate <- function(duckdb_con, enum_name, codes, descriptions
           ),
           overwrite = TRUE
      )
-     
-     #association_tbl <- tbl(duckdb_con, "WeatherCode")
-     
-     # Return the data frame
-     #return(association_tbl)
 }
