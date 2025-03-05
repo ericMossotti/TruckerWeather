@@ -68,7 +68,7 @@
 .large-tables {
      display: flex;
      justify-self: center;
-     font-size: clamp(0.5rem, 1.5vw, 1.25rem);
+     font-size: clamp(0.6rem, 1.3vw, 1.0rem);
      
      @media (min-width: 576px) { // Small devices (landscape phones)
           max-width: 100vw;

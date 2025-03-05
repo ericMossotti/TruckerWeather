@@ -190,35 +190,16 @@ overwrite = TRUE
 
 ### Realistic Coordinate Examples
 
--   Intersection of Hwy 70 & 270
+| Location Name | Address | Lat, Long |
+|------------------------|------------------------|------------------------|
+| \- | Intersection of Hwy 70 & 270 | 38.748, -90.439 |
+| The St. Louis Regional Freightway | \- | 38.627480, -90.189781 |
+| Port of St. Louis | \- | 38.609215, -90.204275 |
+| USPS Office Kansas City International Airport | \- | 39.304413, -94.720711 |
+| Walmart Distribution Center | 1100 Matlock Dr, Saint James, MO 65559-9026 | 38.002338, -91.634422 |
+| KCS International Freight Gateway | 3301 East 147th Street, Kansas City, MO 64147 | 38.84930037041913, -94.55499143307868 |
 
-    -   38.748, -90.439
-
--   The St. Louis Regional Freightway
-
-    -   38.627480, -90.189781
-
--   Port of St. Louis
-
-    -   38.609215, -90.204275
-
--   USPS Office Kansas City International Airport
-
-    -   KC, MO
-
-        -   39.304413, -94.720711
-
--   Walmart Distribution Center
-
-    -   1100 Matlock Dr, Saint James, MO 65559-9026
-
-        -   38.002338, -91.634422
-
--   KCS International Freight Gateway
-
-    -   3301 East 147th Street, Kansas City, MO 64147
-
-        -   38.84930037041913, -94.55499143307868
+: Real locations that might be points of interest for truckers.
 
 ### Enum
 
@@ -335,7 +316,6 @@ multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
 color_by_columns = "Code",
-#doBodyShadows = FALSE
 #row_name_col = "Model"
 )
 
@@ -423,9 +403,7 @@ multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
 row_name_col = "Model",
-#doBodyShadows = TRUE
 )
-
 ```
 :::
 
@@ -446,7 +424,6 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 } 
 '
 )
-
 ```
 :::
 ::::
@@ -495,15 +472,14 @@ pal_df,
 multiline_feet = TRUE,
 tbl_font_size = pct(85),
 target_everything = TRUE,
-row_name_col = NULL,
-doBodyShadows = TRUE
+row_name_col = NULL
 )
 ```
 :::
 
 ::::: {#two}
-:::: {.medium-large-tables}
-::: {.table-flex}
+:::: medium-large-tables
+::: table-flex
 ```{r}
 #| label: "tbl-modelDiffs"
 #| echo: false
@@ -515,7 +491,6 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 } 
 '
 )
-
 ```
 :::
 ::::
@@ -573,14 +548,13 @@ footnotes_df,
 source_note = md("**source**: "),
 pal_df,
 multiline_feet = TRUE,
-tbl_font_size = pct(80),
-doBodyShadows = TRUE
+tbl_font_size = pct(80)
 )
 ```
 :::
 
-:::: {.large-tables}
-::: {.table-flex}
+:::: large-tables
+::: table-flex
 ```{r}
 #| label: "tbl-historicalSample"
 #| echo: false
@@ -679,6 +653,116 @@ plot_wind_rose_ggplot(duckdb_con)
 @fig-precipitation
 
 @fig-wind_rose
+
+# Topography
+
+## Route Geometry and Elevation
+
+Might help with determining fuel cost and time of trip?
+
+```{r}
+#| label: "osrm"
+#| code-summary: "Creates a linestring object for the map."
+#| message: false
+
+
+# R example (osmdata)
+library(osmdata)
+library(osrm)
+library(sf)
+library(FedData)
+library(terra)
+library(leaflet)
+
+# stl regional freightway to walmart distribution center
+route <- osrmRoute(
+src = c(-90.189781, 38.627480), 
+dst = c(-91.634422, 38.002338)
+)
+
+write_sf(route, "route.geojson")  # Save for DuckDB
+```
+
+```{r}
+#| label: "getSpatRaster"
+#| code-summary: "Topological map data is retrieved, creating a SpatRaster object."
+#| message: false
+
+# Define the bounding box (min_lon, min_lat, max_lon, max_lat)
+bbox <- st_bbox(
+c(
+xmin = -90.189781, 
+ymin = 38.627480, 
+xmax = -91.634422, 
+ymax = 38.002338), 
+crs = 4326)
+
+# Convert to an sf polygon
+route_area <- st_as_sfc(bbox)
+
+route_area <- st_transform(route_area, 4326)
+
+dem <- get_ned(template = route_area, label = "route_dem")
+```
+
+::: {#fig-topography layout="[[1],[2],[3]]" fig-cap="Map figures"}
+```{r}
+#| label: "fig-route"
+#| lightbox: 
+#|   group: topograhy
+#|   description: "Geometric route without map background." 
+#| fig-cap: "Geometric route"
+#| echo: false
+#| warning: false
+#| error: false
+
+plot(st_geometry(route))
+```
+
+```{r}
+#| label: "fig-topo"
+#| lightbox: 
+#|   group: topograhy
+#|   description: "Topological data" 
+#| fig-cap: "Topological plot without route"
+#| echo: false
+#| warning: false
+#| error: false
+#| out-width: 50%
+#| fig-align: center
+
+plet(
+dem, 
+tiles = "OpenTopoMap", 
+main = "Topographical\nElevation\n(DEM)")
+
+```
+
+```{r}
+#| label: "fig-topoRoute"
+#| lightbox: 
+#|   group: topograhy
+#|   description: "Route mapped to topological data" 
+#| fig-cap: "Topological plot with route"
+#| echo: false
+#| warning: false
+#| error: false
+#| out-width: 100%
+#| column: screen
+
+
+plet(
+     dem, 
+     tiles = "OpenTopoMap", 
+     main = "Topographical\nElevation\n(DEM)") |>
+     addPolylines(
+     data = route, 
+     color = "red", 
+     weight = 2, 
+     opacity = 0.8)
+     
+```
+:::
 
 # Disconnect From Databases
 

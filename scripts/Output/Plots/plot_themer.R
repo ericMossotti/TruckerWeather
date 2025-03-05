@@ -1,7 +1,7 @@
 #  Plot output script ----
 # normal axes ----
 ggplot_theming <- function(...) {
-     theme_minimal() +
+     base_theme <- theme_minimal() +
           theme(
                axis.title = element_text(
                     color = 'gray100',
@@ -19,8 +19,8 @@ ggplot_theming <- function(...) {
                axis.text.x.top = element_text(vjust = 0.5),
                legend.background = element_rect(fill = '#222'),
                legend.position = "bottom",
-               legend.text = element_text(color = 'gray'),
-               legend.title = element_text(color = 'white'),
+               legend.text = element_text(color = 'gray', size = rel(0.7)),
+               legend.title = element_text(color = 'white', size = rel(1.0)),
                panel.background = element_rect(fill = '#222'),
                panel.grid.major.x = element_line(linetype = 'solid', color = 'black'),
                panel.grid.minor.x = element_line(linetype = "dotted", color = 'black'),
@@ -42,16 +42,18 @@ ggplot_theming <- function(...) {
                     margin = margin(5, 2, 5, 2),
                     hjust = 0
                ),
-               #plot.margin = margin(0, 0, 0, 0, "pt"),
+               plot.margin = margin(10, 10, 10, 10, "pt"),
                strip.text.y = element_text(color = "gray"),
                strip.text.x = element_text(color = "gray", face = "bold"),
                text = element_text(size = 12)
           )
+     
+     base_theme + theme(...)
 }
 
 # flipped axes ----
 ggplot_theming_flipped_axes <- function(...) {
-     theme_minimal() +
+     base_theme <- theme_minimal() +
           theme(
                axis.title = element_text(color = 'gray100'),
                axis.text = element_text(color = 'gray'),
@@ -66,4 +68,7 @@ ggplot_theming_flipped_axes <- function(...) {
                legend.text = element_text(color = 'gray'),
                legend.title = element_text(color = 'white')
           )
+     
+     base_theme + theme(...)
+     
 }
