@@ -58,6 +58,7 @@ library(tidyr)
 #| echo: false
 #| warning: false
 #| message: false
+import duckdb
 import openmeteo_requests
 import pandas as pd
 import polars as pl
@@ -65,9 +66,39 @@ import requests_cache
 from retry_requests import retry
 ```
 
+## Purpose
+
+Can brokers involved with bids for shipping contracts via road be better informed with data pertaining to the weather and other factors deemed relevant to the bid price?
+
+## Broker Bid Contract Pricing
+
+### Possible Influencing Factors
+
+1.  Weather related factors
+
+2.  Road topology
+
+3.  Truck's attributes
+
+4.  Gas prices
+
+5.  Traffic
+
+    -   Accidents
+
+    -   Local events
+
+6.  Season of year
+
+    -   holidays
+
+7.  Day of week
+
+8.  Time of day
+
 ## Database Connections
 
-### MSSQL
+#### MSSQL
 
 ```{r}
 #| include: false
@@ -97,7 +128,7 @@ mssql_con <- dbConnect(
 ```
 :::
 
-### DuckDB
+#### DuckDB
 
 ::: code-fold-flex
 ```{r}
@@ -108,19 +139,27 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 ```
 :::
 
-## Custom Output Tools
+## Loading Custom Output Scripts
 
 ### Tables
 
 ::: code-fold-flex
 ```{r}
 #| label: "loadTableOutput"
-#| code-summary: "table building and theming"
+#| code-summary: "table building"
 #| file: "scripts/Output/Tables/table_workshop.R"
 ```
 :::
 
-#### Plots
+::: code-fold-flex
+```{r}
+#| label: "loadTableOutput"
+#| code-summary: "table styling"
+#| file: "scripts/Output/Tables/table_styling.R"
+```
+:::
+
+### Plots
 
 ::: code-fold-flex
 ```{r}
@@ -138,11 +177,13 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 ```
 :::
 
-## Weather Data API Connection
+# Import
+
+## Weather Data API
 
 [@openMeteo_2025]
 
-### Import Hourly Data
+### 24-Hour Forecast
 
 ::: code-fold-flex
 ```{python}
@@ -159,12 +200,14 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 
 dbWriteTable(
 duckdb_con, 
-"hourly_day_forecast", 
+"forecast_data", 
 data.frame(py$import_api_hourly(38.748, -90.439)),
 overwrite = TRUE
 )
 ```
 :::
+
+### Historical Weather (1974-2024)
 
 ::: code-fold-flex
 ```{python}
@@ -176,32 +219,183 @@ overwrite = TRUE
 
 ::: code-fold-flex
 ```{r}
-#| label: writeHourlyAPIdata
+#| label: writeHistoricalAPIdata
 #| code-summary: "Write hourly api historical data."
 
 dbWriteTable(
 duckdb_con, 
-"hourly_historical_weather",
-py$import_api_hourly_historical(38.748, -90.439),
+"historical_data",
+data.frame(py$import_api_hourly_historical(38.748, -90.439)),
 overwrite = TRUE
 )
 ```
 :::
 
-### Realistic Coordinate Examples
 
-| Location Name | Address | Lat, Long |
-|------------------------|------------------------|------------------------|
-| \- | Intersection of Hwy 70 & 270 | 38.748, -90.439 |
-| The St. Louis Regional Freightway | \- | 38.627480, -90.189781 |
-| Port of St. Louis | \- | 38.609215, -90.204275 |
-| USPS Office Kansas City International Airport | \- | 39.304413, -94.720711 |
-| Walmart Distribution Center | 1100 Matlock Dr, Saint James, MO 65559-9026 | 38.002338, -91.634422 |
-| KCS International Freight Gateway | 3301 East 147th Street, Kansas City, MO 64147 | 38.84930037041913, -94.55499143307868 |
+# Weather Factors
 
-: Real locations that might be points of interest for truckers.
+::: p-1
+The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022
+:::
 
-### Enum
+::: code-fold-flex
+```{r}
+#| label: "forecastModelDescription"
+#| code-summary: "table setup"
+#| warning: false
+
+# Create the tibble
+forecast_models <- tibble(
+     Model = c("GFS", "HRRR"),
+     Developed_By = c(
+          "NOAA (National Oceanic and Atmospheric Administration)",
+          "NOAA (specifically by the Earth System Research Laboratory)"
+     ),
+     Scope = c(
+          "Global",
+          "Regional (primarily focused on the contiguous United States)"
+     ),
+     Resolution = c(
+          "Lower resolution compared to HRRR (approximately 13 km as of recent updates)",
+          "High resolution (3 km)"
+     ),
+     Forecast_Range = c("Up to 16 days", "Up to 18 hours"),
+     Updates = c("Runs four times a day (00Z, 06Z, 12Z, 18Z)", "Runs every hour"),
+     Applications = c(
+          "Used for long-term weather forecasting, climate modeling, and global weather patterns.",
+          "Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."
+     )
+)
+
+locations_list = colnames(forecast_models)
+
+notes_list =  list(
+     "",
+  "Organization or entity responsible for developing the model.",
+  "Geographical coverage of the model (e.g., global or regional).",
+  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
+  "Time period for which the model provides forecasts.",
+  "Frequency at which the model is updated with new data.",
+  "Primary uses and strengths of the model in weather forecasting."
+  )
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list
+#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
+)
+
+rTable <- r_table_theming(
+forecast_models,
+title = "Forecast Models: Attributes",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+multiline_feet = TRUE,
+table_font_size = pct(85),
+target_everything = TRUE,
+row_name_col = "Model",
+)
+```
+:::
+
+::::: {#one}
+:::: medium-large-tables
+::: table-flex
+```{r}
+#| label: "tbl-modelAttributes"
+#| warning: false
+#| echo: false
+#| column: body-outset-right
+
+rTable |>
+opt_css(
+css = '
+#one .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+```
+:::
+::::
+:::::
+
+::: code-fold-flex
+```{r}
+#| label: "modelDiffSetup"
+#| code-summary: "table setup"
+#| message: false
+#| error: false
+
+forecast_model_differences <- tibble(
+"Resolution" = c(
+"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."
+),
+"Forecast_Range" = c("GFS provides forecasts for a much longer period compared to HRRR."),
+"Update_Frequency" =  c(
+"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."
+)
+)
+
+locations_list = colnames(forecast_model_differences)
+
+notes_list =  list(
+  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
+  "Time period for which the model provides forecasts.",
+  "Frequency at which the model is updated with new data.")
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list
+#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
+)
+
+rTable <- r_table_theming(
+forecast_model_differences,
+title = "Forecast Models: Differences",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+multiline_feet = TRUE,
+table_font_size = pct(85),
+target_everything = TRUE,
+row_name_col = NULL
+)
+```
+:::
+
+::::: {#two}
+:::: medium-large-tables
+::: table-flex
+```{r}
+#| label: "tbl-modelDiffs"
+#| echo: false
+rTable |>
+opt_css(
+css = '
+#two .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+```
+:::
+::::
+:::::
+
+
+## Database Setup
+
+### ENUM
 
 ::: code-fold-flex
 ```{r}
@@ -278,7 +472,13 @@ descriptions <- c(
 'Thunderstorm with heavy hail'
 )
 
-create_enum_and_associate(duckdb_con, "WeatherCode", codes, descriptions)
+create_enum_and_associate(
+duckdb_con, 
+"weather_code_enum", 
+"WeatherCodeDictionary", 
+codes, 
+descriptions
+)
 
 ```
 :::
@@ -288,7 +488,7 @@ create_enum_and_associate(duckdb_con, "WeatherCode", codes, descriptions)
 #| label: "wcSetup"
 #| code-summary: "table setup"
 
-rTable <- tbl(duckdb_con, "WeatherCode") |> collect()
+rTable <- tbl(duckdb_con, "WeatherCodeDictionary") |> collect()
 
 locations_list = colnames(rTable)
 
@@ -313,7 +513,7 @@ footnotes_df,
 source_note = md("**source**: World Meteorlogical Organization"),
 pal_df,
 multiline_feet = TRUE,
-tbl_font_size = pct(85),
+table_font_size = pct(85),
 target_everything = TRUE,
 color_by_columns = "Code",
 #row_name_col = "Model"
@@ -336,169 +536,279 @@ rTable
 :::
 ::::
 
-# Modeling Weather
 
-::: p-1
-The study, published in the *Weather and Forecasting* journal, focuses on evaluating and improving the accuracy of weather prediction models, particularly for severe weather events. It examines the performance of high-resolution numerical weather prediction (NWP) models in forecasting convective storms, which are critical for predicting severe weather such as thunderstorms, hail, and tornadoes. The research highlights advancements in model resolution, data assimilation techniques, and the integration of observational data to enhance forecast precision. The findings emphasize the importance of these improvements for short-term (nowcasting) and medium-range forecasts, particularly in regions prone to severe weather, like the central United States (including Missouri). @dowell_high-resolution_2022
-:::
+# In-Database Transformations
 
-::: code-fold-flex
-```{r}
-#| label: "forecastModelDescription"
-#| code-summary: "table setup"
-#| warning: false
 
-# Create the tibble
-forecast_models <- tibble(
-     Model = c("GFS", "HRRR"),
-     Developed_By = c(
-          "NOAA (National Oceanic and Atmospheric Administration)",
-          "NOAA (specifically by the Earth System Research Laboratory)"
-     ),
-     Scope = c(
-          "Global",
-          "Regional (primarily focused on the contiguous United States)"
-     ),
-     Resolution = c(
-          "Lower resolution compared to HRRR (approximately 13 km as of recent updates)",
-          "High resolution (3 km)"
-     ),
-     Forecast_Range = c("Up to 16 days", "Up to 18 hours"),
-     Updates = c("Runs four times a day (00Z, 06Z, 12Z, 18Z)", "Runs every hour"),
-     Applications = c(
-          "Used for long-term weather forecasting, climate modeling, and global weather patterns.",
-          "Ideal for short-term, detailed weather forecasting, including severe weather events like thunderstorms, tornadoes, and localized precipitation."
-     )
-)
 
-locations_list = colnames(forecast_models)
+## Custom Data Types
 
-notes_list =  list(
-     "",
-  "Organization or entity responsible for developing the model.",
-  "Geographical coverage of the model (e.g., global or regional).",
-  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
-  "Time period for which the model provides forecasts.",
-  "Frequency at which the model is updated with new data.",
-  "Primary uses and strengths of the model in weather forecasting."
-  )
+```{sql}
+#| connection: duckdb_con
 
-footnotes_df <- tibble(
-  notes = notes_list, 
-  locations = locations_list)
+-- Create ENUM for wind direction
+CREATE TYPE cardinal_direction_enum AS ENUM (
+  'N', 
+  'NE', 
+  'E', 
+  'SE', 
+  'S', 
+  'SW', 
+  'W', 
+  'NW'
+);
 
-pal_df <- tibble(
-  cols = locations_list
-#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
-)
+CREATE TYPE month_name_enum AS ENUM (
+  'January', 
+  'February', 
+  'March', 
+  'April', 
+  'June', 
+  'July', 
+  'August', 
+  'September', 
+  'October', 
+  'November', 
+  'December'
+);
 
-rTable <- r_table_theming(
-forecast_models,
-title = "Forecast Models: Attributes",
-subtitle = NULL,
-footnotes_df,
-source_note = md("**source**: "),
-pal_df,
-multiline_feet = TRUE,
-tbl_font_size = pct(85),
-target_everything = TRUE,
-row_name_col = "Model",
-)
+CREATE TYPE month_abb_enum AS ENUM (
+  'Jan', 
+  'Feb', 
+  'Mar', 
+  'Apr', 
+  'Jun', 
+  'Jul', 
+  'Aug', 
+  'Sep', 
+  'Oct', 
+  'Nov', 
+  'Dec'
+);
+
+CREATE TYPE weekday_name_enum AS ENUM (
+  'Sunday', 
+  'Monday', 
+  'Tuesday', 
+  'Wednesday', 
+  'Thursday', 
+  'Friday', 
+  'Saturday'
+);
+
+CREATE TYPE weekday_abb_enum AS ENUM (
+  'Sun', 
+  'Mon', 
+  'Tue', 
+  'Wed', 
+  'Thu', 
+  'Fri', 
+  'Sat'
+);
+
+CREATE TYPE visibility_cat_enum AS ENUM (
+  'Clearest (>30 km)', 
+  'Excellent (10-30 km)', 
+  'Good (5-10 km)', 
+  'Moderate (2-5 km)', 
+  'Low (1-2 km)', 
+  'Fog/Haze (<1 km)'
+  );
+
 ```
-:::
 
-::::: {#one}
-:::: medium-large-tables
-::: table-flex
-```{r}
-#| label: "tbl-modelAttributes"
-#| warning: false
-#| echo: false
-#| column: body-outset-right
+## Dataset: Forecast, 24-Hour
 
-rTable |>
-opt_css(
-css = '
-#one .gt_table_body td.gt_row {
-box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
-} 
-'
-)
+### CTAS (Create Table As Select) Approach
+
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: table_transformed
+-- Assess results of data transformation before replacing the table
+CREATE OR REPLACE VIEW transformed_forecast AS
+SELECT 
+     date,
+     ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
+     precipitation_probability,
+     ROUND(precipitation::FLOAT, 3) AS precipitation,
+     ROUND(rain::FLOAT, 3) AS rain,
+     ROUND(showers::FLOAT, 3) AS showers,
+     ROUND(snowfall::FLOAT, 3) AS snowfall,
+     ROUND(snow_depth::FLOAT, 3) AS snow_depth,
+     weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
+     ROUND(visibility::FLOAT, 1) AS visibility,
+     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
+     wind_direction_10m,
+     -- Calculate cardinal direction
+     CASE 
+          WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN 'N'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN 'NE'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN 'E'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN 'SE'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN 'S'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN 'SW'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN 'W'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN 'NW'::cardinal_direction_enum
+          WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN 'N'::cardinal_direction_enum
+     END AS wind_direction_cardinal,
+     CASE
+          WHEN visibility > 30_000 THEN 'Clearest (>30 km)'::visibility_cat_enum
+          WHEN visibility > 10_000 THEN 'Excellent (10-30 km)'::visibility_cat_enum
+          WHEN visibility > 5_000 THEN 'Good (5-10 km)'::visibility_cat_enum
+          WHEN visibility > 2_000 THEN 'Moderate (2-5 km)'::visibility_cat_enum
+          WHEN visibility > 1_000 THEN 'Low (1-2 km)'::visibility_cat_enum
+          ELSE 'Fog/Haze (<1 km)'::visibility_cat_enum
+     END AS visibility_categories,
+     -- Extract date parts
+     EXTRACT(YEAR FROM date) AS year,
+     EXTRACT(MONTH FROM date) AS month,
+     monthname(date)::month_name_enum AS month_name,
+     strftime(date, '%b')::month_abb_enum AS month_abb,
+     EXTRACT(DAY FROM date) AS day,
+     dayname(date)::weekday_name_enum AS weekday_name,
+     strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
+     strftime(date, '%b %d') AS month_day,
+     strftime(date, '%H:%M:%S') AS time_only,
+     strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
+FROM forecast_data;
+
+-- Preview results
+SELECT * FROM transformed_forecast LIMIT 10;
+
 ```
-:::
-::::
-:::::
 
-::: code-fold-flex
-```{r}
-#| label: "modelDiffSetup"
-#| code-summary: "table setup"
-#| message: false
-#| error: false
 
-forecast_model_differences <- tibble(
-"Resolution" = c(
-"HRRR has a much higher resolution than GFS, making it more accurate for short-term, localized forecasts."
-),
-"Forecast_Range" = c("GFS provides forecasts for a much longer period compared to HRRR."),
-"Update_Frequency" =  c(
-"HRRR updates more frequently, which is crucial for capturing rapidly changing weather conditions."
-)
-)
 
-locations_list = colnames(forecast_model_differences)
+```{sql}
+#| connection: duckdb_con
+#| output.var: table_forecast
 
-notes_list =  list(
-  "Spatial resolution of the model, indicating the level of detail in the forecasts.",
-  "Time period for which the model provides forecasts.",
-  "Frequency at which the model is updated with new data.")
+-- Replace the historical weather table
+CREATE OR REPLACE TABLE forecast_data AS
+SELECT * FROM transformed_forecast;
 
-footnotes_df <- tibble(
-  notes = notes_list, 
-  locations = locations_list)
-
-pal_df <- tibble(
-  cols = locations_list
-#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
-)
-
-rTable <- r_table_theming(
-forecast_model_differences,
-title = "Forecast Models: Differences",
-subtitle = NULL,
-footnotes_df,
-source_note = md("**source**: "),
-pal_df,
-multiline_feet = TRUE,
-tbl_font_size = pct(85),
-target_everything = TRUE,
-row_name_col = NULL
-)
+-- Preview results 
+SELECT * FROM forecast_data LIMIT 10;
 ```
-:::
 
-::::: {#two}
-:::: medium-large-tables
-::: table-flex
-```{r}
-#| label: "tbl-modelDiffs"
-#| echo: false
-rTable |>
-opt_css(
-css = '
-#two .gt_table_body td.gt_row {
-box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
-} 
-'
-)
+
+
+```{sql}
+#| connection: duckdb_con
+DROP VIEW transformed_forecast;
 ```
-:::
-::::
-:::::
 
-## Weather Condition Analysis
+Speed up time-based queries by indexing the timestamp column:
 
-### FROM to Table
+```{sql}
+#| connection: duckdb_con
+CREATE INDEX idx_forecast_date ON forecast_data(date);
+```
+
+Refresh database statistics for the query planner:
+
+```{sql}
+#| connection: duckdb_con
+ANALYZE forecast_data;
+```
+
+
+
+## Dataset: Historical, 1974-2024
+
+Ensure the weather_code column uses the ENUM type for efficient storage and queries:
+
+### CTAS Approach
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: table_tranformation
+
+-- Create ENUM for wind direction
+CREATE TYPE cardinal_direction_enum AS ENUM (
+  'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'
+);
+
+-- Assess results of data transformation before replacing the table
+CREATE OR REPLACE VIEW transformed_historical AS
+SELECT 
+     date,
+     ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
+     ROUND(precipitation::FLOAT, 1) AS precipitation,
+     ROUND(rain::FLOAT, 2) AS rain,
+     ROUND(snowfall::FLOAT, 2) AS snowfall,
+     ROUND(snow_depth::FLOAT, 2) AS snow_depth,
+     weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
+     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
+     wind_direction_10m,
+     -- Calculate cardinal direction
+     CASE 
+          WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN 'N'
+          WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN 'N'
+          WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN 'NE'
+          WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN 'E'
+          WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN 'SE'
+          WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN 'S'
+          WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN 'SW'
+          WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN 'W'
+          WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN 'NW'
+     END AS wind_direction_cardinal,
+     -- Extract date parts
+     EXTRACT(YEAR FROM date) AS year,
+     EXTRACT(MONTH FROM date) AS month,
+     EXTRACT(DAY FROM date) AS day
+FROM historical_data;
+
+-- Preview results
+SELECT * FROM transformed_historical LIMIT 10;
+```
+
+
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: table_historical
+
+-- Replace the historical weather table
+CREATE OR REPLACE TABLE historical_data AS
+SELECT * FROM transformed_historical;
+
+-- Preview results 
+SELECT * FROM historical_data LIMIT 10;
+```
+
+
+
+```{sql}
+#| connection: duckdb_con
+DROP VIEW transformed_historical;
+```
+
+Speed up time-based queries by indexing the timestamp column:
+
+```{sql}
+#| connection: duckdb_con
+CREATE INDEX idx_historical_date ON historical_data(date);
+```
+
+Refresh database statistics for the query planner:
+
+```{sql}
+#| connection: duckdb_con
+ANALYZE historical_data;
+```
+
+
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: sql_var
+SELECT *
+FROM historical_data;
+```
+
+
 
 ::: code-fold-flex
 ```{r}
@@ -506,13 +816,15 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 #| code-summary: "table setup"
 
 r_df <- tbl(
-duckdb_con, "hourly_historical_weather") |>
-dplyr::select(!'visibility') |>
-dplyr::slice_sample(n = 20) |>
-dplyr::collect() |>
+duckdb_con, "historical_data") |>
+select(!'visibility') |>
+slice_sample(n = 20) |>
+arrange(date) |>
+collect() |>
 dplyr::mutate(
 date = as.character.POSIXt(date),
-date = forcats::as_factor(date)
+date = forcats::as_factor(date),
+date = forcats::fct_inorder(date)
 )
 
 locations_list = colnames(r_df)
@@ -524,10 +836,11 @@ notes_list <- c(
   "Rain precipitation in inches.",
   "Snowfall in inches.",
   "Snow depth in inches.",
-  #"Visibility in miles.",
+  "Visibility in miles.",
   "Weather code indicating the current weather condition.",
   "Wind speed at 10 meters above the ground in miles per hour.",
-  "Wind direction at 10 meters above the ground in degrees."
+  "Wind direction at 10 meters above the ground in degrees.",
+  "Cardinal wind directions."
 )
 
 footnotes_df <- tibble(
@@ -547,9 +860,10 @@ subtitle = NULL,
 footnotes_df,
 source_note = md("**source**: "),
 pal_df,
-multiline_feet = TRUE,
-tbl_font_size = pct(80)
+footnotes_multiline = TRUE,
+table_font_size = pct(100)
 )
+
 ```
 :::
 
@@ -564,7 +878,7 @@ rTable
 :::
 ::::
 
-### GGplot Testing
+### Plot Testing
 
 ::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}
 ```{r}
@@ -654,6 +968,20 @@ plot_wind_rose_ggplot(duckdb_con)
 
 @fig-wind_rose
 
+```{r}
+#| label: ""
+
+
+
+```
+
+```{r}
+#| label: ""
+
+
+
+```
+
 # Topography
 
 ## Route Geometry and Elevation
@@ -664,7 +992,6 @@ Might help with determining fuel cost and time of trip?
 #| label: "osrm"
 #| code-summary: "Creates a linestring object for the map."
 #| message: false
-
 
 # R example (osmdata)
 library(osmdata)
@@ -728,14 +1055,11 @@ plot(st_geometry(route))
 #| echo: false
 #| warning: false
 #| error: false
-#| out-width: 50%
-#| fig-align: center
 
 plet(
 dem, 
 tiles = "OpenTopoMap", 
 main = "Topographical\nElevation\n(DEM)")
-
 ```
 
 ```{r}
