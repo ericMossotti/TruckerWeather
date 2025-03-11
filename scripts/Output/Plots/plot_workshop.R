@@ -10,56 +10,60 @@ execute_query <- function(con, query) {
      dbGetQuery(con, query)  # Execute the SQL query and return the result
 }
 
-# 1 Day Temperature Trend ----
+
 plot_temperature_trend <- function(con, freezing_threshold = 32) {
      # Query to fetch temperature data for the day
      query <- "
     SELECT
       temperature_2m,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%b %d') AS day
+      time_only,
+      common_date,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
      
+     # Calculate bar width based on time intervals
+     if (nrow(data) > 1) {
+          time_diff <- as.numeric(difftime(data$common_date[2], data$common_date[1], units = "secs"))
+     } else {
+          time_diff <- 3600  # Default to 1 hour if only one data point
+     }
+     half_width <- time_diff / 2
+     
+     # Prepare data for rectangular columns
+     data <- data %>%
+          arrange(common_date) %>%
+          mutate(
+               xmin = common_date - half_width,
+               xmax = common_date + half_width,
+               fill_group = ifelse(temperature_2m > freezing_threshold, "above freezing", "below freezing"),
+               ymin = ifelse(temperature_2m > freezing_threshold, freezing_threshold, temperature_2m),
+               ymax = ifelse(temperature_2m > freezing_threshold, temperature_2m, freezing_threshold)
+          )
+     
      # Create a ggplot object for temperature trend
      rPlot <- ggplot(data, aes(x = common_date, y = temperature_2m)) +
-          geom_line(color = "black", size = 0.5) +  # Line plot for temperature
+          geom_rect(
+               aes(
+                    xmin = xmin,
+                    xmax = xmax,
+                    ymin = ymin,
+                    ymax = ymax,
+                    fill = fill_group
+               ),
+               color = 'black',
+               alpha = 0.5
+          ) +  # Column rectangles
+     #     geom_line(color = "black", size = 0.5) +  # Line plot for temperature
           geom_hline(
                yintercept = freezing_threshold,
                linetype = "dashed",
                color = "lightblue",
                linewidth = 0.4
           ) +  # Horizontal line for freezing threshold
-          geom_ribbon(
-               aes(
-                    ymin = freezing_threshold,
-                    ymax = ifelse(
-                         temperature_2m > freezing_threshold,
-                         temperature_2m,
-                         freezing_threshold
-                    ),
-                    fill = "above freezing"
-               ),
-               alpha = 0.5,
-               na.rm = TRUE
-          ) +  # Ribbon for temperatures above freezing
-          geom_ribbon(
-               aes(
-                    ymin = ifelse(
-                         temperature_2m <= freezing_threshold,
-                         temperature_2m,
-                         freezing_threshold
-                    ),
-                    ymax = freezing_threshold,
-                    fill = "at/below freezing"
-               ),
-               alpha = 0.5,
-               na.rm = TRUE
-          ) +  # Ribbon for temperatures at/below freezing
           labs(
                title = "Temperature Forecast",
                x = "",
@@ -78,8 +82,8 @@ plot_temperature_trend <- function(con, freezing_threshold = 32) {
                     "above freezing" = "green",
                     "below freezing" = "lightblue"
                )
-          ) +  # Manual color scale for freezing indicators
-          facet_grid(~ day) +  # Facet by day
+          ) +  # Manual color scale
+          facet_grid(~ month_day) +  # Facet by month_day
           ggplot_theming()  # Apply custom theme
      
      # Save the plot as a PNG file
@@ -101,11 +105,11 @@ plot_precipitation <- function(con) {
       precipitation,
       rain,
       snowfall,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%b %d') AS day
+      time_only,
+      common_date,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -165,7 +169,7 @@ plot_precipitation <- function(con) {
                labs(title = "Precipitation Forecast", 
                x = "Time of Day", 
                y = "Precipitation Probability (%)") +  # Labels for the plot
-          facet_grid(~ day) +  # Facet by day
+          facet_grid(~ month_day) +  # Facet by month_day
           ggplot_theming(legend.position = "bottom", 
                          legend.text = element_text(size = rel(0.5)),
                          legend.title = element_text(size = rel(0.7)))  # Apply custom theme
@@ -188,11 +192,11 @@ plot_wind_rose <- function(con) {
     SELECT
       wind_speed_10m,
       wind_direction_10m,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%b %d') AS day
+      time_only,
+      common_date,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -209,56 +213,85 @@ plot_wind_rose <- function(con) {
      )
 }
 
-# ggplot Wind Rose ----
+# ggplot wind rose ----
 plot_wind_rose_ggplot <- function(con) {
      # Query to fetch wind data
      query <- "
-    SELECT
-      wind_speed_10m,
-      wind_direction_10m,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%b %d') AS day
-    FROM
-      hourly_day_forecast;
-  "
+       SELECT
+         wind_direction_10m,
+         speed_bin,
+         wind_direction_cardinal,
+         direction_angle,
+         time_only,
+         month_day
+       FROM forecast_data;
+     "
      
      data <- execute_query(con, query)  # Execute the query and get the data
      
-     # Bin wind speeds into categories
-     data <- data |>
-          mutate(speed_bin = cut(
-               wind_speed_10m,
-               breaks = c(0, 2, 4, 6, 8, 10, Inf),
-               labels = c("0-2", "2-4", "4-6", "6-8", "8-10", "10+")
-          ))
+     # Summarize data for plotting
+     plot_data <- data |>
+          group_by(wind_direction_10m, speed_bin, month_day, time_only) |>
+          summarise(count = n(), .groups = "drop")
      
-     # Create a wind rose plot using ggplot
-     rPlot <- ggplot(data, aes(x = wind_direction_10m, fill = speed_bin)) +
-          geom_histogram(binwidth = 10,
-                         color = "black",
-                         position = "stack") +  # Histogram for wind direction
-          coord_polar(start = 2 * pi) +  # Convert to polar coordinates
-          scale_x_continuous(limits = c(0, 360),
-                             breaks = seq(0, 360, by = 45)) +  # Format x-axis for degrees
-          labs(
-               title = "Wind Rose",
-               x = "Wind Direction (°)",
-               y = "Frequency",
-               fill = "Wind Speed (m/s)"
-          ) +  # Labels for the plot
-          ggplot_theming()  # Apply custom theme
+     # Get unique days
+     days <- unique(plot_data$month_day)
      
-     # Save the plot as a PNG file
-     base_path <- "data/plots/"
-     plot_path <- paste0(base_path, "ggWindRose.png")
-     ggsave(plot_path, plot = rPlot, scale = 1.5)
+     walk(days, ~ {
+          # Filter data for the current day
+          day_data <- filter(plot_data, month_day == .x)
+          
+          # Create the wind rose plot for the current day
+          day_plot <- ggplot(day_data,
+                             aes(
+                                  x = wind_direction_10m, y = count, fill = speed_bin
+                             )) +
+               geom_col(width = 15,
+                        color = "black",
+                        linewidth = 0.1) +
+               coord_polar(start = 2 * pi) +
+               scale_x_continuous(
+                    limits = c(0, 360),
+                    breaks = seq(0, 360, by = 45),
+                    labels = c('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N')  # Cardinal labels
+               ) +
+               scale_fill_paletteer_d('ggprism::viridis') +
+               labs(
+                    title = paste("Wind Rose -", .x),
+                    x = "Wind Direction (°)",
+                    y = "",
+                    fill = "Wind Speed (m/s)"
+               ) +
+               facet_wrap( ~ time_only) +  # Facet by hour
+               ggplot_theming(
+                    text = element_text(size = 8),
+                    axis.text = element_text(
+                         color = 'gray',
+                         margin = margin(5, 5, 5, 5, "pt"),
+                         size = rel(.8)
+                    ),
+                    axis.text.y = element_blank(),
+                    strip.background = element_rect(fill = 'gray20'),
+                    #strip.background.y = element_rect('#39D94E'),
+                    strip.text = element_text(size = rel(0.8), 
+                                              margin = margin(0, 0, 0, 0, "pt"),
+                                              color = 'cornsilk'),
+                    
+               )
+          
+          # Save the plot for the current day
+          ggsave(
+               stringr::str_remove(paste0("data/plots/wind_rose_", .x, ".png"), " "),
+               day_plot,
+               #width = 24,
+               #height = 20,
+               scale = 1.5
+          )
+     })
      
-     # Read the PNG file and display it
-     img <- readPNG(plot_path)
-     grid::grid.raster(img)
-     
+     #message("Plots saved for each day.")
 }
+
 
 # Visibility geom_line ----
 plot_visibility_line <- function(con) {
@@ -266,10 +299,10 @@ plot_visibility_line <- function(con) {
      query <- "
     SELECT
       visibility,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%b %d') AS day
+      common_date,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -285,7 +318,7 @@ plot_visibility_line <- function(con) {
                minor_breaks = "2 hour",
                guide = guide_axis(n.dodge = 1)
           ) +  # Format x-axis for time
-          facet_grid(~ day) +  # Facet by day
+          facet_grid(~ month_day) +  # Facet by month_day
           ggplot_theming()  # Apply custom theme
      
      # Save the plot as a PNG file
@@ -305,11 +338,11 @@ plot_visibility_heat <- function(con) {
      query <- "
     SELECT
       visibility,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strftime(date, '%b %d') AS day
+      common_date,
+      time_only,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -317,7 +350,7 @@ plot_visibility_heat <- function(con) {
      
      # Create a ggplot object for visibility heatmap
      rPlot <- ggplot(data, aes(
-          x = day,
+          x = month_day,
           y = time_only,
           fill = visibility / 10 ^ 3
      )) +
@@ -334,7 +367,7 @@ plot_visibility_heat <- function(con) {
                date_breaks = "2 hours",
                sec.axis = dup_axis(name = "")
           ) +  # Format x-axis for time
-          facet_grid(~ day, scales = "free") +
+          facet_grid(~ month_day, scales = "free") +
           ggplot_theming(legend.position = "right")  # Apply custom theme
      
      # Save the plot as a PNG file
@@ -353,34 +386,22 @@ plot_visibility_categorical_heat <- function(con) {
      query <- "
     SELECT
       visibility,
-      strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date,
-      strftime(date, '%H:%M:%S') AS time_only,
-      strftime(date, '%b %d') AS day
+      visibility_category,
+      common_date,
+      time_only,
+      month_day
     FROM
-      hourly_day_forecast;
+      forecast_data;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
-     
-     # Categorize visibility into different levels
-     data <- data |>
-          mutate(
-               visibility_category = case_when(
-                    visibility > 30 * 10 ^ 3 ~ "Clearest (>30 km)",
-                    visibility > 10 * 10 ^ 3 ~ "Excellent (10-30 km)",
-                    visibility > 5 * 10 ^ 3 ~ "Good (5-10 km)",
-                    visibility > 2 * 10 ^ 3 ~ "Moderate (2-5 km)",
-                    visibility > 1 * 10 ^ 3 ~ "Low (1-2 km)",
-                    TRUE ~ "Fog/Haze (<1 km)"
-               )
-          )
-     
-     # Create a ggplot object for categorical visibility heatmap
+
+          # Create a ggplot object for categorical visibility heatmap
      # Convert time_only to POSIXct for plotting
      data$time_only <- as.POSIXct(data$time_only, format = "%H:%M:%S")
      
      # Create a ggplot object for weather codes
-     rPlot <- ggplot(data, aes(x = day, y = time_only, fill = visibility_category)) +
+     rPlot <- ggplot(data, aes(x = month_day, y = time_only, fill = visibility_category)) +
           geom_tile() +  # Tile plot for visibility categories
           scale_fill_manual(
                values = c(
@@ -398,18 +419,12 @@ plot_visibility_categorical_heat <- function(con) {
                y = "Time of Day",
                fill = "Visibility Level"
           ) +  # Labels for the plot
-         # scale_x_datetime(
-     #          labels = scales::date_format("%H:%M"),
-     #          breaks = "6 hours",
-     #          minor_breaks = "2 hour",
-     #          guide = guide_axis(n.dodge = 1)
-     #     ) +  # Format x-axis for time
           scale_y_datetime(
                date_labels = "%H:%M",
                date_breaks = "2 hours",
                sec.axis = dup_axis(name = "")
           ) +  # Format y-axis for time
-          facet_grid(~ day, scales = "free") +
+          facet_grid(~ month_day, scales = "free") +
           ggplot_theming(legend.position = "right")  # Apply custom theme
      
      # Save the plot as a PNG file
@@ -427,13 +442,13 @@ plot_weather_codes <- function(con) {
      # Query to fetch weather codes and descriptions
      query <- "
     SELECT
-      hr.weather_code::INTEGER::TEXT::WeatherCode AS weather_code,
+      fd.weather_code,
       wc.Description AS description,
-      strftime(hr.date, '%H:%M:%S') AS time_only,
-      strftime(hr.date, '%b %d') AS day
+      fd.time_only,
+      fd.month_day
     FROM
-      hourly_day_forecast hr
-    LEFT JOIN WeatherCode wc ON wc.Code == hr.weather_code;
+      forecast_data fd
+    LEFT JOIN WeatherCodeDictionary wc ON wc.Code == fd.weather_code;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -443,7 +458,7 @@ plot_weather_codes <- function(con) {
      
      # Create a ggplot object for weather codes
      rPlot <- ggplot(
-          data, aes(x = day, y = time_only, fill = description)) +
+          data, aes(x = month_day, y = time_only, fill = description)) +
           geom_tile(alpha = 0.5) +  # Tile plot for weather codes
           scale_fill_paletteer_d("khroma::land") +  # Color scale for weather codes
           scale_y_datetime(
@@ -457,7 +472,7 @@ plot_weather_codes <- function(con) {
                y = "Time of Day",
                fill = "Weather Code"
           ) +  # Labels for the plot
-          facet_grid(~ day, scales = "free") +
+          facet_grid(~ month_day, scales = "free") +
           ggplot_theming(legend.position = "right")  # Apply custom theme
      
      # Save the plot as a PNG file
@@ -470,3 +485,8 @@ plot_weather_codes <- function(con) {
      grid::grid.raster(img)
 }
 
+display_a_plot <- function(plot_path) {
+     # Read the PNG file and display it
+     img <- readPNG(plot_path)
+     grid::grid.raster(img)     
+}
