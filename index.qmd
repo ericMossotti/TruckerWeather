@@ -96,6 +96,13 @@ Can brokers involved with bids for shipping contracts via road be better informe
 
 8.  Time of day
 
+
+## What can AI help with? 
+
+* Making decisions that require more logic than what can be hard-coded in a reasonable amount of time.
+
+
+
 ## Database Connections
 
 #### MSSQL
@@ -148,14 +155,6 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 #| label: "loadTableOutput"
 #| code-summary: "table building"
 #| file: "scripts/Output/Tables/table_workshop.R"
-```
-:::
-
-::: code-fold-flex
-```{r}
-#| label: "loadTableOutput"
-#| code-summary: "table styling"
-#| file: "scripts/Output/Tables/table_styling.R"
 ```
 :::
 
@@ -217,6 +216,9 @@ overwrite = TRUE
 ```
 :::
 
+
+
+
 ::: code-fold-flex
 ```{r}
 #| label: writeHistoricalAPIdata
@@ -230,7 +232,6 @@ overwrite = TRUE
 )
 ```
 :::
-
 
 # Weather Factors
 
@@ -392,7 +393,6 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 ::::
 :::::
 
-
 ## Database Setup
 
 ### ENUM
@@ -536,10 +536,7 @@ rTable
 :::
 ::::
 
-
 # In-Database Transformations
-
-
 
 ## Custom Data Types
 
@@ -563,6 +560,7 @@ CREATE TYPE month_name_enum AS ENUM (
   'February', 
   'March', 
   'April', 
+  'May',
   'June', 
   'July', 
   'August', 
@@ -577,6 +575,7 @@ CREATE TYPE month_abb_enum AS ENUM (
   'Feb', 
   'Mar', 
   'Apr', 
+  'May',
   'Jun', 
   'Jul', 
   'Aug', 
@@ -614,6 +613,15 @@ CREATE TYPE visibility_cat_enum AS ENUM (
   'Low (1-2 km)', 
   'Fog/Haze (<1 km)'
   );
+  
+CREATE TYPE speed_bin_enum AS ENUM (
+     '0-2', 
+     '2-4', 
+     '4-6', 
+     '6-8', 
+     '8-10', 
+     '10+'
+     );
 
 ```
 
@@ -621,63 +629,205 @@ CREATE TYPE visibility_cat_enum AS ENUM (
 
 ### CTAS (Create Table As Select) Approach
 
+Creating a view for transformations is generally considered a safer approach and aligns with modern data engineering best practices. Views function as virtual tables that compute results on-the-fly, eliminating the need to store intermediate data and reducing the risk of corrupting the source data. By leveraging views, one can iteratively refine transformations without the need to rewrite tables, allowing for adjustments and improvements to the logic as required. This approach provides flexibility and ensures that the transformation process remains adaptable to changing requirements.
+
+Furthermore, DuckDB optimizes queries against views by pushing down computations, which enhances performance and efficiency. Views also serve as self-documenting transformation pipelines, offering clarity and transparency into the decision logic. This makes it easier for others to understand, maintain, and collaborate on the data workflow. By adopting this method, one ensures a scalable, efficient, and transparent data processing system that supports both current and future analytical needs.
+
 
 ```{sql}
 #| connection: duckdb_con
-#| output.var: table_transformed
--- Assess results of data transformation before replacing the table
+#| 
+-- Create or replace the view with modular CTEs and explicit column lists
 CREATE OR REPLACE VIEW transformed_forecast AS
-SELECT 
-     date,
-     ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
-     precipitation_probability,
-     ROUND(precipitation::FLOAT, 3) AS precipitation,
-     ROUND(rain::FLOAT, 3) AS rain,
-     ROUND(showers::FLOAT, 3) AS showers,
-     ROUND(snowfall::FLOAT, 3) AS snowfall,
-     ROUND(snow_depth::FLOAT, 3) AS snow_depth,
-     weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
-     ROUND(visibility::FLOAT, 1) AS visibility,
-     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
-     wind_direction_10m,
-     -- Calculate cardinal direction
-     CASE 
-          WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN 'N'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN 'NE'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN 'E'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN 'SE'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN 'S'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN 'SW'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN 'W'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN 'NW'::cardinal_direction_enum
-          WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN 'N'::cardinal_direction_enum
-     END AS wind_direction_cardinal,
-     CASE
-          WHEN visibility > 30_000 THEN 'Clearest (>30 km)'::visibility_cat_enum
-          WHEN visibility > 10_000 THEN 'Excellent (10-30 km)'::visibility_cat_enum
-          WHEN visibility > 5_000 THEN 'Good (5-10 km)'::visibility_cat_enum
-          WHEN visibility > 2_000 THEN 'Moderate (2-5 km)'::visibility_cat_enum
-          WHEN visibility > 1_000 THEN 'Low (1-2 km)'::visibility_cat_enum
-          ELSE 'Fog/Haze (<1 km)'::visibility_cat_enum
-     END AS visibility_categories,
-     -- Extract date parts
-     EXTRACT(YEAR FROM date) AS year,
-     EXTRACT(MONTH FROM date) AS month,
-     monthname(date)::month_name_enum AS month_name,
-     strftime(date, '%b')::month_abb_enum AS month_abb,
-     EXTRACT(DAY FROM date) AS day,
-     dayname(date)::weekday_name_enum AS weekday_name,
-     strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
-     strftime(date, '%b %d') AS month_day,
-     strftime(date, '%H:%M:%S') AS time_only,
-     strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
-FROM forecast_data;
+WITH cleaned_data AS (
+  SELECT
+    date,
+    ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
+    precipitation_probability,
+    ROUND(precipitation::FLOAT, 3) AS precipitation,
+    ROUND(rain::FLOAT, 3) AS rain,
+    ROUND(showers::FLOAT, 3) AS showers,
+    ROUND(snowfall::FLOAT, 3) AS snowfall,
+    ROUND(snow_depth::FLOAT, 3) AS snow_depth,
+    weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
+    ROUND(visibility::FLOAT, 1) AS visibility,
+    ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
+    wind_direction_10m
+  FROM forecast_data
+),
 
--- Preview results
-SELECT * FROM transformed_forecast LIMIT 10;
+transformed_data AS (
+  SELECT
+    *,
+    -- Speed bin
+    CASE 
+      WHEN wind_speed_10m <= 2 THEN CAST('0-2' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 4 THEN CAST('2-4' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 6 THEN CAST('4-6' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 8 THEN CAST('6-8' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 10 THEN CAST('8-10' AS speed_bin_enum)
+      ELSE CAST('10+' AS speed_bin_enum)
+    END AS speed_bin,
+    -- Cardinal direction
+    CASE 
+      WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN CAST('N' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN CAST('NE' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN CAST('E' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN CAST('SE' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN CAST('S' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN CAST('SW' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN CAST('W' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN CAST('NW' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN CAST('N' AS cardinal_direction_enum)
+      ELSE NULL
+    END AS wind_direction_cardinal,
+    -- 15-degree direction bin (numeric)
+    FLOOR((wind_direction_10m - 1e-9) / 15) * 15 AS direction_bin
+  FROM cleaned_data
+),
 
+final_data AS (
+  SELECT
+    *,
+    -- Direction angle
+    CASE
+      WHEN wind_direction_cardinal = 'N' THEN 0
+      WHEN wind_direction_cardinal = 'NE' THEN 45
+      WHEN wind_direction_cardinal = 'E' THEN 90
+      WHEN wind_direction_cardinal = 'SE' THEN 135
+      WHEN wind_direction_cardinal = 'S' THEN 180
+      WHEN wind_direction_cardinal = 'SW' THEN 225
+      WHEN wind_direction_cardinal = 'W' THEN 270
+      WHEN wind_direction_cardinal = 'NW' THEN 315
+      ELSE NULL
+    END AS direction_angle,
+    -- Visibility category
+    CASE
+      WHEN visibility > 30000 THEN CAST('Clearest (>30 km)' AS visibility_cat_enum)
+      WHEN visibility > 10000 THEN CAST('Excellent (10-30 km)' AS visibility_cat_enum)
+      WHEN visibility > 5000 THEN CAST('Good (5-10 km)' AS visibility_cat_enum)
+      WHEN visibility > 2000 THEN CAST('Moderate (2-5 km)' AS visibility_cat_enum)
+      WHEN visibility > 1000 THEN CAST('Low (1-2 km)' AS visibility_cat_enum)
+      WHEN visibility <= 1000 THEN CAST('Fog/Haze (<1 km)' AS visibility_cat_enum)
+      ELSE NULL
+    END AS visibility_category,
+    -- Date parts
+    EXTRACT(YEAR FROM date) AS year,
+    EXTRACT(MONTH FROM date) AS month,
+    monthname(date)::month_name_enum AS month_name,
+    strftime(date, '%b')::month_abb_enum AS month_abb,
+    EXTRACT(DAY FROM date) AS day,
+    dayname(date)::weekday_name_enum AS weekday_name,
+    strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
+    strftime(date, '%b %d') AS month_day,
+    strftime(date, '%H:%M:%S') AS time_only,
+    strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
+  FROM transformed_data
+)
+
+-- Final output
+SELECT * FROM final_data;
 ```
 
+
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: viewOfForecast
+
+-- Final output
+SELECT * FROM transformed_forecast;
+```
+
+
+
+::: code-fold-flex
+```{r}
+#| label: 'historical_data_setup'
+#| code-summary: "table setup"
+
+r_df <- viewOfForecast |>
+dplyr::mutate(
+     date = as.character(date),
+     common_date = as.character(common_date)
+)
+
+locations_list = colnames(r_df)
+
+notes_list <-c(
+  "Date of the recorded data.",
+  "Temperature at 2 meters above ground.",
+  "Probability of precipitation.",
+  "Amount of precipitation.",
+  "Amount of rain.",
+  "Amount of showers.",
+  "Amount of snowfall.",
+  "Depth of snow.",
+  "Code representing the weather condition.",
+  "Visibility distance.",
+  "Wind speed at 10 meters above ground.",
+  "Wind direction at 10 meters above ground.",
+  "Binned categories for wind speed.",
+  "Cardinal direction of the wind.",
+  "Binned categories for wind direction.",
+  "Numeric angle representing wind direction.",
+  "Categorized visibility levels.",
+  "Year extracted from the date.",
+  "Month extracted from the date.",
+  "Name of the month.",
+  "Abbreviated name of the month.",
+  "Day extracted from the date.",
+  "Name of the weekday.",
+  "Abbreviated name of the weekday.",
+  "Combined month and day.",
+  "Time extracted from the date.",
+  "Common date format for time-based analysis."
+)
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list
+)
+
+pal_df <- tibble(
+  cols = locations_list,
+  pals = list(eval_palette("grDevices::Rocket", 10 , 'c', 1))
+)
+
+rTable <- r_table_theming(
+r_df,
+title = "Forecast Data Preview",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+footnotes_multiline = FALSE,
+table_font_size = pct(85),
+#do_col_labels = TRUE,
+)
+
+```
+:::
+
+::::: {#three}
+:::: large-tables
+::: table-flex
+```{r}
+#| label: "tbl-viewOfForecast"
+#| echo: false
+#| column: page-right
+rTable |>
+opt_css(
+css = '
+#four .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+```
+:::
+::::
+:::::
 
 
 ```{sql}
@@ -692,18 +842,9 @@ SELECT * FROM transformed_forecast;
 SELECT * FROM forecast_data LIMIT 10;
 ```
 
-
-
 ```{sql}
 #| connection: duckdb_con
 DROP VIEW transformed_forecast;
-```
-
-Speed up time-based queries by indexing the timestamp column:
-
-```{sql}
-#| connection: duckdb_con
-CREATE INDEX idx_forecast_date ON forecast_data(date);
 ```
 
 Refresh database statistics for the query planner:
@@ -714,133 +855,137 @@ ANALYZE forecast_data;
 ```
 
 
-
 ## Dataset: Historical, 1974-2024
-
-Ensure the weather_code column uses the ENUM type for efficient storage and queries:
 
 ### CTAS Approach
 
+
 ```{sql}
 #| connection: duckdb_con
-#| output.var: table_tranformation
-
--- Create ENUM for wind direction
-CREATE TYPE cardinal_direction_enum AS ENUM (
-  'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'
-);
-
--- Assess results of data transformation before replacing the table
+-- Create or replace the view with modular CTEs and explicit column lists
 CREATE OR REPLACE VIEW transformed_historical AS
-SELECT 
-     date,
-     ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
-     ROUND(precipitation::FLOAT, 1) AS precipitation,
-     ROUND(rain::FLOAT, 2) AS rain,
-     ROUND(snowfall::FLOAT, 2) AS snowfall,
-     ROUND(snow_depth::FLOAT, 2) AS snow_depth,
-     weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
-     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
-     wind_direction_10m,
-     -- Calculate cardinal direction
-     CASE 
-          WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN 'N'
-          WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN 'N'
-          WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN 'NE'
-          WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN 'E'
-          WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN 'SE'
-          WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN 'S'
-          WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN 'SW'
-          WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN 'W'
-          WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN 'NW'
-     END AS wind_direction_cardinal,
-     -- Extract date parts
-     EXTRACT(YEAR FROM date) AS year,
-     EXTRACT(MONTH FROM date) AS month,
-     EXTRACT(DAY FROM date) AS day
-FROM historical_data;
+WITH cleaned_data AS (
+  SELECT
+    date,
+    ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
+    ROUND(precipitation::FLOAT, 3) AS precipitation,
+    ROUND(rain::FLOAT, 3) AS rain,
+    ROUND(snowfall::FLOAT, 3) AS snowfall,
+    ROUND(snow_depth::FLOAT, 3) AS snow_depth,
+    weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
+    ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
+    wind_direction_10m
+  FROM historical_data
+),
 
--- Preview results
-SELECT * FROM transformed_historical LIMIT 10;
+transformed_data AS (
+  SELECT
+    *,
+    -- Speed bin
+    CASE 
+      WHEN wind_speed_10m <= 2 THEN CAST('0-2' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 4 THEN CAST('2-4' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 6 THEN CAST('4-6' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 8 THEN CAST('6-8' AS speed_bin_enum)
+      WHEN wind_speed_10m <= 10 THEN CAST('8-10' AS speed_bin_enum)
+      ELSE CAST('10+' AS speed_bin_enum)
+    END AS speed_bin,
+    -- Cardinal direction
+    CASE 
+      WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN CAST('N' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN CAST('NE' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN CAST('E' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN CAST('SE' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN CAST('S' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN CAST('SW' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN CAST('W' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN CAST('NW' AS cardinal_direction_enum)
+      WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN CAST('N' AS cardinal_direction_enum)
+      ELSE NULL
+    END AS wind_direction_cardinal,
+    -- 15-degree direction bin (numeric)
+    FLOOR((wind_direction_10m - 1e-9) / 15) * 15 AS direction_bin
+  FROM cleaned_data
+),
+
+final_data AS (
+  SELECT
+    *,
+    -- Direction angle
+    CASE
+      WHEN wind_direction_cardinal = 'N' THEN 0
+      WHEN wind_direction_cardinal = 'NE' THEN 45
+      WHEN wind_direction_cardinal = 'E' THEN 90
+      WHEN wind_direction_cardinal = 'SE' THEN 135
+      WHEN wind_direction_cardinal = 'S' THEN 180
+      WHEN wind_direction_cardinal = 'SW' THEN 225
+      WHEN wind_direction_cardinal = 'W' THEN 270
+      WHEN wind_direction_cardinal = 'NW' THEN 315
+      ELSE NULL
+    END AS direction_angle,
+    -- Date parts
+    EXTRACT(YEAR FROM date) AS year,
+    EXTRACT(MONTH FROM date) AS month,
+    monthname(date)::month_name_enum AS month_name,
+    strftime(date, '%b')::month_abb_enum AS month_abb,
+    EXTRACT(DAY FROM date) AS day,
+    dayname(date)::weekday_name_enum AS weekday_name,
+    strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
+    strftime(date, '%b %d') AS month_day,
+    strftime(date, '%H:%M:%S') AS time_only,
+    strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
+  FROM transformed_data
+)
+
+-- Final output
+SELECT * FROM final_data;
 ```
-
-
 
 ```{sql}
 #| connection: duckdb_con
-#| output.var: table_historical
+#| output.var: viewOfHistorical
 
--- Replace the historical weather table
-CREATE OR REPLACE TABLE historical_data AS
-SELECT * FROM transformed_historical;
-
--- Preview results 
-SELECT * FROM historical_data LIMIT 10;
+-- Final output
+SELECT * FROM transformed_historical LIMIT 20;
 ```
-
-
-
-```{sql}
-#| connection: duckdb_con
-DROP VIEW transformed_historical;
-```
-
-Speed up time-based queries by indexing the timestamp column:
-
-```{sql}
-#| connection: duckdb_con
-CREATE INDEX idx_historical_date ON historical_data(date);
-```
-
-Refresh database statistics for the query planner:
-
-```{sql}
-#| connection: duckdb_con
-ANALYZE historical_data;
-```
-
-
-
-```{sql}
-#| connection: duckdb_con
-#| output.var: sql_var
-SELECT *
-FROM historical_data;
-```
-
-
 
 ::: code-fold-flex
 ```{r}
-#| label: "historicalSampleSetup"
+#| label: 'historical_data_setup'
 #| code-summary: "table setup"
 
-r_df <- tbl(
-duckdb_con, "historical_data") |>
-select(!'visibility') |>
-slice_sample(n = 20) |>
-arrange(date) |>
-collect() |>
+r_df <- viewOfHistorical |>
 dplyr::mutate(
-date = as.character.POSIXt(date),
-date = forcats::as_factor(date),
-date = forcats::fct_inorder(date)
+     date = as.character(date),
+     common_date = as.character(common_date)
 )
 
 locations_list = colnames(r_df)
 
 notes_list <- c(
-  "Date and time in POSIXt.",
-  "Temperature at 2 meters above the ground in Fahrenheit.",
-  "Total precipitation in inches.",
-  "Rain precipitation in inches.",
-  "Snowfall in inches.",
-  "Snow depth in inches.",
-  "Visibility in miles.",
-  "Weather code indicating the current weather condition.",
-  "Wind speed at 10 meters above the ground in miles per hour.",
-  "Wind direction at 10 meters above the ground in degrees.",
-  "Cardinal wind directions."
+  "Date of the recorded data.",
+  "Temperature at 2 meters above ground.",
+  "Amount of precipitation.",
+  "Amount of rain.",
+  "Amount of snowfall.",
+  "Depth of snow.",
+  "Code representing the weather condition.",
+  "Wind speed at 10 meters above ground.",
+  "Wind direction at 10 meters above ground.",
+  "Binned categories for wind speed.",
+  "Cardinal direction of the wind.",
+  "Binned categories for wind direction.",
+  "Numeric angle representing wind direction.",
+  "Year extracted from the date.",
+  "Month extracted from the date.",
+  "Name of the month.",
+  "Abbreviated name of the month.",
+  "Day extracted from the date.",
+  "Name of the weekday.",
+  "Abbreviated name of the weekday.",
+  "Combined month and day.",
+  "Time extracted from the date.",
+  "Common date format for time-based analysis."
 )
 
 footnotes_df <- tibble(
@@ -850,37 +995,71 @@ footnotes_df <- tibble(
 
 pal_df <- tibble(
   cols = locations_list,
-  pals = list(eval_palette("grDevices::Greens 3", , 'c', -1))
+  pals = list(eval_palette("grDevices::Rocket", 10 , 'c', 1))
 )
 
 rTable <- r_table_theming(
 r_df,
-title = "Historical View",
+title = "Forecast Data Preview",
 subtitle = NULL,
 footnotes_df,
 source_note = md("**source**: "),
 pal_df,
-footnotes_multiline = TRUE,
-table_font_size = pct(100)
+footnotes_multiline = FALSE,
+table_font_size = pct(85),
+#do_col_labels = TRUE,
 )
 
 ```
 :::
 
+::::: {#four}
 :::: large-tables
 ::: table-flex
 ```{r}
-#| label: "tbl-historicalSample"
+#| label: "tbl-viewOfHistorical"
 #| echo: false
-#| column: screen-inset-right
-rTable
+#| column: page-right
+rTable |>
+opt_css(
+css = '
+#four .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
 ```
 :::
 ::::
+:::::
+
+
+```{sql}
+#| connection: duckdb_con
+-- Replace the historical weather table
+CREATE OR REPLACE TABLE historical_data AS
+SELECT * FROM transformed_historical;
+```
+
+
+```{sql}
+#| connection: duckdb_con
+DROP VIEW transformed_historical;
+```
+
+
+```{sql}
+#| connection: duckdb_con
+#| label: "analyzeHistoricalTable"
+#| code-summary: Refresh database statistics for the query planner
+
+ANALYZE historical_data;
+```
+
 
 ### Plot Testing
 
-::: {#fig-weather layout-ncol="3" fig-cap="These are the grouped figures."}
+::: {#fig-weather layout="[[1, 1, 1], [1, 1], [1]]" fig-cap="These are the grouped figures."}
 ```{r}
 #| label: "fig-weather_codes"
 #| lightbox: 
@@ -950,9 +1129,168 @@ plot_precipitation(duckdb_con)
 #| echo: false
 #| warning: false
 #| message: false
+#| column: page-right
+
+dir.create("data/plots/wind")
+
 plot_wind_rose_ggplot(duckdb_con)
+
+wind_paths <- list.files("data/plots/wind")
+
+img <- readPNG(wind_paths[1])
+grid::grid.raster(img)
+
 ```
 :::
+
+
+
+```{r}
+library(patchwork)
+library(purrr)
+library(ggplot2)
+
+plot_wind_rose_ggplot <- function(con) {
+     # ... [previous code until plotting] ...
+          # Query to fetch wind data
+     query <- "
+       SELECT
+         wind_direction_10m,
+         speed_bin,
+         wind_direction_cardinal,
+         direction_angle,
+         time_only,
+         month_day
+       FROM forecast_data;
+     "
+
+     data <- execute_query(con, query)  # Execute the query and get the data
+     
+     plot_data <- data |>
+       group_by(speed_bin, month_day, time_only, wind_direction_10m) |>
+       summarise(count = n())   
+
+     # Get unique days
+     days <- unique(plot_data$month_day)
+     
+     # Create a list to store plots
+     plot_list <- list()
+     
+     # Create and store plots for each day
+     for (day in days) {
+          day_data <- filter(plot_data, month_day == day)
+          day_plot <- ggplot(day_data, aes(x = wind_direction_10m, y = count, fill = speed_bin)) +
+            geom_col(width = 15, color = "black", size = 0.1) +  # Wider bars for 45° bins
+            coord_polar(start = 2*pi) +
+            scale_x_continuous(
+              limits = c(0, 360),
+              breaks = seq(0, 315, by = 45),  # Breaks at cardinal midpoints
+              labels = c('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW')  # Cardinal labels
+            ) +
+               scale_fill_paletteer_d('ggsci::deep_orange_material') +
+               labs(
+                    title = paste("Wind Rose -", day),
+                    x = "Wind Direction (°)",
+                    y = "",
+                    fill = "Wind Speed (m/s)"
+               ) +
+               facet_wrap(~ time_only, ncol = 8) +
+               ggplot_theming(
+                    text = element_text(size = 8),
+                    axis.text.x = element_text(size = rel(0.7),
+                                               color = 'gray'),
+                    axis.text.y = element_blank(),
+                    strip.background = element_rect(fill = 'gray'),
+                    #strip.background.y = element_rect('#39D94E'),
+                    strip.text = element_text(
+                                   size = rel(1.5), 
+                                   margin = margin(0, 0, 0, 0, "pt"),
+                                   color = 'black'),
+                    legend.position = "bottom",
+                  #  legend.text = element_text(color = 'gray', size = rel(0.5)),
+                   # legend.title = element_text(color = 'white', size = rel(0.7))
+                   )
+
+          # Store the plot in the list
+          plot_list[[day]] <- day_plot
+     }
+     
+     # Combine all plots into a single object using patchwork
+     combined_plot <- wrap_plots(plot_list, ncol = 1)  # Arrange plots in a single column
+     
+     # Return the combined plot
+     return(combined_plot)
+}
+```
+
+
+
+```{r}
+
+plot_wind_rose_ggplot(duckdb_con)
+```
+
+
+
+```{r}
+
+data <- dbExecute(connection = duckb_con, query)
+```
+
+
+
+```{r}
+#| label: "fig-patchedPlots"
+#| column: screen-inset
+#| echo: false
+# Call the function and display the combined plot
+combined_plot <- plot_wind_rose_ggplot(duckdb_con)
+
+ggsave("data/plots/wind_rose.png", combined_plot, width = 24, height = 20, dpi = 600)
+
+
+print(combined_plot)
+```
+
+
+
+```{r}
+query <- "
+SELECT
+ wind_speed_10m,
+ wind_direction_10m,
+ time_only,
+ common_date,
+ month_day,
+ EXTRACT(HOUR FROM date) AS hour
+FROM
+ forecast_data;
+"
+
+data <- dbGetQuery(duckdb_con, query)
+
+# Bin wind speeds and directions
+data <- data |>
+     mutate(
+          speed_bin = cut(
+               wind_speed_10m,
+               breaks = c(0, 2, 4, 6, 8, 10, Inf),
+               labels = c("0-2", "2-4", "4-6", "6-8", "8-10", "10+"),
+               include.lowest = TRUE
+          ),
+          # Create 15-degree direction bins and convert to numeric
+          direction_bin = cut(
+               wind_direction_10m,
+               breaks = seq(0, 360, by = 15),
+               labels = seq(0, 345, by = 15),
+               include.lowest = TRUE
+          ) |> as.character() |> as.numeric()
+     )
+
+data
+```
+
+
 
 @fig-weather
 
@@ -967,20 +1305,6 @@ plot_wind_rose_ggplot(duckdb_con)
 @fig-precipitation
 
 @fig-wind_rose
-
-```{r}
-#| label: ""
-
-
-
-```
-
-```{r}
-#| label: ""
-
-
-
-```
 
 # Topography
 
@@ -1097,3 +1421,5 @@ plet(
 dbDisconnect(duckdb_con)
 ```
 :::
+
+:::::::::: ::::::::::: ::::::::::::
