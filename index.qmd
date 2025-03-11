@@ -37,6 +37,7 @@ library(gt)
 library(lubridate)
 library(odbc)
 library(openair)
+library(patchwork)
 #library(pillar)
 library(pryr)
 library(purrr)
@@ -76,32 +77,31 @@ Can brokers involved with bids for shipping contracts via road be better informe
 
 1.  Weather related factors
 
-2.  Road topology
+2.  Truck's attributes
 
-3.  Truck's attributes
+3.  Gas prices
 
-4.  Gas prices
-
-5.  Traffic
+4.  Traffic
 
     -   Accidents
 
     -   Local events
 
-6.  Season of year
+5.  Season of year
 
     -   holidays
 
-7.  Day of week
+6.  Day of week
 
-8.  Time of day
+    -   Weekend vs work week
 
+7.  Time of day
 
-## What can AI help with? 
+8.  Road topology
 
-* Making decisions that require more logic than what can be hard-coded in a reasonable amount of time.
+## What can AI help with?
 
-
+-   Making decisions that require more logic than what can be hard-coded in a reasonable amount of time.
 
 ## Database Connections
 
@@ -215,9 +215,6 @@ overwrite = TRUE
 #| file: "scripts/Import/API/Hourly/import_api_hourly_historical.py"
 ```
 :::
-
-
-
 
 ::: code-fold-flex
 ```{r}
@@ -522,7 +519,7 @@ color_by_columns = "Code",
 ```
 :::
 
-[@noaa_wmo_2025]
+@noaa_wmo_2025
 
 :::: skinny-tables
 ::: table-flex
@@ -540,6 +537,7 @@ rTable
 
 ## Custom Data Types
 
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 
@@ -624,19 +622,22 @@ CREATE TYPE speed_bin_enum AS ENUM (
      );
 
 ```
+:::
 
 ## Dataset: Forecast, 24-Hour
 
 ### CTAS (Create Table As Select) Approach
 
-Creating a view for transformations is generally considered a safer approach and aligns with modern data engineering best practices. Views function as virtual tables that compute results on-the-fly, eliminating the need to store intermediate data and reducing the risk of corrupting the source data. By leveraging views, one can iteratively refine transformations without the need to rewrite tables, allowing for adjustments and improvements to the logic as required. This approach provides flexibility and ensures that the transformation process remains adaptable to changing requirements.
+Creating a view for transformations is generally considered a safer approach and aligns with modern data engineering best practices. Views function as virtual tables that compute results on-the-fly, eliminating the need to store intermediate data and reducing the risk of corrupting the source data. By leveraging views, one can iteratively refine transformations without the need to rewrite tables, allowing for adjustments and improvements to the logic as required. This approach provides flexibility and helps the transformation process to remain adaptable to changing requirements.
 
-Furthermore, DuckDB optimizes queries against views by pushing down computations, which enhances performance and efficiency. Views also serve as self-documenting transformation pipelines, offering clarity and transparency into the decision logic. This makes it easier for others to understand, maintain, and collaborate on the data workflow. By adopting this method, one ensures a scalable, efficient, and transparent data processing system that supports both current and future analytical needs.
+Furthermore, DuckDB optimizes queries against views by pushing down computations, which enhances performance and efficiency. Views also serve as self-documenting transformation pipelines, offering clarity and transparency into the decision logic. This makes it easier for others to understand, maintain, and collaborate on the data workflow. By adopting this method, one works towards ensuring a scalable, efficient, and transparent data processing system, supporting both current and future analytical needs.
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
-#| 
+#| code-summary: Modular SQL, in-database transformation
+#| code-fold: show
+
 -- Create or replace the view with modular CTEs and explicit column lists
 CREATE OR REPLACE VIEW transformed_forecast AS
 WITH cleaned_data AS (
@@ -728,9 +729,9 @@ final_data AS (
 -- Final output
 SELECT * FROM final_data;
 ```
+:::
 
-
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 #| output.var: viewOfForecast
@@ -738,12 +739,11 @@ SELECT * FROM final_data;
 -- Final output
 SELECT * FROM transformed_forecast;
 ```
-
-
+:::
 
 ::: code-fold-flex
 ```{r}
-#| label: 'historical_data_setup'
+#| label: 'forecast_data_setup'
 #| code-summary: "table setup"
 
 r_df <- viewOfForecast |>
@@ -802,7 +802,7 @@ footnotes_df,
 source_note = md("**source**: "),
 pal_df,
 footnotes_multiline = FALSE,
-table_font_size = pct(85),
+table_font_size = pct(70),
 #do_col_labels = TRUE,
 )
 
@@ -815,21 +815,24 @@ table_font_size = pct(85),
 ```{r}
 #| label: "tbl-viewOfForecast"
 #| echo: false
-#| column: page-right
+#| column: screen-inset
 rTable |>
 opt_css(
 css = '
-#four .gt_table_body td.gt_row {
-box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+#three .gt_table_body td.gt_row {
+box-shadow: -1px 0px 1px 0px rgba(255, 255, 255, 0.2) inset,
+     1px 0px 1px 0px rgba(0, 0, 0, 0.2) inset;
+     
 } 
-'
+',
+#add = FALSE
 )
 ```
 :::
 ::::
 :::::
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 #| output.var: table_forecast
@@ -841,27 +844,34 @@ SELECT * FROM transformed_forecast;
 -- Preview results 
 SELECT * FROM forecast_data LIMIT 10;
 ```
+:::
 
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 DROP VIEW transformed_forecast;
 ```
+:::
 
 Refresh database statistics for the query planner:
 
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 ANALYZE forecast_data;
 ```
-
+:::
 
 ## Dataset: Historical, 1974-2024
 
 ### CTAS Approach
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
+#| code-summary: Modular SQL, in-database transformation
+#| code-fold: show
+
 -- Create or replace the view with modular CTEs and explicit column lists
 CREATE OR REPLACE VIEW transformed_historical AS
 WITH cleaned_data AS (
@@ -940,7 +950,9 @@ final_data AS (
 -- Final output
 SELECT * FROM final_data;
 ```
+:::
 
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 #| output.var: viewOfHistorical
@@ -948,6 +960,7 @@ SELECT * FROM final_data;
 -- Final output
 SELECT * FROM transformed_historical LIMIT 20;
 ```
+:::
 
 ::: code-fold-flex
 ```{r}
@@ -1006,7 +1019,7 @@ footnotes_df,
 source_note = md("**source**: "),
 pal_df,
 footnotes_multiline = FALSE,
-table_font_size = pct(85),
+table_font_size = pct(70),
 #do_col_labels = TRUE,
 )
 
@@ -1019,35 +1032,40 @@ table_font_size = pct(85),
 ```{r}
 #| label: "tbl-viewOfHistorical"
 #| echo: false
-#| column: page-right
+#| column: screen-inset
 rTable |>
 opt_css(
 css = '
 #four .gt_table_body td.gt_row {
-box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+box-shadow: -1px 0px 0px 0px rgba(255, 255, 255, 0.2) inset,
+     1px 0px 0px 0px rgba(0, 0, 0, 0.2) inset;
 } 
-'
+',
+#     add = FALSE
 )
 ```
 :::
 ::::
 :::::
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
--- Replace the historical weather table
+#| code-summary: Replace the historical weather table
 CREATE OR REPLACE TABLE historical_data AS
 SELECT * FROM transformed_historical;
 ```
+:::
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
+#| code-summary: "Drop the view"
 DROP VIEW transformed_historical;
 ```
+:::
 
-
+::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
 #| label: "analyzeHistoricalTable"
@@ -1055,11 +1073,27 @@ DROP VIEW transformed_historical;
 
 ANALYZE historical_data;
 ```
-
+:::
 
 ### Plot Testing
 
-::: {#fig-weather layout="[[1, 1, 1], [1, 1], [1]]" fig-cap="These are the grouped figures."}
+::: code-fold-flex
+```{r}
+#| label: "makePlotList"
+#| code-summary: "Create a plot list for wind roses"
+#| warning: false
+#| error: false
+
+base_path = "data/plots/"
+
+plot_wind_rose_ggplot(duckdb_con)
+
+fileList <-list.files(base_path, pattern = "^wind_rose")
+```
+:::
+
+:::: {.flex-container}
+::: {#fig-weather layout="[[1,1,1], [1,1], [1, 1, 1]]" fig-cap="These are the grouped figures."}
 ```{r}
 #| label: "fig-weather_codes"
 #| lightbox: 
@@ -1121,176 +1155,51 @@ plot_precipitation(duckdb_con)
 ```
 
 ```{r}
-#| label: "fig-wind_rose"
+#| label: "fig-rose1"
+#| echo: false
 #| lightbox: 
 #|   group: weather
 #|   description: "Wind direction and speed." 
-#| fig-cap: "Wind Rose"
-#| echo: false
-#| warning: false
-#| message: false
-#| column: page-right
-
-dir.create("data/plots/wind")
-
-plot_wind_rose_ggplot(duckdb_con)
-
-wind_paths <- list.files("data/plots/wind")
-
-img <- readPNG(wind_paths[1])
-grid::grid.raster(img)
-
+#| fig-cap: "Wind Rose1"
+##| fig-align: center
+#| out-height: 100%
+#| out-width: 100%
+display_a_plot(paste0(base_path, fileList[1]))
 ```
-:::
-
-
 
 ```{r}
-library(patchwork)
-library(purrr)
-library(ggplot2)
+#| label: "fig-rose2"
+#| echo: false
+#| lightbox: 
+#|   group: weather
+#|   description: "Wind direction and speed." 
+#| fig-cap: "Wind Rose2"
+##| fig-align: center
+#| out-height: 100%
+#| out-width: 100%
 
-plot_wind_rose_ggplot <- function(con) {
-     # ... [previous code until plotting] ...
-          # Query to fetch wind data
-     query <- "
-       SELECT
-         wind_direction_10m,
-         speed_bin,
-         wind_direction_cardinal,
-         direction_angle,
-         time_only,
-         month_day
-       FROM forecast_data;
-     "
+if(!is.na(fileList[2]) == TRUE) {
+     display_a_plot(paste0(base_path, fileList[2]))
+}
 
-     data <- execute_query(con, query)  # Execute the query and get the data
-     
-     plot_data <- data |>
-       group_by(speed_bin, month_day, time_only, wind_direction_10m) |>
-       summarise(count = n())   
+```
 
-     # Get unique days
-     days <- unique(plot_data$month_day)
-     
-     # Create a list to store plots
-     plot_list <- list()
-     
-     # Create and store plots for each day
-     for (day in days) {
-          day_data <- filter(plot_data, month_day == day)
-          day_plot <- ggplot(day_data, aes(x = wind_direction_10m, y = count, fill = speed_bin)) +
-            geom_col(width = 15, color = "black", size = 0.1) +  # Wider bars for 45° bins
-            coord_polar(start = 2*pi) +
-            scale_x_continuous(
-              limits = c(0, 360),
-              breaks = seq(0, 315, by = 45),  # Breaks at cardinal midpoints
-              labels = c('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW')  # Cardinal labels
-            ) +
-               scale_fill_paletteer_d('ggsci::deep_orange_material') +
-               labs(
-                    title = paste("Wind Rose -", day),
-                    x = "Wind Direction (°)",
-                    y = "",
-                    fill = "Wind Speed (m/s)"
-               ) +
-               facet_wrap(~ time_only, ncol = 8) +
-               ggplot_theming(
-                    text = element_text(size = 8),
-                    axis.text.x = element_text(size = rel(0.7),
-                                               color = 'gray'),
-                    axis.text.y = element_blank(),
-                    strip.background = element_rect(fill = 'gray'),
-                    #strip.background.y = element_rect('#39D94E'),
-                    strip.text = element_text(
-                                   size = rel(1.5), 
-                                   margin = margin(0, 0, 0, 0, "pt"),
-                                   color = 'black'),
-                    legend.position = "bottom",
-                  #  legend.text = element_text(color = 'gray', size = rel(0.5)),
-                   # legend.title = element_text(color = 'white', size = rel(0.7))
-                   )
+```{r}
+#| label: "fig-rose3"
+#| echo: false
+#| lightbox: 
+#|   group: weather
+#|   description: "Wind direction and speed." 
+#| fig-cap: "Wind Rose3"
+##| fig-align: center
+#| out-width: 100%
 
-          # Store the plot in the list
-          plot_list[[day]] <- day_plot
-     }
-     
-     # Combine all plots into a single object using patchwork
-     combined_plot <- wrap_plots(plot_list, ncol = 1)  # Arrange plots in a single column
-     
-     # Return the combined plot
-     return(combined_plot)
+if(!is.na(fileList[3])) {
+     display_a_plot(paste0(base_path, fileList[3]))
 }
 ```
-
-
-
-```{r}
-
-plot_wind_rose_ggplot(duckdb_con)
-```
-
-
-
-```{r}
-
-data <- dbExecute(connection = duckb_con, query)
-```
-
-
-
-```{r}
-#| label: "fig-patchedPlots"
-#| column: screen-inset
-#| echo: false
-# Call the function and display the combined plot
-combined_plot <- plot_wind_rose_ggplot(duckdb_con)
-
-ggsave("data/plots/wind_rose.png", combined_plot, width = 24, height = 20, dpi = 600)
-
-
-print(combined_plot)
-```
-
-
-
-```{r}
-query <- "
-SELECT
- wind_speed_10m,
- wind_direction_10m,
- time_only,
- common_date,
- month_day,
- EXTRACT(HOUR FROM date) AS hour
-FROM
- forecast_data;
-"
-
-data <- dbGetQuery(duckdb_con, query)
-
-# Bin wind speeds and directions
-data <- data |>
-     mutate(
-          speed_bin = cut(
-               wind_speed_10m,
-               breaks = c(0, 2, 4, 6, 8, 10, Inf),
-               labels = c("0-2", "2-4", "4-6", "6-8", "8-10", "10+"),
-               include.lowest = TRUE
-          ),
-          # Create 15-degree direction bins and convert to numeric
-          direction_bin = cut(
-               wind_direction_10m,
-               breaks = seq(0, 360, by = 15),
-               labels = seq(0, 345, by = 15),
-               include.lowest = TRUE
-          ) |> as.character() |> as.numeric()
-     )
-
-data
-```
-
-
+:::
+::::
 
 @fig-weather
 
@@ -1304,7 +1213,11 @@ data
 
 @fig-precipitation
 
-@fig-wind_rose
+@fig-rose1
+
+@fig-rose2
+
+@fig-rose3
 
 # Topography
 
@@ -1312,6 +1225,7 @@ data
 
 Might help with determining fuel cost and time of trip?
 
+::: code-fold-flex
 ```{r}
 #| label: "osrm"
 #| code-summary: "Creates a linestring object for the map."
@@ -1331,9 +1245,11 @@ src = c(-90.189781, 38.627480),
 dst = c(-91.634422, 38.002338)
 )
 
-write_sf(route, "route.geojson")  # Save for DuckDB
+# write_sf(route, "route.geojson")  # Save for DuckDB?
 ```
+:::
 
+::: code-fold-flex
 ```{r}
 #| label: "getSpatRaster"
 #| code-summary: "Topological map data is retrieved, creating a SpatRaster object."
@@ -1355,6 +1271,7 @@ route_area <- st_transform(route_area, 4326)
 
 dem <- get_ned(template = route_area, label = "route_dem")
 ```
+:::
 
 ::: {#fig-topography layout="[[1],[2],[3]]" fig-cap="Map figures"}
 ```{r}
@@ -1383,7 +1300,8 @@ plot(st_geometry(route))
 plet(
 dem, 
 tiles = "OpenTopoMap", 
-main = "Topographical\nElevation\n(DEM)")
+main = "Topographical\nElevation\n(DEM)"
+)
 ```
 
 ```{r}
@@ -1400,14 +1318,15 @@ main = "Topographical\nElevation\n(DEM)")
 
 
 plet(
-     dem, 
-     tiles = "OpenTopoMap", 
-     main = "Topographical\nElevation\n(DEM)") |>
-     addPolylines(
-     data = route, 
-     color = "red", 
-     weight = 2, 
-     opacity = 0.8)
+dem, 
+tiles = "OpenTopoMap", 
+main = "Topographical\nElevation\n(DEM)") |>
+addPolylines(
+data = route, 
+color = "limegreen", 
+weight = 2, 
+opacity = 0.8
+)
      
 ```
 :::
@@ -1421,5 +1340,3 @@ plet(
 dbDisconnect(duckdb_con)
 ```
 :::
-
-:::::::::: ::::::::::: ::::::::::::
