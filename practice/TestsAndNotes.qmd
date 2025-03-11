@@ -469,3 +469,16 @@ df = pd.DataFrame(result[:-8])
 df
 
 ```
+
+## Coordinate Examples
+
+| Location Name | Address | Lat, Long |
+|------------------------|------------------------|------------------------|
+| \- | Intersection of Hwy 70 & 270 | 38.748, -90.439 |
+| The St. Louis Regional Freightway | \- | 38.627480, -90.189781 |
+| Port of St. Louis | \- | 38.609215, -90.204275 |
+| USPS Office Kansas City International Airport | \- | 39.304413, -94.720711 |
+| Walmart Distribution Center | 1100 Matlock Dr, Saint James, MO 65559-9026 | 38.002338, -91.634422 |
+| KCS International Freight Gateway | 3301 East 147th Street, Kansas City, MO 64147 | 38.84930037041913, -94.55499143307868 |
+
+: Real locations that might be points of interest for truckers.

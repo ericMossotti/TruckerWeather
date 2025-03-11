@@ -44,8 +44,6 @@ eval_palette <- function(pal_name, n = 10, pal_type, direction = NULL) {
 #' @param footnotes_df A data frame containing footnotes and their locations.
 #' @param source_note A source note to be added at the bottom of the table.
 #' @param pal_df A data frame containing color palettes and columns to apply them to.
-#' @param multiline_feet Whether footnotes should be multiline (default is NULL).
-#' @param tbl_font_size The font size of the table (default is NULL).
 #' @param color_by_columns Columns to apply color to (default is NULL).
 #' @param row_name_col The column to use as row names (default is NULL).
 #' @param do_col_labels Whether to apply custom styling to column labels (default is FALSE).
@@ -89,14 +87,15 @@ r_table_theming <- function(r_df,
                             footnotes_df,
                             source_note,
                             pal_df,
-                            multiline_feet = NULL,
-                            tbl_font_size = NULL,
                             color_by_columns = NULL,
                             row_name_col = NULL,
                             do_col_labels = FALSE,
                             target_everything = FALSE,
-                            doBodyShadows = FALSE
-) {
+                            doBodyShadows = FALSE,
+                            footnotes_multiline = TRUE,
+                            table_font_size = pct(100),
+                            multiline_feet = TRUE
+                            ) {
      # Initialize the gt table
      if(is.null(row_name_col)) {
           # If no row name column is specified, create a basic gt table
@@ -181,7 +180,7 @@ r_table_theming <- function(r_df,
                footnotes.padding = px(5),  # Add padding to footnotes
                footnotes.background.color = '#222',  # Set background color for footnotes
                footnotes.sep = ", ",  # Set separator for footnotes
-               footnotes.multiline = multiline_feet,  # Allow multiline footnotes (if enabled)
+               footnotes.multiline = footnotes_multiline,  # Allow multiline footnotes (if enabled)
                heading.padding = px(10),  # Add padding to the heading
                heading.background.color = '#222',  # Set background color for the heading
                heading.title.font.size = pct(125),  # Set font size for the title
@@ -200,7 +199,7 @@ r_table_theming <- function(r_df,
                table.border.top.width = px(0),  # Remove top border for the table
                table.border.bottom.width = px(0),  # Remove bottom border for the table
                table.background.color = '#222',  # Set background color for the table
-               table.font.size = tbl_font_size,  # Set font size for the table
+               table.font.size = table_font_size,  # Set font size for the table
                table.layout = "auto",  # Use automatic table layout
                table_body.hlines.color = 'black',  # Set horizontal line color for the table body
                table_body.hlines.width = px(0),  # Remove horizontal lines in the table body
@@ -208,7 +207,7 @@ r_table_theming <- function(r_df,
                table_body.border.bottom.color = 'black',  # Set bottom border color for the table body
                table_body.border.top.color = 'black',  # Set top border color for the table body
                table_body.border.bottom.width = px(0),  # Remove bottom border for the table body
-               table_body.border.top.width = px(0)  # Remove top border for the table body
+               table_body.border.top.width = px(0),  # Remove top border for the table body
           )
      
      return(r_table)

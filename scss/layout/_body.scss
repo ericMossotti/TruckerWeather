@@ -23,3 +23,9 @@ li {
 .quarto-float-caption {
      font-size: clamp(0.7rem, 1.25vw, 1.0rem);
 }
+
+.flex-container {
+     display: flex;
+     margin: .1rem;
+     padding: .1rem;
+}
