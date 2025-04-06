@@ -15,16 +15,12 @@ code-tools: true
 
 fig-responsive: true
 
-#filters:
-#     - nutshell
-
 
 lightbox: true
 
 smooth-scroll: true
 source: true
 ---
-
 
 ```{r}
 #| label: rLibraries
@@ -151,13 +147,13 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 ```
 :::
 
-## Workflow
+## Data Ingestion Workflow
 
 Data moves from:
 
 Python ingestion → R loading → SQL transformations → final table materialization
 
-![workflow](svgWorkflow.svg){fig-align="center" width="1012" height="140"}
+![workflow](diagrams/svgWorkflow.svg){fig-align="center" width="598" height="140"}
 
 # Import
 
@@ -180,19 +176,31 @@ Python ingestion → R loading → SQL transformations → final table materiali
 #| label: writeHourlyForecastAPIdata
 #| code-summary: "Write hourly api results."
 
-dbWriteTable(
-duckdb_con, 
-"forecast_data", 
-py$import_api_hourly(38.748, -90.439),
-overwrite = TRUE
+coordinates <- list(
+  c(38.748, -90.439),  # Original coordinates
+  c(40.7128, -74.0060),  # New York
+  c(34.0522, -118.2437)  # Los Angeles
 )
+
+lats <- purrr::map_dbl(coordinates, 1)
+lons <- purrr::map_dbl(coordinates, 2)
+
+purrr::walk2(lats, lons, \(lat, lon) {
+  dbWriteTable(
+    duckdb_con,
+    "forecast_data",
+    py$import_api_hourly(lat, lon),
+    append = TRUE
+  )
+}, .progress = FALSE)
+
 ```
 :::
 
 ### Historical
 
 ::: code-fold-flex
-```{python}
+``` python
 #| label: loadHourlyHistoricalAPIscript
 #| code-summary: "Run the API script to import the dataset."
 #| file: "scripts/Import/API/Hourly/import_api_hourly_historical.py"
@@ -200,19 +208,114 @@ overwrite = TRUE
 :::
 
 ::: code-fold-flex
-```{r}
+``` r
 #| label: writeHistoricalAPIdata
 #| code-summary: "Write hourly api historical data."
 
-dbWriteTable(
-duckdb_con, 
-"historical_data",
-py$import_api_hourly_historical(38.748, -90.439, "1974-01-01", "2024-12-31"),
-overwrite = TRUE
+save_to_partition <- function(df, lat, lon) {
+  # Add partitioning columns to the data frame
+  df <- df|>
+    mutate(
+      lat = lat,
+      lon = lon,
+      year = year(date),
+      month = month(date)
+    )
+  
+  # Write to Hive partitions (folders auto-created)
+  arrow::write_dataset(
+    df,
+    path = "data/historical_weather/",
+    format = "parquet",
+    partitioning = c("lat", "lon", "year", "month"),
+    existing_data_behavior = "overwrite"  # or "delete_matching"
+  )
+}
+
+coordinates1 <- list(
+     c(34.0522, -118.2437),   # Los Angeles, CA (Start)
+     c(33.9806, -117.3755),   # Riverside, CA (I-215 logistics)
+     c(34.1495, -117.2345),   # San Bernardino, CA (I-10/I-215 interchange)
+     c(33.6103, -114.5964),   # Blythe, CA (I-10 desert truck stop)
+     c(33.4484, -112.0740)   # Phoenix, AZ (I-10)
 )
+
+coordinates2 <- list(
+     c(35.1983, -111.6513),   # Flagstaff, AZ (I-40 mountain gateway)
+     c(35.0844, -106.6504),   # Albuquerque, NM (I-40)
+     c(34.9333, -104.6876),   # Santa Rosa, NM (I-40 rest area)
+     c(35.2210, -101.8313),   # Amarillo, TX (I-40, "Big Texan" truck stop)
+     c(35.2161, -100.2491)   # Shamrock, TX (I-40, near OK border)
+)
+
+coordinates3 <- list(
+     c(35.4676, -97.5164),    # Oklahoma City, OK (I-40/I-44 junction)
+     c(36.7538, -95.2206),    # Miami, OK (I-44, near MO border)
+     c(37.0842, -94.5133),    # Joplin, MO (I-44 truck hub)
+     c(38.7480, -90.4390),    # St. Louis, MO (I-44/I-70 interchange)
+     c(39.1200, -88.5435)    # Effingham, IL (I-70 logistics hub)
+)
+
+coordinates4 <- list(
+     c(39.7684, -86.1581),    # Indianapolis, IN (I-70 "Crossroads of America")
+     c(39.7589, -84.1916),    # Dayton, OH (I-70/I-75 junction)
+     c(40.4406, -79.9959),    # Pittsburgh, PA (I-76)
+     c(39.9995, -78.2341),    # Breezewood, PA (I-70/I-76 truck stop)
+     c(40.7357, -74.1724)     # Newark, NJ (End, NYC metro)
+)
+
+lats <- purrr::map_dbl(coordinates4, 1)
+lons <- purrr::map_dbl(coordinates4, 2)
+
+purrr::walk2(lats, lons, \(lat, lon) {
+
+     df <- py$import_api_hourly_historical(lat, lon, "1974-01-01", "2024-12-31")
+     
+     save_to_partition(df, lat, lon)
+
+     # Delay to avoid API rate limits
+     Sys.sleep(300)
+
+}, .progress = FALSE)
 ```
 :::
 
+#### storage:// 
+
+-   data/
+
+    -   weather_data/
+
+        -   lat=34.0522/
+
+            -   lon=-118.2437/
+
+                -   year=2024/
+
+                    -   month=01/
+
+                        -   part-0.parquet
+
+```{sql}
+#| connection: duckdb_con
+#| output.var: partExample 
+SELECT * --lat/lon/year/month
+FROM read_parquet(
+     'data/historical_weather/*/*/*/*/part-0.parquet', 
+     hive_partitioning = true)
+LIMIT 100;
+```
+
+```{sql}
+#| label: createTable
+#| code-summary: Create a table from the hive partitioned dataset. 
+#| connection: duckdb_con
+CREATE OR REPLACE TABLE historical_data AS 
+SELECT * 
+FROM read_parquet(
+     'data/historical_weather/*/*/*/*/part-0.parquet', --lat/lon/year/month
+     hive_partitioning = true);
+```
 
 ## About the Weather Data
 
@@ -285,14 +388,13 @@ row_name_col = "Model",
 ```
 :::
 
-::::: {#one}
-:::: medium-large-tables
+::::: column-body-outset-right
+:::: {#one}
 ::: table-flex
 ```{r}
 #| label: "tbl-modelAttributes"
 #| warning: false
 #| echo: false
-#| column: body-outset-right
 
 rTable |>
 opt_css(
@@ -355,8 +457,8 @@ row_name_col = NULL
 ```
 :::
 
-::::: {#two}
-:::: medium-large-tables
+::::: column-body-outset-right
+:::: {#two}
 ::: table-flex
 ```{r}
 #| label: "tbl-modelDiffs"
@@ -390,159 +492,159 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 #| code-summary: "Sets the custom data types in the database."
 
 code_frame <- tibble::tibble(
-code = c(
-'0',
-'1',
-'2',
-'3',
-'45',
-'48',
-'51',
-'53',
-'55',
-'56',
-'57',
-'61',
-'63',
-'65',
-'66',
-'67',
-'71',
-'73',
-'75',
-'77',
-'80',
-'81',
-'82',
-'85',
-'86',
-'95',
-'96',
-'99'
+weather_code = c(
+     '0',
+     '1',
+     '2',
+     '3',
+     '45',
+     '48',
+     '51',
+     '53',
+     '55',
+     '56',
+     '57',
+     '61',
+     '63',
+     '65',
+     '66',
+     '67',
+     '71',
+     '73',
+     '75',
+     '77',
+     '80',
+     '81',
+     '82',
+     '85',
+     '86',
+     '95',
+     '96',
+     '99'
 ),
 
 description = c(
-'Clear sky',
-'Mainly clear',
-'Partly cloudy',
-'Overcast',
-'Fog',
-'Depositing rime fog',
-'Drizzle: light',
-'Drizzle: moderate',
-'Drizzle: dense',
-'Freezing drizzle: light',
-'Freezing drizzle: dense',
-'Rain: slight',
-'Rain: moderate',
-'Rain: heavy',
-'Freezing rain: light',
-'Freezing rain: heavy',
-'Snow fall: slight',
-'Snow fall: moderate',
-'Snow fall: heavy',
-'Snow grains',
-'Rain showers: slight',
-'Rain showers: moderate',
-'Rain showers: violent',
-'Snow showers: slight',
-'Snow showers: heavy',
-'Thunderstorm: slight or moderate',
-'Thunderstorm with slight hail',
-'Thunderstorm with heavy hail'
+     'Clear sky',
+     'Mainly clear',
+     'Partly cloudy',
+     'Overcast',
+     'Fog',
+     'Depositing rime fog',
+     'Drizzle: light',
+     'Drizzle: moderate',
+     'Drizzle: dense',
+     'Freezing drizzle: light',
+     'Freezing drizzle: dense',
+     'Rain: slight',
+     'Rain: moderate',
+     'Rain: heavy',
+     'Freezing rain: light',
+     'Freezing rain: heavy',
+     'Snow fall: slight',
+     'Snow fall: moderate',
+     'Snow fall: heavy',
+     'Snow grains',
+     'Rain showers: slight',
+     'Rain showers: moderate',
+     'Rain showers: violent',
+     'Snow showers: slight',
+     'Snow showers: heavy',
+     'Thunderstorm: slight or moderate',
+     'Thunderstorm with slight hail',
+     'Thunderstorm with heavy hail'
 ),
 
 implication = c(
-"Normal operations - No restrictions",              # Clear sky
-"Normal operations - Increased vigilance",          # Mainly clear
-"Normal operations - Monitor weather updates",      # Partly cloudy
-"Reduced visibility - Maintain safe following distance", # Overcast
-"Speed reduction required - Fog lights mandatory",  # Fog
-"Speed reduction required - Extreme caution",        # Depositing rime fog
-"Potential minor delays - Road surface slickness",   # Drizzle: light
-"Speed restrictions - 15% reduction recommended",    # Drizzle: moderate
-"Mandatory speed reduction - 25%+",                 # Drizzle: dense
-"Chain requirement - Level 1 traction advisory",     # Freezing drizzle: light
-"Road closure likely - Avoid non-essential travel",  # Freezing drizzle: dense
-"Increased stopping distance - 10% speed reduction", # Rain: slight
-"15-20% speed reduction - Check tire tread",         # Rain: moderate
-"25%+ speed reduction - Possible detour routing",    # Rain: heavy
-"Mandatory chains - Temperature monitoring",         # Freezing rain: light
-"Road closure imminent - Immediate stop advised",    # Freezing rain: heavy
-"15% speed reduction - Traction control engaged",    # Snow fall: slight
-"25% speed reduction - Chain requirement possible",  # Snow fall: moderate
-"Road closure likely - Abandon shipment staging",    # Snow fall: heavy
-"Speed restriction - Watch for black ice",           # Snow grains
-"Increased following distance - 4-second rule",      # Rain showers: slight
-"20% speed reduction - Avoid lane changes",          # Rain showers: moderate
-"Immediate parking advised - Flash flood risk",      # Rain showers: violent
-"Chain requirement - Trailer brake check",           # Snow showers: slight
-"Road closure protocol activated",                   # Snow showers: heavy
-"Delay shipments - No open-top trailers",            # Thunderstorm: slight/mod
-"Immediate stop - Seek shelter",                     # Thunderstorm w/ slight hail
-"Catastrophic risk - Emergency protocols"            # Thunderstorm w/ heavy hail
+     "Normal operations - No restrictions",              # Clear sky
+     "Normal operations - Increased vigilance",          # Mainly clear
+     "Normal operations - Monitor weather updates",      # Partly cloudy
+     "Reduced visibility - Maintain safe following distance", # Overcast
+     "Speed reduction required - Fog lights mandatory",  # Fog
+     "Speed reduction required - Extreme caution",        # Depositing rime fog
+     "Potential minor delays - Road surface slickness",   # Drizzle: light
+     "Speed restrictions - 15% reduction recommended",    # Drizzle: moderate
+     "Mandatory speed reduction - 25%+",                 # Drizzle: dense
+     "Chain requirement - Level 1 traction advisory",     # Freezing drizzle: light
+     "Road closure likely - Avoid non-essential travel",  # Freezing drizzle: dense
+     "Increased stopping distance - 10% speed reduction", # Rain: slight
+     "15-20% speed reduction - Check tire tread",         # Rain: moderate
+     "25%+ speed reduction - Possible detour routing",    # Rain: heavy
+     "Mandatory chains - Temperature monitoring",         # Freezing rain: light
+     "Road closure imminent - Immediate stop advised",    # Freezing rain: heavy
+     "15% speed reduction - Traction control engaged",    # Snow fall: slight
+     "25% speed reduction - Chain requirement possible",  # Snow fall: moderate
+     "Road closure likely - Abandon shipment staging",    # Snow fall: heavy
+     "Speed restriction - Watch for black ice",           # Snow grains
+     "Increased following distance - 4-second rule",      # Rain showers: slight
+     "20% speed reduction - Avoid lane changes",          # Rain showers: moderate
+     "Immediate parking advised - Flash flood risk",      # Rain showers: violent
+     "Chain requirement - Trailer brake check",           # Snow showers: slight
+     "Road closure protocol activated",                   # Snow showers: heavy
+     "Delay shipments - No open-top trailers",            # Thunderstorm: slight/mod
+     "Immediate stop - Seek shelter",                     # Thunderstorm w/ slight hail
+     "Catastrophic risk - Emergency protocols"            # Thunderstorm w/ heavy hail
 ),
 
 risk_score = c(
-0.1,  # Clear sky
-0.15, # Mainly clear
-0.2,  # Partly cloudy
-0.25, # Overcast
-0.4,  # Fog
-0.5,  # Depositing rime fog
-0.3,  # Drizzle: light
-0.35, # Drizzle: moderate
-0.45, # Drizzle: dense
-0.55, # Freezing drizzle: light
-0.8,  # Freezing drizzle: dense
-0.3,  # Rain: slight
-0.4,  # Rain: moderate
-0.6,  # Rain: heavy
-0.65, # Freezing rain: light
-0.85, # Freezing rain: heavy
-0.4,  # Snow fall: slight
-0.6,  # Snow fall: moderate
-0.75, # Snow fall: heavy
-0.5,  # Snow grains
-0.35, # Rain showers: slight
-0.5,  # Rain showers: moderate
-0.7,  # Rain showers: violent
-0.6,  # Snow showers: slight
-0.8,  # Snow showers: heavy
-0.65, # Thunderstorm: slight/mod
-0.85, # Thunderstorm w/ slight hail
-0.95  # Thunderstorm w/ heavy hail
+     0.1,  # Clear sky
+     0.15, # Mainly clear
+     0.2,  # Partly cloudy
+     0.25, # Overcast
+     0.4,  # Fog
+     0.5,  # Depositing rime fog
+     0.3,  # Drizzle: light
+     0.35, # Drizzle: moderate
+     0.45, # Drizzle: dense
+     0.55, # Freezing drizzle: light
+     0.8,  # Freezing drizzle: dense
+     0.3,  # Rain: slight
+     0.4,  # Rain: moderate
+     0.6,  # Rain: heavy
+     0.65, # Freezing rain: light
+     0.85, # Freezing rain: heavy
+     0.4,  # Snow fall: slight
+     0.6,  # Snow fall: moderate
+     0.75, # Snow fall: heavy
+     0.5,  # Snow grains
+     0.35, # Rain showers: slight
+     0.5,  # Rain showers: moderate
+     0.7,  # Rain showers: violent
+     0.6,  # Snow showers: slight
+     0.8,  # Snow showers: heavy
+     0.65, # Thunderstorm: slight/mod
+     0.85, # Thunderstorm w/ slight hail
+     0.95  # Thunderstorm w/ heavy hail
   ),
 
 dot_compliance = c(
-"§392.14(a)",              # Clear sky
-"§392.14(a)",              # Mainly clear
-"§392.14(a)",              # Partly cloudy
-"§392.14(b)",              # Overcast
-"§392.14(b)+§393.75(c)",   # Fog
-"§392.14(c)",              # Depositing rime fog
-"§392.71(a)",              # Drizzle: light
-"§392.71(b)",              # Drizzle: moderate
-"§392.71(c)",              # Drizzle: dense
-"§392.16(a)",              # Freezing drizzle: light
-"§392.16(c)",              # Freezing drizzle: dense
-"§392.71(a)",              # Rain: slight
-"§392.71(b)",              # Rain: moderate
-"§392.71(c)",              # Rain: heavy
-"§392.16(b)+§393.95(d)",   # Freezing rain: light
-"§392.16(c)",              # Freezing rain: heavy
-"§392.14(b)+§393.95(a)",   # Snow fall: slight
-"§392.14(c)+§393.95(b)",   # Snow fall: moderate
-"§392.16(c)",              # Snow fall: heavy
-"§392.14(c)",              # Snow grains
-"§392.14(b)",              # Rain showers: slight
-"§392.14(c)",              # Rain showers: moderate
-"§392.16(c)",              # Rain showers: violent
-"§393.95(c)",              # Snow showers: slight
-"§392.16(c)",              # Snow showers: heavy
-"§392.14(d)+§393.75(e)",   # Thunderstorm: slight/mod
-"§392.16(c)",              # Thunderstorm w/ slight hail
-"§392.16(e)"               # Thunderstorm w/ heavy hail
+     "§392.14(a)",              # Clear sky
+     "§392.14(a)",              # Mainly clear
+     "§392.14(a)",              # Partly cloudy
+     "§392.14(b)",              # Overcast
+     "§392.14(b)+§393.75(c)",   # Fog
+     "§392.14(c)",              # Depositing rime fog
+     "§392.71(a)",              # Drizzle: light
+     "§392.71(b)",              # Drizzle: moderate
+     "§392.71(c)",              # Drizzle: dense
+     "§392.16(a)",              # Freezing drizzle: light
+     "§392.16(c)",              # Freezing drizzle: dense
+     "§392.71(a)",              # Rain: slight
+     "§392.71(b)",              # Rain: moderate
+     "§392.71(c)",              # Rain: heavy
+     "§392.16(b)+§393.95(d)",   # Freezing rain: light
+     "§392.16(c)",              # Freezing rain: heavy
+     "§392.14(b)+§393.95(a)",   # Snow fall: slight
+     "§392.14(c)+§393.95(b)",   # Snow fall: moderate
+     "§392.16(c)",              # Snow fall: heavy
+     "§392.14(c)",              # Snow grains
+     "§392.14(b)",              # Rain showers: slight
+     "§392.14(c)",              # Rain showers: moderate
+     "§392.16(c)",              # Rain showers: violent
+     "§393.95(c)",              # Snow showers: slight
+     "§392.16(c)",              # Snow showers: heavy
+     "§392.14(d)+§393.75(e)",   # Thunderstorm: slight/mod
+     "§392.16(c)",              # Thunderstorm w/ slight hail
+     "§392.16(e)"               # Thunderstorm w/ heavy hail
 ),
 
 severity = cut(
@@ -552,221 +654,221 @@ labels = c("Low", "Moderate", "High", "Critical")
 ),
 
 insurance_surcharge = c(
-0,    # Clear sky
-0,    # Mainly clear
-0.05, # Partly cloudy (5%)
-0.07, # Overcast (7%)
-0.1,  # Fog (10%)
-0.15, # Rime fog (15%)
-0.08, # Light drizzle (8%)
-0.12, # Moderate drizzle (12%)
-0.18, # Dense drizzle (18%)
-0.25, # Freezing drizzle light (25%)
-0.4,  # Freezing drizzle dense (40%)
-0.1,  # Rain slight (10%)
-0.15, # Rain moderate (15%)
-0.25, # Rain heavy (25%)
-0.35, # Freezing rain light (35%)
-0.5,  # Freezing rain heavy (50%)
-0.2,  # Snow slight (20%)
-0.3,  # Snow moderate (30%)
-0.45, # Snow heavy (45%)
-0.25, # Snow grains (25%)
-0.12, # Rain showers slight (12%)
-0.2,  # Rain showers moderate (20%)
-0.35, # Rain showers violent (35%)
-0.3,  # Snow showers slight (30%)
-0.5,  # Snow showers heavy (50%)
-0.4,  # Thunderstorm (40%)
-0.6,  # Thunderstorm w/ slight hail (60%)
-0.8   # Thunderstorm w/ heavy hail (80%)
+     0,    # Clear sky
+     0,    # Mainly clear
+     0.05, # Partly cloudy (5%)
+     0.07, # Overcast (7%)
+     0.1,  # Fog (10%)
+     0.15, # Rime fog (15%)
+     0.08, # Light drizzle (8%)
+     0.12, # Moderate drizzle (12%)
+     0.18, # Dense drizzle (18%)
+     0.25, # Freezing drizzle light (25%)
+     0.4,  # Freezing drizzle dense (40%)
+     0.1,  # Rain slight (10%)
+     0.15, # Rain moderate (15%)
+     0.25, # Rain heavy (25%)
+     0.35, # Freezing rain light (35%)
+     0.5,  # Freezing rain heavy (50%)
+     0.2,  # Snow slight (20%)
+     0.3,  # Snow moderate (30%)
+     0.45, # Snow heavy (45%)
+     0.25, # Snow grains (25%)
+     0.12, # Rain showers slight (12%)
+     0.2,  # Rain showers moderate (20%)
+     0.35, # Rain showers violent (35%)
+     0.3,  # Snow showers slight (30%)
+     0.5,  # Snow showers heavy (50%)
+     0.4,  # Thunderstorm (40%)
+     0.6,  # Thunderstorm w/ slight hail (60%)
+     0.8   # Thunderstorm w/ heavy hail (80%)
 ),
 
 fuel_multiplier = c(
-1.0,  # Clear sky
-1.0,  # Mainly clear
-1.03, # Partly cloudy (3%)
-1.05, # Overcast (5%)
-1.12, # Fog (12%)
-1.15, # Rime fog (15%)
-1.07, # Light drizzle (7%)
-1.1,  # Moderate drizzle (10%)
-1.15, # Dense drizzle (15%)
-1.25, # Freezing drizzle light (25%)
-1.4,  # Freezing drizzle dense (40%)
-1.08, # Rain slight (8%)
-1.12, # Rain moderate (12%)
-1.2,  # Rain heavy (20%)
-1.3,  # Freezing rain light (30%)
-1.5,  # Freezing rain heavy (50%)
-1.15, # Snow slight (15%)
-1.25, # Snow moderate (25%)
-1.4,  # Snow heavy (40%)
-1.2,  # Snow grains (20%)
-1.1,  # Rain showers slight (10%)
-1.15, # Rain showers moderate (15%)
-1.3,  # Rain showers violent (30%)
-1.25, # Snow showers slight (25%)
-1.45, # Snow showers heavy (45%)
-1.35, # Thunderstorm (35%)
-1.6,  # Thunderstorm w/ slight hail (60%)
-2.0   # Thunderstorm w/ heavy hail (100%)
+     1.0,  # Clear sky
+     1.0,  # Mainly clear
+     1.03, # Partly cloudy (3%)
+     1.05, # Overcast (5%)
+     1.12, # Fog (12%)
+     1.15, # Rime fog (15%)
+     1.07, # Light drizzle (7%)
+     1.1,  # Moderate drizzle (10%)
+     1.15, # Dense drizzle (15%)
+     1.25, # Freezing drizzle light (25%)
+     1.4,  # Freezing drizzle dense (40%)
+     1.08, # Rain slight (8%)
+     1.12, # Rain moderate (12%)
+     1.2,  # Rain heavy (20%)
+     1.3,  # Freezing rain light (30%)
+     1.5,  # Freezing rain heavy (50%)
+     1.15, # Snow slight (15%)
+     1.25, # Snow moderate (25%)
+     1.4,  # Snow heavy (40%)
+     1.2,  # Snow grains (20%)
+     1.1,  # Rain showers slight (10%)
+     1.15, # Rain showers moderate (15%)
+     1.3,  # Rain showers violent (30%)
+     1.25, # Snow showers slight (25%)
+     1.45, # Snow showers heavy (45%)
+     1.35, # Thunderstorm (35%)
+     1.6,  # Thunderstorm w/ slight hail (60%)
+     2.0   # Thunderstorm w/ heavy hail (100%)
   ),
 
 route_delay_factor = c(
-1.0,  # Clear sky
-1.0,  # Mainly clear
-1.1,  # Partly cloudy
-1.2,  # Overcast
-1.5,  # Fog
-1.8,  # Rime fog
-1.3,  # Light drizzle
-1.6,  # Moderate drizzle
-2.0,  # Dense drizzle
-2.5,  # Freezing drizzle light
-4.0,  # Freezing drizzle dense
-1.4,  # Rain slight
-1.8,  # Rain moderate
-2.5,  # Rain heavy
-3.0,  # Freezing rain light
-5.0,  # Freezing rain heavy
-2.0,  # Snow slight
-3.0,  # Snow moderate
-4.5,  # Snow heavy
-2.5,  # Snow grains
-1.5,  # Rain showers slight
-2.0,  # Rain showers moderate
-3.5,  # Rain showers violent
-3.0,  # Snow showers slight
-5.0,  # Snow showers heavy
-3.5,  # Thunderstorm
-6.0,  # Thunderstorm w/ slight hail
-10.0  # Thunderstorm w/ heavy hail
+     1.0,  # Clear sky
+     1.0,  # Mainly clear
+     1.00,  # Partly cloudy
+     1.01,  # Overcast
+     1.05,  # Fog
+     1.08,  # Rime fog
+     1.03,  # Light drizzle
+     1.06,  # Moderate drizzle
+     1.2,  # Dense drizzle
+     1.25,  # Freezing drizzle light
+     1.4,  # Freezing drizzle dense
+     1.04,  # Rain slight
+     1.08,  # Rain moderate
+     1.25,  # Rain heavy
+     1.3,  # Freezing rain light
+     1.5,  # Freezing rain heavy
+     1.2,  # Snow slight
+     1.3,  # Snow moderate
+     1.45,  # Snow heavy
+     1.25,  # Snow grains
+     1.05,  # Rain showers slight
+     1.2,  # Rain showers moderate
+     1.35,  # Rain showers violent
+     1.3,  # Snow showers slight
+     1.5,  # Snow showers heavy
+     1.3,  # Thunderstorm
+     1.6,  # Thunderstorm w/ slight hail
+     2.0  # Thunderstorm w/ heavy hail
 ),
 
 # New Labor & Equipment Columns
 safety_inspections = c(
-"Pre-trip only",                    # Clear sky
-"Pre-trip + mid-trip visual",       # Mainly clear
-"Pre-trip + brake check",           # Partly cloudy
-"Pre-trip + hourly tire checks",    # Overcast
-"Pre-trip + fog light checks",      # Fog
-"Pre-trip + 30-min interval checks",# Rime fog
-"Pre-trip + 2hr brake tests",       # Drizzle: light
-"Pre-trip + 1hr brake tests",       # Drizzle: moderate
-"Pre-trip + 30min brake tests",     # Drizzle: dense
-"Pre-trip + axle temp monitoring",  # Freezing drizzle: light
-"Continuous monitoring required",   # Freezing drizzle: dense
-"Pre-trip + wiper checks",          # Rain: slight
-"Pre-trip + 2hr wiper checks",      # Rain: moderate
-"Pre-trip + 30min wiper checks",    # Rain: heavy
-"Pre-trip + chain integrity checks",# Freezing rain: light
-"Roadside inspections mandatory",   # Freezing rain: heavy
-"Pre-trip + tire chain prep",       # Snow fall: slight
-"Pre-trip + hourly chain checks",   # Snow fall: moderate
-"Continuous chain monitoring",      # Snow fall: heavy
-"Pre-trip + sanding required",      # Snow grains
-"Pre-trip + drainage checks",       # Rain showers: slight
-"Pre-trip + undercarriage checks",  # Rain showers: moderate
-"Abort trip + full inspection",     # Rain showers: violent
-"Pre-trip + plow attachment",       # Snow showers: slight
-"Roadside de-icing required",       # Snow showers: heavy
-"Pre-trip + lightning protocol",    # Thunderstorm: slight/mod
-"Immediate shelter + inspection",   # Thunderstorm w/ slight hail
-"Post-storm forensic inspection"    # Thunderstorm w/ heavy hail
+     "Pre-trip only",                    # Clear sky
+     "Pre-trip + mid-trip visual",       # Mainly clear
+     "Pre-trip + brake check",           # Partly cloudy
+     "Pre-trip + hourly tire checks",    # Overcast
+     "Pre-trip + fog light checks",      # Fog
+     "Pre-trip + 30-min interval checks",# Rime fog
+     "Pre-trip + 2hr brake tests",       # Drizzle: light
+     "Pre-trip + 1hr brake tests",       # Drizzle: moderate
+     "Pre-trip + 30min brake tests",     # Drizzle: dense
+     "Pre-trip + axle temp monitoring",  # Freezing drizzle: light
+     "Continuous monitoring required",   # Freezing drizzle: dense
+     "Pre-trip + wiper checks",          # Rain: slight
+     "Pre-trip + 2hr wiper checks",      # Rain: moderate
+     "Pre-trip + 30min wiper checks",    # Rain: heavy
+     "Pre-trip + chain integrity checks",# Freezing rain: light
+     "Roadside inspections mandatory",   # Freezing rain: heavy
+     "Pre-trip + tire chain prep",       # Snow fall: slight
+     "Pre-trip + hourly chain checks",   # Snow fall: moderate
+     "Continuous chain monitoring",      # Snow fall: heavy
+     "Pre-trip + sanding required",      # Snow grains
+     "Pre-trip + drainage checks",       # Rain showers: slight
+     "Pre-trip + undercarriage checks",  # Rain showers: moderate
+     "Abort trip + full inspection",     # Rain showers: violent
+     "Pre-trip + plow attachment",       # Snow showers: slight
+     "Roadside de-icing required",       # Snow showers: heavy
+     "Pre-trip + lightning protocol",    # Thunderstorm: slight/mod
+     "Immediate shelter + inspection",   # Thunderstorm w/ slight hail
+     "Post-storm forensic inspection"    # Thunderstorm w/ heavy hail
 ),
 
 driver_wage_premium = c(
-0.00,  # Clear sky
-0.00,   # Mainly clear
-0.05,   # Partly cloudy (+5%)
-0.07,   # Overcast (+7%)
-0.15,   # Fog (+15%)
-0.20,   # Rime fog (+20%)
-0.10,   # Drizzle: light (+10%)
-0.12,   # Drizzle: moderate (+12%)
-0.18,   # Drizzle: dense (+18%)
-0.25,   # Freezing drizzle: light (+25%)
-0.40,   # Freezing drizzle: dense (+40%)
-0.10,   # Rain: slight (+10%)
-0.15,   # Rain: moderate (+15%)
-0.25,   # Rain: heavy (+25%)
-0.35,   # Freezing rain: light (+35%)
-0.50,   # Freezing rain: heavy (+50%)
-0.20,   # Snow fall: slight (+20%)
-0.30,   # Snow fall: moderate (+30%)
-0.45,   # Snow fall: heavy (+45%)
-0.25,   # Snow grains (+25%)
-0.12,   # Rain showers: slight (+12%)
-0.20,   # Rain showers: moderate (+20%)
-0.35,   # Rain showers: violent (+35%)
-0.30,   # Snow showers: slight (+30%)
-0.50,   # Snow showers: heavy (+50%)
-0.40,   # Thunderstorm (+40%)
-0.60,   # Thunderstorm w/ slight hail (+60%)
-0.80    # Thunderstorm w/ heavy hail (+80%)
+     0.00,  # Clear sky
+     0.00,   # Mainly clear
+     0.05,   # Partly cloudy (+5%)
+     0.07,   # Overcast (+7%)
+     0.15,   # Fog (+15%)
+     0.20,   # Rime fog (+20%)
+     0.10,   # Drizzle: light (+10%)
+     0.12,   # Drizzle: moderate (+12%)
+     0.18,   # Drizzle: dense (+18%)
+     0.25,   # Freezing drizzle: light (+25%)
+     0.40,   # Freezing drizzle: dense (+40%)
+     0.10,   # Rain: slight (+10%)
+     0.15,   # Rain: moderate (+15%)
+     0.25,   # Rain: heavy (+25%)
+     0.35,   # Freezing rain: light (+35%)
+     0.50,   # Freezing rain: heavy (+50%)
+     0.20,   # Snow fall: slight (+20%)
+     0.30,   # Snow fall: moderate (+30%)
+     0.45,   # Snow fall: heavy (+45%)
+     0.25,   # Snow grains (+25%)
+     0.12,   # Rain showers: slight (+12%)
+     0.20,   # Rain showers: moderate (+20%)
+     0.35,   # Rain showers: violent (+35%)
+     0.30,   # Snow showers: slight (+30%)
+     0.50,   # Snow showers: heavy (+50%)
+     0.40,   # Thunderstorm (+40%)
+     0.60,   # Thunderstorm w/ slight hail (+60%)
+     0.80    # Thunderstorm w/ heavy hail (+80%)
 ),
   
 equipment_wear_factor = c(
-1.0,   # Clear sky
-1.02,  # Mainly clear (+2%)
-1.05,  # Partly cloudy (+5%)
-1.07,  # Overcast (+7%)
-1.15,  # Fog (+15%)
-1.20,  # Rime fog (+20%)
-1.10,  # Drizzle: light (+10%)
-1.12,  # Drizzle: moderate (+12%)
-1.18,  # Drizzle: dense (+18%)
-1.25,  # Freezing drizzle: light (+25%)
-1.40,  # Freezing drizzle: dense (+40%)
-1.12,  # Rain: slight (+12%)
-1.15,  # Rain: moderate (+15%)
-1.25,  # Rain: heavy (+25%)
-1.35,  # Freezing rain: light (+35%)
-1.50,  # Freezing rain: heavy (+50%)
-1.20,  # Snow fall: slight (+20%)
-1.30,  # Snow fall: moderate (+30%)
-1.45,  # Snow fall: heavy (+45%)
-1.25,  # Snow grains (+25%)
-1.10,  # Rain showers: slight (+10%)
-1.15,  # Rain showers: moderate (+15%)
-1.30,  # Rain showers: violent (+30%)
-1.25,  # Snow showers: slight (+25%)
-1.45,  # Snow showers: heavy (+45%)
-1.35,  # Thunderstorm (+35%)
-1.60,  # Thunderstorm w/ slight hail (+60%)
-2.0    # Thunderstorm w/ heavy hail (+100%)
+     1.0,   # Clear sky
+     1.02,  # Mainly clear (+2%)
+     1.05,  # Partly cloudy (+5%)
+     1.07,  # Overcast (+7%)
+     1.15,  # Fog (+15%)
+     1.20,  # Rime fog (+20%)
+     1.10,  # Drizzle: light (+10%)
+     1.12,  # Drizzle: moderate (+12%)
+     1.18,  # Drizzle: dense (+18%)
+     1.25,  # Freezing drizzle: light (+25%)
+     1.40,  # Freezing drizzle: dense (+40%)
+     1.12,  # Rain: slight (+12%)
+     1.15,  # Rain: moderate (+15%)
+     1.25,  # Rain: heavy (+25%)
+     1.35,  # Freezing rain: light (+35%)
+     1.50,  # Freezing rain: heavy (+50%)
+     1.20,  # Snow fall: slight (+20%)
+     1.30,  # Snow fall: moderate (+30%)
+     1.45,  # Snow fall: heavy (+45%)
+     1.25,  # Snow grains (+25%)
+     1.10,  # Rain showers: slight (+10%)
+     1.15,  # Rain showers: moderate (+15%)
+     1.30,  # Rain showers: violent (+30%)
+     1.25,  # Snow showers: slight (+25%)
+     1.45,  # Snow showers: heavy (+45%)
+     1.35,  # Thunderstorm (+35%)
+     1.60,  # Thunderstorm w/ slight hail (+60%)
+     2.0    # Thunderstorm w/ heavy hail (+100%)
 ),
   
 carbon_multiplier = c(
-1.00,  # Clear sky
-1.01,  # Mainly clear (+1%)
-1.03,  # Partly cloudy (+3%)
-1.05,  # Overcast (+5%)
-1.12,  # Fog (+12%)
-1.15,  # Rime fog (+15%)
-1.07,  # Drizzle: light (+7%)
-1.10,  # Drizzle: moderate (+10%)
-1.15,  # Drizzle: dense (+15%)
-1.22,  # Freezing drizzle: light (+22%)
-1.35,  # Freezing drizzle: dense (+35%)
-1.08,  # Rain: slight (+8%)
-1.12,  # Rain: moderate (+12%)
-1.20,  # Rain: heavy (+20%)
-1.28,  # Freezing rain: light (+28%)
-1.45,  # Freezing rain: heavy (+45%)
-1.15,  # Snow fall: slight (+15%)
-1.25,  # Snow fall: moderate (+25%)
-1.40,  # Snow fall: heavy (+40%)
-1.20,  # Snow grains (+20%)
-1.10,  # Rain showers: slight (+10%)
-1.15,  # Rain showers: moderate (+15%)
-1.30,  # Rain showers: violent (+30%)
-1.25,  # Snow showers: slight (+25%)
-1.40,  # Snow showers: heavy (+40%)
-1.35,  # Thunderstorm (+35%)
-1.55,  # Thunderstorm w/ slight hail (+55%)
-1.80   # Thunderstorm w/ heavy hail (+80%)
+     1.00,  # Clear sky
+     1.01,  # Mainly clear (+1%)
+     1.03,  # Partly cloudy (+3%)
+     1.05,  # Overcast (+5%)
+     1.12,  # Fog (+12%)
+     1.15,  # Rime fog (+15%)
+     1.07,  # Drizzle: light (+7%)
+     1.10,  # Drizzle: moderate (+10%)
+     1.15,  # Drizzle: dense (+15%)
+     1.22,  # Freezing drizzle: light (+22%)
+     1.35,  # Freezing drizzle: dense (+35%)
+     1.08,  # Rain: slight (+8%)
+     1.12,  # Rain: moderate (+12%)
+     1.20,  # Rain: heavy (+20%)
+     1.28,  # Freezing rain: light (+28%)
+     1.45,  # Freezing rain: heavy (+45%)
+     1.15,  # Snow fall: slight (+15%)
+     1.25,  # Snow fall: moderate (+25%)
+     1.40,  # Snow fall: heavy (+40%)
+     1.20,  # Snow grains (+20%)
+     1.10,  # Rain showers: slight (+10%)
+     1.15,  # Rain showers: moderate (+15%)
+     1.30,  # Rain showers: violent (+30%)
+     1.25,  # Snow showers: slight (+25%)
+     1.40,  # Snow showers: heavy (+40%)
+     1.35,  # Thunderstorm (+35%)
+     1.55,  # Thunderstorm w/ slight hail (+55%)
+     1.80   # Thunderstorm w/ heavy hail (+80%)
 ),
 
 # Bridge Weight Restrictions (FHWA Load Rating Manual)
@@ -792,34 +894,34 @@ border_delay_hours = c(
   
 # API Endpoints
 reroute_api = c(
-NA_character_,  # Clear sky
-NA_character_,  # Mainly clear
-"HERE Weather API v3",  # Partly cloudy
-"HERE Weather API v3",  # Overcast
-"FHWA ARCHIS Live",  # Fog
-"FHWA ARCHIS Live",  # Rime fog
-"Google Maps Directions",  # Drizzle
-"Google Maps Directions",  # Drizzle
-"Google Maps Directions",  # Drizzle
-"FMCSA SMS API",  # Freezing drizzle
-"FMCSA SMS API",  # Freezing drizzle
-"USDOT NTAD",  # Rain
-"USDOT NTAD",  # Rain
-"USDOT NTAD",  # Rain
-"FMCSA SMS API",  # Freezing rain
-"FMCSA SMS API",  # Freezing rain
-"FHWA RWIS",  # Snow
-"FHWA RWIS",  # Snow
-"FHWA RWIS",  # Snow
-"USGS Streamflow",  # Snow grains
-"NOAA NOWData",  # Rain showers
-"NOAA NOWData",  # Rain showers
-"USGS Flood Events",  # Rain showers violent
-"FHWA CCAP",  # Snow showers
-"FHWA CCAP",  # Snow showers
-"NWS CAP Alerts",  # Thunderstorm
-"NWS CAP Alerts",  # Thunderstorm hail
-"DHS HSIN"  # Severe hail
+     NA_character_,  # Clear sky
+     NA_character_,  # Mainly clear
+     "HERE Weather API v3",  # Partly cloudy
+     "HERE Weather API v3",  # Overcast
+     "FHWA ARCHIS Live",  # Fog
+     "FHWA ARCHIS Live",  # Rime fog
+     "Google Maps Directions",  # Drizzle
+     "Google Maps Directions",  # Drizzle
+     "Google Maps Directions",  # Drizzle
+     "FMCSA SMS API",  # Freezing drizzle
+     "FMCSA SMS API",  # Freezing drizzle
+     "USDOT NTAD",  # Rain
+     "USDOT NTAD",  # Rain
+     "USDOT NTAD",  # Rain
+     "FMCSA SMS API",  # Freezing rain
+     "FMCSA SMS API",  # Freezing rain
+     "FHWA RWIS",  # Snow
+     "FHWA RWIS",  # Snow
+     "FHWA RWIS",  # Snow
+     "USGS Streamflow",  # Snow grains
+     "NOAA NOWData",  # Rain showers
+     "NOAA NOWData",  # Rain showers
+     "USGS Flood Events",  # Rain showers violent
+     "FHWA CCAP",  # Snow showers
+     "FHWA CCAP",  # Snow showers
+     "NWS CAP Alerts",  # Thunderstorm
+     "NWS CAP Alerts",  # Thunderstorm hail
+     "DHS HSIN"  # Severe hail
 )
 
 )
@@ -827,66 +929,19 @@ NA_character_,  # Mainly clear
 create_enum_and_associate(
 duckdb_con, 
 "weather_code_enum", 
-"WeatherCodeDictionary",
+"weather_codes",
 code_frame
 )
 
 ```
 :::
 
-```{.r}
-# Real-Time API Integration Function
-get_reroute <- function(api_name, origin, destination, api_key) {
-  base_urls <- list(
-    "HERE Weather API v3" = "https://weather.ls.hereapi.com/weather/1.0/report.json",
-    "FHWA ARCHIS Live" = "https://ops.fhwa.dot.gov/archis/rest/api/v1/route",
-    "Google Maps Directions" = "https://maps.googleapis.com/maps/api/directions/json",
-    "FMCSA SMS API" = "https://mobile.fmcsa.dot.gov/qc/services/carriers/",
-    "USDOT NTAD" = "https://ntad-api.dot.gov/v1/route"
-  )
-  
-  if (!api_name %in% names(base_urls)) {
-    stop("API not configured")
-  }
-  
-  response <- GET(
-    url = base_urls[[api_name]],
-    query = list(
-      origin = paste(origin$lat, origin$lon, sep = ","),
-      destination = paste(destination$lat, destination$lon, sep = ","),
-      apikey = api_key
-    )
-  )
-  
-  if (http_status(response)$category == "Success") {
-    return(content(response))
-  } else {
-    warning("API request failed: ", http_status(response)$reason)
-    return(NULL)
-  }
-}
-
-# Sample Usage
-origin <- list(lat = 40.7128, lon = -74.0060)  # NYC
-destination <- list(lat = 34.0522, lon = -118.2437)  # LA
-
-# Get reroute during heavy snow
-reroute_data <- code_frame |>
-  filter(description == "Snow fall: heavy") |>
-  pull(reroute_api) |>
-  (\(x) get_reroute(x, origin, destination, Sys.getenv("DOT_API_KEY")))()
-
-```
-
-
-
-
 ::: code-fold-flex
 ```{r}
 #| label: "wcSetup"
 #| code-summary: "table setup"
 
-rTable <- tbl(duckdb_con, "WeatherCodeDictionary") |> collect()
+rTable <- tbl(duckdb_con, "weather_codes") |> collect()
 
 locations_list = colnames(rTable)
 
@@ -933,7 +988,7 @@ footnotes_df,
 source_note = md("**source**: World Meteorlogical Organization"),
 pal_df,
 multiline_feet = TRUE,
-table_font_size = pct(85),
+table_font_size = pct(70),
 target_everything = TRUE,
 color_by_columns = "risk_score",
 #row_name_col = "Model"
@@ -944,9 +999,8 @@ color_by_columns = "risk_score",
 
 @noaa_wmo_2025
 
-::::: {#codeTable}
-:::: skinny-tables
-::: table-flex
+:::: column-screen-inset
+::: {#weatherCodeTable}
 ```{r}
 #| label: "tbl-wc"
 #| echo: false
@@ -955,7 +1009,7 @@ color_by_columns = "risk_score",
 rTable |>
 opt_css(
 css = '
-#codeTable .gt_table_body td.gt_row {
+#weatherCodeTable .gt_table_body td.gt_row {
 box-shadow: -1px 0px 1px 0px rgba(255, 255, 255, 0.2) inset,
      1px 0px 1px 0px rgba(0, 0, 0, 0.2) inset;
 } 
@@ -966,7 +1020,6 @@ box-shadow: -1px 0px 1px 0px rgba(255, 255, 255, 0.2) inset,
 ```
 :::
 ::::
-:::::
 
 ::: code-fold-flex
 ```{sql}
@@ -1067,15 +1120,25 @@ Stages:
 
 -   **Categorical labeling** (visibility categories, enum mapping)
 
-![Transformation](pako_eNp1lOFvojAYxv-VpvviJegEBIRczI0i35ZcduYuObkPBV61WWlJqdmc-r-vgDq3nJCQtM_T5_e2pd3jQpaAI7zi8qXYUKXRIs4Eap-HH3tOc-ARyvATfUEJ1TTDFmo2tIYIlfkRDYczFC8HhAMVUHaOb_9Ow-NOJcvBQlHRrKSqvjpI50iWg5QJyj9rHyGj4ezwJLeivCe00QcU21d1LaCqQVG9VWB9z9X97KeCgtVMU82k6Lt-s4.svg){style="height: 50%" fig-align="center" width="336"}
+![Transformation](diagrams/pako_eNp1lOFvojAYxv-VpvviJegEBIRczI0i35ZcduYuObkPBV61WWlJqdmc-r-vgDq3nJCQtM_T5_e2pd3jQpaAI7zi8qXYUKXRIs4Eap-HH3tOc-ARyvATfUEJ1TTDFmo2tIYIlfkRDYczFC8HhAMVUHaOb_9Ow-NOJcvBQlHRrKSqvjpI50iWg5QJyj9rHyGj4ezwJLeivCe00QcU21d1LaCqQVG9VWB9z9X97KeCgtVMU82k6Lt-s4.svg){style="height: 50%" fig-align="center" width="336"}
 
 ### Dataset: Forecast, Next Day
 
 ::: p-1
-Creating a view for transformations is generally considered a safer approach and aligns with modern data engineering best practices. Views function as virtual tables that compute results on-the-fly, eliminating the need to store intermediate data and reducing the risk of corrupting the source data. By leveraging views, one can iteratively refine transformations without the need to rewrite tables, allowing for adjustments and improvements to the logic as required. This approach provides flexibility and helps the transformation process to remain adaptable to changing requirements.
-
-Furthermore, DuckDB optimizes queries against views by pushing down computations, which enhances performance and efficiency. Views also serve as self-documenting transformation pipelines, offering clarity and transparency into the decision logic. This makes it easier for others to understand, maintain, and collaborate on the data workflow. By adopting this method, one works towards ensuring a scalable, efficient, and transparent data processing system, supporting both current and future analytical needs.
+Views enhance transformation safety by acting as virtual tables, processing data dynamically without storing intermediates or risking source corruption. They enable iterative logic refinement, avoiding table rewrites. DuckDB optimizes view queries through computation pushdown, boosting efficiency. Self-documenting views clarify transformation logic, fostering collaboration and maintenance
 :::
+
+``` sql
+#| label: typeCastWeatherCode
+#| connection: duckdb_con
+
+CREATE OR REPLACE TABLE forecast_data AS
+SELECT 
+     *,
+     weather_code::INTEGER::TEXT AS weather_code
+FROM 
+     forecast_data;
+```
 
 ::: code-fold-flex
 ```{sql}
@@ -1096,7 +1159,7 @@ WITH cleaned_data AS (
     ROUND(showers::FLOAT, 3) AS showers,
     ROUND(snowfall::FLOAT, 3) AS snowfall,
     ROUND(snow_depth::FLOAT, 3) AS snow_depth,
-    weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
+    weather_code,
     ROUND(visibility::FLOAT, 1) AS visibility,
     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
     wind_direction_10m,
@@ -1161,9 +1224,10 @@ final_data AS (
       ELSE NULL
     END AS visibility_category,
     -- Date parts
-    strftime(date, '%d-%m-%Y') AS date_only,
+    strftime(date, '%Y-%m-%d') AS date_only,
     EXTRACT(YEAR FROM date) AS year,
     EXTRACT(MONTH FROM date) AS month,
+    EXTRACT(hour FROM date) AS hour,
     monthname(date)::month_name_enum AS month_name,
     strftime(date, '%b')::month_abb_enum AS month_abb,
     EXTRACT(DAY FROM date) AS day,
@@ -1224,6 +1288,7 @@ notes_list <-c(
   "Date without time",
   "Year extracted from the date.",
   "Month extracted from the date.",
+  "Hour extracted from the date.",
   "Name of the month.",
   "Abbreviated name of the month.",
   "Day extracted from the date.",
@@ -1259,8 +1324,8 @@ table_font_size = pct(70),
 ```
 :::
 
-::::: {#three}
-:::: large-tables
+::::: column-screen-inset
+:::: {#three}
 ::: table-flex
 ```{r}
 #| label: "tbl-viewOfForecast"
@@ -1307,13 +1372,13 @@ DROP VIEW transformed_forecast;
 ::: code-fold-flex
 ```{sql}
 #| connection: duckdb_con
-ANALYZE forecast_data;
+VACUUM forecast_data;
 ```
 :::
 
 ### Dataset: Historical, 1974-2024
 
-```{r}
+``` r
 #| label: "preValidationHistorical"
 #| code-summary: "Pre-Transformation Validation (Raw Data)"
 #| code-fold: true
@@ -1344,16 +1409,15 @@ raw_agent <- create_agent(tbl = raw_data,
      col_vals_gte(vars(precipitation), 0, na_pass = TRUE) |>
      
      # Add valid codes
-     col_vals_in_set(vars(weather_code), set = codes) |> 
+    # col_vals_in_set(vars(weather_code), set = codes) |> 
      
      col_vals_between(vars(wind_direction_10m), 0, 360, na_pass = TRUE) |>
      
      interrogate()
-
 ```
 
 ::: column-screen-inset
-```{r}
+``` r
 #| label: "outputRawAgent"
 #| echo: false
 raw_agent 
@@ -1370,79 +1434,80 @@ raw_agent
 -- Create or replace the view with modular CTEs and explicit column lists
 CREATE OR REPLACE VIEW transformed_historical AS
 WITH cleaned_data AS (
-  SELECT
-    date,
-    ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
-    ROUND(precipitation::FLOAT, 3) AS precipitation,
-    ROUND(rain::FLOAT, 3) AS rain,
-    ROUND(snowfall::FLOAT, 3) AS snowfall,
-    ROUND(snow_depth::FLOAT, 3) AS snow_depth,
-    weather_code::INTEGER::TEXT::weather_code_enum AS weather_code,
-    ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
-    wind_direction_10m,
-    latitude,
-    longitude
-  FROM historical_data
+SELECT
+     date::TIMESTAMP AS date,
+     ROUND(temperature_2m::FLOAT, 1) AS temperature_2m,
+     ROUND(precipitation::FLOAT, 3) AS precipitation,
+     ROUND(rain::FLOAT, 3) AS rain,
+     ROUND(snowfall::FLOAT, 3) AS snowfall,
+     ROUND(snow_depth::FLOAT, 3) AS snow_depth,
+     weather_code AS weather_code,
+     ROUND(wind_speed_10m::FLOAT, 2) AS wind_speed_10m,
+     wind_direction_10m AS wind_direction_10m,
+     latitude AS latitude,
+     longitude AS longitude
+FROM historical_data
 ),
 
 transformed_data AS (
-  SELECT
-    *,
-    -- Speed bin
-    CASE 
-      WHEN wind_speed_10m <= 2 THEN CAST('0-2' AS speed_bin_enum)
-      WHEN wind_speed_10m <= 4 THEN CAST('2-4' AS speed_bin_enum)
-      WHEN wind_speed_10m <= 6 THEN CAST('4-6' AS speed_bin_enum)
-      WHEN wind_speed_10m <= 8 THEN CAST('6-8' AS speed_bin_enum)
-      WHEN wind_speed_10m <= 10 THEN CAST('8-10' AS speed_bin_enum)
-      ELSE CAST('10+' AS speed_bin_enum)
-    END AS speed_bin,
-    -- Cardinal direction
-    CASE 
-      WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN CAST('N' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN CAST('NE' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN CAST('E' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN CAST('SE' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN CAST('S' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN CAST('SW' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN CAST('W' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN CAST('NW' AS cardinal_direction_enum)
-      WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN CAST('N' AS cardinal_direction_enum)
-      ELSE NULL
-    END AS wind_direction_cardinal,
-    -- 15-degree direction bin (numeric)
-    FLOOR((wind_direction_10m - 1e-9) / 15) * 15 AS direction_bin
-  FROM cleaned_data
+SELECT
+     *,
+-- Speed bin
+CASE 
+WHEN wind_speed_10m <= 2 THEN CAST('0-2' AS speed_bin_enum)
+WHEN wind_speed_10m <= 4 THEN CAST('2-4' AS speed_bin_enum)
+WHEN wind_speed_10m <= 6 THEN CAST('4-6' AS speed_bin_enum)
+WHEN wind_speed_10m <= 8 THEN CAST('6-8' AS speed_bin_enum)
+WHEN wind_speed_10m <= 10 THEN CAST('8-10' AS speed_bin_enum)
+ELSE CAST('10+' AS speed_bin_enum)
+END AS speed_bin,
+-- Cardinal direction
+CASE 
+WHEN wind_direction_10m BETWEEN 0 AND 22.5 THEN CAST('N' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 22.5 AND 67.5 THEN CAST('NE' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 67.5 AND 112.5 THEN CAST('E' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 112.5 AND 157.5 THEN CAST('SE' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 157.5 AND 202.5 THEN CAST('S' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 202.5 AND 247.5 THEN CAST('SW' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 247.5 AND 292.5 THEN CAST('W' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 292.5 AND 337.5 THEN CAST('NW' AS cardinal_direction_enum)
+WHEN wind_direction_10m BETWEEN 337.5 AND 360 THEN CAST('N' AS cardinal_direction_enum)
+ELSE NULL
+END AS wind_direction_cardinal,
+-- 15-degree direction bin (numeric)
+FLOOR((wind_direction_10m - 1e-9) / 15) * 15 AS direction_bin
+FROM cleaned_data
 ),
 
 final_data AS (
-  SELECT
-    *,
-    -- Direction angle
-    CASE
-      WHEN wind_direction_cardinal = 'N' THEN 0
-      WHEN wind_direction_cardinal = 'NE' THEN 45
-      WHEN wind_direction_cardinal = 'E' THEN 90
-      WHEN wind_direction_cardinal = 'SE' THEN 135
-      WHEN wind_direction_cardinal = 'S' THEN 180
-      WHEN wind_direction_cardinal = 'SW' THEN 225
-      WHEN wind_direction_cardinal = 'W' THEN 270
-      WHEN wind_direction_cardinal = 'NW' THEN 315
-      ELSE NULL
-    END AS direction_angle,
-    -- Date parts
-   strftime(date, '%d-%m-%Y') AS date_only,
-    EXTRACT(YEAR FROM date) AS year,
-    EXTRACT(MONTH FROM date) AS month,
-    monthname(date)::month_name_enum AS month_name,
-    strftime(date, '%b')::month_abb_enum AS month_abb,
-    EXTRACT(DAY FROM date) AS day,
-    dayname(date)::weekday_name_enum AS weekday_name,
-    strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
-    strftime(date, '%b %d') AS month_day,
-    strftime(date, '%H:%M:%S') AS time_only,
-    strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
-  FROM transformed_data
+SELECT
+     *,
+     -- Direction angle
+     CASE
+          WHEN wind_direction_cardinal = 'N' THEN 0
+          WHEN wind_direction_cardinal = 'NE' THEN 45
+          WHEN wind_direction_cardinal = 'E' THEN 90
+          WHEN wind_direction_cardinal = 'SE' THEN 135
+          WHEN wind_direction_cardinal = 'S' THEN 180
+          WHEN wind_direction_cardinal = 'SW' THEN 225
+          WHEN wind_direction_cardinal = 'W' THEN 270
+          WHEN wind_direction_cardinal = 'NW' THEN 315
+     ELSE NULL
+     END AS direction_angle,
+-- Date parts
+strftime(date, '%m-%d-%Y') AS date_only,
+EXTRACT(YEAR FROM date) AS year,
+EXTRACT(MONTH FROM date) AS month,
+EXTRACT(hour FROM date) AS hour,
+monthname(date)::month_name_enum AS month_name,
+strftime(date, '%b')::month_abb_enum AS month_abb,
+EXTRACT(DAY FROM date) AS day,
+dayname(date)::weekday_name_enum AS weekday_name,
+strftime(date, '%a')::weekday_abb_enum AS weekday_abb,
+strftime(date, '%b %d') AS month_day,
+strftime(date, '%H:%M:%S') AS time_only,
+strptime('1970-01-01 ' || strftime(date, '%H:%M:%S'), '%Y-%m-%d %H:%M:%S') AS common_date
+FROM transformed_data
 )
 
 -- Final output
@@ -1450,7 +1515,7 @@ SELECT * FROM final_data;
 ```
 :::
 
-```{r}
+``` r
 #| label: "postTransformHistorical"
 #| code-summary: "Post-Transformation Validation"
 #| code-fold: true
@@ -1547,7 +1612,7 @@ trans_agent <- create_agent(
 ```
 
 ::: column-screen-inset
-```{r}
+``` r
 #| label: "transAgent"
 #| echo: false
 trans_agent
@@ -1578,32 +1643,33 @@ dplyr::mutate(
 locations_list = colnames(r_df)
 
 notes_list <- c(
-"Date of the recorded data.",
-"Temperature at 2 meters above ground.",
-"Amount of precipitation.",
-"Amount of rain.",
-"Amount of snowfall.",
-"Depth of snow.",
-"Code representing the weather condition.",
-"Wind speed at 10 meters above ground.",
-"Wind direction at 10 meters above ground.",
-"Vertical location coordinate.",
-"Horizontal location coordinate.",
-"Binned categories for wind speed.",
-"Cardinal direction of the wind.",
-"Binned categories for wind direction.",
-"Numeric angle representing wind direction.",
-"Date without time",
-"Year extracted from the date.",
-"Month extracted from the date.",
-"Name of the month.",
-"Abbreviated name of the month.",
-"Day extracted from the date.",
-"Name of the weekday.",
-"Abbreviated name of the weekday.",
-"Combined month and day.",
-"Time extracted from the date.",
-"Common date format for time-based analysis."
+     "Date of the recorded data.",
+     "Temperature at 2 meters above ground.",
+     "Amount of precipitation.",
+     "Amount of rain.",
+     "Amount of snowfall.",
+     "Depth of snow.",
+     "Code representing the weather condition.",
+     "Wind speed at 10 meters above ground.",
+     "Wind direction at 10 meters above ground.",
+     "Vertical location coordinate.",
+     "Horizontal location coordinate.",
+     "Cardinal direction of the wind.",
+     "Binned categories for wind speed.",
+     "Binned categories for direction angle.",
+     "Numeric angle representing wind direction.",
+     "Date without time",
+     "Year extracted from the date.",
+     "Month extracted from the date.",
+     "Hour extracted from the date.",
+     "Name of the month.",
+     "Abbreviated name of the month.",
+     "Day extracted from the date.",
+     "Name of the weekday.",
+     "Abbreviated name of the weekday.",
+     "Combined month and day.",
+     "Time extracted from the date.",
+     "Common date format for time-based analysis."
 )
 
 footnotes_df <- tibble(
@@ -1631,13 +1697,12 @@ table_font_size = pct(70),
 ```
 :::
 
-::::: {#four}
-:::: large-tables
+::::: column-screen-inset
+:::: {#four}
 ::: table-flex
 ```{r}
 #| label: "tbl-viewOfHistorical"
 #| echo: false
-#| column: screen-inset
 rTable |>
 opt_css(
 css = '
@@ -1675,36 +1740,429 @@ DROP VIEW transformed_historical;
 #| connection: duckdb_con
 #| label: "analyzeHistoricalTable"
 #| code-summary: Refresh database statistics for the query planner
-ANALYZE historical_data;
+VACUUM historical_data;
 ```
 :::
 
+## Weather Code Stats
 
-## Stats
-
-```{sql}
-#| connection: duckdb_con
-#| output.var: list_of_db_tables
-#| label: createListOfTables
-SHOW ALL TABLES;
-```
-
+### Forecast
 
 ```{sql}
+#| label: installLoadSpatial
+#| code-summary: Install and load DuckDB's spatial library.
 #| connection: duckdb_con
-#| output.var: describe_table
-#| label: describeTable
-SHOW forecast_data;
+INSTALL spatial; LOAD spatial;
 ```
 
 ```{sql}
+#| label: statsTransformation
+#| code-summary: Contextualize weather data by linking codes to actionable insights using in-database processing.
 #| connection: duckdb_con
-#| output.var: summarize_table
-#| label: summarizeTable
-SUMMARIZE forecast_data;
+#| output.var: exampleOutput
+WITH routes AS (
+  SELECT * FROM (
+    VALUES
+    (101, 38.748, -90.439, 40.7128, -74.0060, 280),
+    (102, 40.7128, -74.0060, 34.0522, -118.2437, 220)
+  ) AS t(route_id, start_lat, start_lon, end_lat, end_lon, distance_miles)
+),
+
+route_geometries AS (
+  SELECT
+    route_id,
+    distance_miles,
+    ST_MakeLine(
+      ST_Point(start_lon, start_lat),
+      ST_Point(end_lon, end_lat)
+    ) AS route_line
+  FROM routes
+),
+
+enhanced_forecast AS (
+  SELECT
+    *,
+    ST_Point(longitude, latitude) AS forecast_point
+  FROM forecast_data
+),
+
+route_weather_join AS (
+  SELECT
+    rg.route_id,
+    rg.distance_miles,
+    wc.*,
+    ST_Distance(rg.route_line, ef.forecast_point) AS distance_from_route
+  FROM route_geometries rg
+  JOIN enhanced_forecast ef
+    ON ST_Intersects(ST_Buffer(rg.route_line, 0.1), ef.forecast_point)
+  JOIN weather_codes wc USING (weather_code)
+)
+
+SELECT
+  route_id,
+  MAX(severity) AS max_severity,
+  SUM(risk_score) AS total_risk,
+  AVG(fuel_multiplier) * distance_miles AS projected_fuel,
+  SUM(risk_score * distance_miles / (60 * 10)) AS total_delay,
+  COUNT(*) AS weather_points_impacted
+FROM route_weather_join
+GROUP BY route_id, distance_miles
+ORDER BY route_id ASC;
 ```
 
+SUM(route_delay_factor \* distance_miles / 60) + SUM(border_delay_hours) AS total_delay,
 
+```{r}
+#| label: "statsTransformTableSetup"
+#| code-summary: "table setup"
+#| warning: false
+
+locations_list = colnames(exampleOutput)
+
+notes_list <- c(
+  "Unique identifier for the transportation route",
+  "Highest severity level of weather impacts along the route (Low/Moderate/High/Critical)",
+  "Sum of all risk scores from weather events affecting the route",
+  "Estimated total fuel consumption adjusted for weather multipliers",
+  "Cumulative delay time (hours) due to weather-related speed reductions",
+  "Number of geographic points along the route affected by adverse weather"
+)
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list)
+
+pal_df <- tibble(
+  cols = locations_list
+#  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
+)
+
+rTable <- r_table_theming(
+exampleOutput,
+title = "Experimental Route Attributes",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**: "),
+pal_df,
+multiline_feet = TRUE,
+table_font_size = pct(95),
+target_everything = TRUE,
+#row_name_col = "route_id",
+)
+     
+```
+
+::::: {#statsExample}
+:::: medium-large-tables
+::: table-flex
+```{r}
+#| label: "tbl-statsExample"
+#| warning: false
+#| echo: false
+
+rTable |>
+opt_css(
+css = '
+#statsExample .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+```
+:::
+::::
+:::::
+
+### Spatial Representation
+
+**Convert coordinates into geometric objects:**
+
+::: {.p-1 style="font-size: 115%; text-align: center"}
+$\color{yellow}{Routes\to LineStrings}$
+
+$\color{yellow}{Forecast\ Points\to Points}$ $\color{gray}{\text{where:}}$ $\color{yellow}{LineString\small_R\normalsize=ST\_MakeLine(ST\_Point(start),\ ST\_Point(end))}$ $\color{yellow}{Point(F)=ST\_Point(longitude,\ latitude)}$
+:::
+
+${\textbf{R}}$ - Route definition (tuple of start/end coordinates)
+
+${\textbf{LineString(R)}}$ - Linear geometry connecting route endpoints, generated by: $\color{gray}{ST\_MakeLine(ST\_Point(start_{Lon},\ start_{Lat}),\ ST\_Point(end_{Lon},\ end_{Lat}))}$
+
+${\textbf{F}}$ - Raw forecast data point (from API)
+
+${\textbf{Point(F)}}$ - Geometric point representing weather observation, generated by: $\color{gray}{\ ST\_Point(longitude,\ latitude))}$
+
+${\textbf{start, end}}$ - Route endpoints (latitude/longitude pairs)
+
+${\textbf{ST\_Point}}$ - DuckDB function converting coordinates to points
+
+${\textbf{ST\_MakeLine}}$ - DuckDB function creating route lines
+
+### Risk Aggregation
+
+**Summarize impacts per route:**
+
+::: {.p-1 style="font-size: 110%; text-align: center"}
+$\color{yellow}{Total\ Risk_R=\sum{risk\_score}^{}}$
+:::
+
+::: {.p-1 style="font-size: 110%; text-align: center"}
+$\color{yellow}{Max\ Severity\small_R\normalsize=max(severity)}$
+:::
+
+::: {.p-1 style="font-size: 110%; text-align: center"}
+$\color{yellow}{Fuel\ Impact_R=distance\ \times \ \overline{fuel\_multiplier}}$
+:::
+
+::: {.p-1 style="font-size: 110%; text-align: center"}
+$\color{yellow}{Delay\small_R\normalsize=\left(\frac{distance}{60}\ \times\ route\_delay\right)\ +\ border\_delays}$
+:::
+
+${\textbf{R}}$ - Route definition (tuple of start/end coordinates)
+
+### Spatial Filtering
+
+**Identify weather impacts along routes:**
+
+:::: column-page
+::: {.p-1 style="font-size: 110%; text-align: center"}
+$\color{yellow}{Impacted\ Points=\{F\ |\ ST\_Intersects(ST\_Buffer(LineString(R),\ Point(F))\}}$
+:::
+::::
+
+${\textbf{F}}$ - Weather forecast points
+
+${\textbf{R}}$ - Route geometry
+
+${\textbf{ST\_Buffer}}$ - Expands route line by 0.1 degr. (\~11 km at equator)
+
+### Simplified Pipeline
+
+:::: column-page-right
+::: {.p-1 style="font-size: 115%; text-align: center"}
+$$
+\color{yellow}{Raw\ Forecast\overset{Spatialize}{\longrightarrow}Points\overset{Intersect\ Routes}{\longrightarrow}Filtered\ Data\overset{Aggregate}{\longrightarrow}Risk\ Metrics}
+$$
+:::
+::::
+
+The workflow transforms raw coordinates into actionable route risk profiles using spatial relationships and weighted averages.
+
+## Historical EDA
+
+### Parameterized SQL Aggregation Function Examples
+
+::: code-fold-flex
+```{r}
+#| label: "fullyParameterized"
+#| code-summary: "Full parameterization using a glue_sql template"
+
+glue_sql_mean <- function(con,
+                     group_cols,
+                     transformation_col,
+                     metric_col,
+                     from_tbl) {
+     # Create parameterized query with glue_sql
+     query <- glue::glue_sql("
+     SELECT
+          {`group_cols`*}
+          ,AVG({`transformation_col`}) AS {`metric_col`}
+     FROM {`from_tbl`}
+     GROUP BY {`group_cols`*}
+     ORDER BY {`group_cols`*}
+     ", .con = con)
+     return(dbGetQuery(con, query))
+}
+
+glue_sql_sum <- function(con,
+                     group_cols,
+                     transformation_col,
+                     metric_col,
+                     from_tbl) {
+     # Create parameterized query with glue_sql
+     query <- glue::glue_sql("
+     SELECT
+          {`group_cols`*}
+          ,SUM({`transformation_col`}) AS {`metric_col`}
+     FROM {`from_tbl`}
+     GROUP BY {`group_cols`*}
+     ORDER BY {`group_cols`*}
+     ", .con = con)
+     return(dbGetQuery(con, query))
+}
+
+glue_sql_count <- function(con,
+                     group_cols,
+                     transformation_col,
+                     metric_col,
+                     from_tbl) {
+     # Create parameterized query with glue_sql
+     query <- glue::glue_sql("
+     SELECT
+          {`group_cols`*}
+          ,COUNT({`transformation_col`}) AS {`metric_col`}
+     FROM {`from_tbl`}
+     GROUP BY {`group_cols`*}
+     ORDER BY {`group_cols`*}
+     ", .con = con)
+     return(dbGetQuery(con, query))
+}
+
+```
+:::
+
+::: code-fold-flex
+```{r}
+
+# Define parameters
+group_cols <- c("year", "month")
+transformation_col <- "temperature_2m"
+metric_col <- "avg_temp"
+from_tbl <- "historical_data"
+
+mean_data <- glue_sql_mean(
+     duckdb_con, 
+     group_cols, 
+     transformation_col, 
+     metric_col, 
+     from_tbl
+     )
+
+# Define parameters
+transformation_col <- "rain"
+metric_col <- "sum_rain"
+
+sum_data <- glue_sql_sum(
+     duckdb_con, 
+     group_cols, 
+     transformation_col, 
+     metric_col, 
+     from_tbl
+     )
+
+transformation_col <- "weekday_name"
+metric_col <- "count_weekdays"
+group_cols <- c("year", "month", "weekday_abb")
+
+count_data <- glue_sql_count(
+     duckdb_con, 
+     group_cols, 
+     transformation_col, 
+     metric_col, 
+     from_tbl
+)
+
+```
+:::
+
+### Test A Correlation Visual
+
+::: code-fold-flex
+```{r}
+#| label: "matrixCorrelationSetup"
+library(GGally)
+
+# Define parameters
+group_cols <- c("year", "month")
+transformation_col <- "temperature_2m"
+metric_col <- "avg_temp"
+from_tbl <- "historical_data"
+
+query_data <- glue_sql_mean(
+     duckdb_con, 
+     group_cols, 
+     transformation_col, 
+     metric_col, 
+     from_tbl
+)
+
+pm <- ggpairs(
+query_data, 
+columns = c("year", "month", "avg_temp"), 
+columnLabels = c("Year", "Month", "Mean Temp"),
+ggplot2::aes(color = as.factor(month), alpha = 0.5)
+)
+
+```
+:::
+
+::: column-page-right
+```{r}
+#| warning: false
+#| label: "fig-monthYearTemp"
+#| out-width: 100%
+pm + ggplot_theming()  # Apply custom theme
+```
+:::
+
+::: code-fold-flex
+```{r}
+library(corrplot)
+
+# Subset temperature-related numerical variables
+temp_vars <- tbl(duckdb_con, "historical_data") |> 
+     select(latitude, temperature_2m, year, snowfall, snow_depth) |>
+     collect() # |>
+     #glimpse()
+
+# Calculate correlation matrix (Pearson)
+cor_matrix_temp <- cor(temp_vars, use = "complete.obs", method = "pearson")
+
+```
+:::
+
+```{r}
+#| label: "fig-corMatrixTemp"
+cor_matrix_temp
+```
+
+```{r}
+# Visualize with corrplot
+corrplot(cor_matrix_temp, method = "number", type = "upper", tl.cex = 0.7)
+```
+
+ANOVA for cateogorical (e.g., weather_code) to continuous data (e.g., temperature, precipitation)
+
+::: code-fold-flex
+```{r}
+# Example: Weather code vs temperature
+temp_weather_code <- tbl(duckdb_con, "historical_data") |> 
+     select(temperature_2m, weather_code) |>
+     dplyr::collect() 
+
+anova_temp <-aov(temperature_2m ~ weather_code, data = temp_weather_code)
+
+summary(anova_temp)
+```
+:::
+
+::: code-fold-flex
+```{r}
+# Boxplot visualization
+ggplot(temp_weather_code, aes(x = as.factor(weather_code), y = temperature_2m)) +
+     geom_boxplot() +
+     labs(title = "Temperature by Weather Code")
+```
+:::
+
+::: code-fold-flex
+```{r}
+#| lable: corTest
+#| code-summary: "figure setup"
+
+# Subset precipitation variables
+precip_vars <- tbl(duckdb_con, "historical_data") |> 
+     select(precipitation, rain, snowfall, snow_depth, weather_code) |>
+     dplyr::collect()
+
+# Use Spearman for non-normal distributions
+cor_matrix_precip <- cor(precip_vars, use = "complete.obs", method = "spearman")
+```
+:::
+
+```{r}
+#| label: "fig-corPrecip"
+corrplot(cor_matrix_precip, method = "color", type = "upper")
+```
 
 ## Forecast Plot Testing
 
@@ -1723,7 +2181,6 @@ fileList <-list.files(base_path, pattern = "^wind_rose")
 ```
 :::
 
-:::: flex-container
 ::: {#fig-weather layout="[[1,1,1], [1,1], [1, 1, 1]]" fig-cap="These are the grouped figures."}
 ```{r}
 #| label: "fig-weather_codes"
@@ -1812,7 +2269,6 @@ display_a_plot(paste0(base_path, fileList[1]))
 if(!is.na(fileList[2]) == TRUE) {
      display_a_plot(paste0(base_path, fileList[2]))
 }
-
 ```
 
 ```{r}
@@ -1828,126 +2284,6 @@ if(!is.na(fileList[2]) == TRUE) {
 if(!is.na(fileList[3])) {
      display_a_plot(paste0(base_path, fileList[3]))
 }
-```
-:::
-::::
-
-::: code-fold-flex
-```{r}
-#| label: "osrm"
-#| code-summary: "Creates a linestring object for the map."
-#| message: false
-#| eval: false
-#| include: false
-#| echo: false
-
-# R example (osmdata)
-library(osmdata)
-library(osrm)
-library(sf)
-library(FedData)
-library(terra)
-library(leaflet)
-
-# stl regional freightway to walmart distribution center
-route <- osrmRoute(
-src = c(-90.189781, 38.627480), 
-dst = c(-91.634422, 38.002338)
-)
-
-# write_sf(route, "route.geojson")  # Save for DuckDB?
-```
-:::
-
-::: code-fold-flex
-```{r}
-#| label: "getSpatRaster"
-#| code-summary: "Topological map data is retrieved, creating a SpatRaster object."
-#| message: false
-#| eval: false
-#| include: false
-#| echo: false
-
-
-# Define the bounding box (min_lon, min_lat, max_lon, max_lat)
-bbox <- st_bbox(
-c(
-xmin = -90.189781, 
-ymin = 38.627480, 
-xmax = -91.634422, 
-ymax = 38.002338), 
-crs = 4326)
-
-# Convert to an sf polygon
-route_area <- st_as_sfc(bbox)
-
-route_area <- st_transform(route_area, 4326)
-
-dem <- get_ned(template = route_area, label = "route_dem")
-```
-:::
-
-::: {#fig-topography layout="[[1],[2],[3]]" fig-cap="Map figures"}
-```{r}
-#| label: "fig-route"
-#| lightbox: 
-#|   group: topograhy
-#|   description: "Geometric route without map background." 
-#| fig-cap: "Geometric route"
-#| warning: false
-#| error: false
-#| eval: false
-#| include: false
-#| echo: false
-
-plot(st_geometry(route))
-```
-
-```{r}
-#| label: "fig-topo"
-#| lightbox: 
-#|   group: topograhy
-#|   description: "Topological data" 
-#| fig-cap: "Topological plot without route"
-#| warning: false
-#| error: false
-#| eval: false
-#| include: false
-#| echo: false
-
-plet(
-dem, 
-tiles = "OpenTopoMap", 
-main = "Topographical\nElevation\n(DEM)"
-)
-```
-
-```{r}
-#| label: "fig-topoRoute"
-#| lightbox: 
-#|   group: topograhy
-#|   description: "Route mapped to topological data" 
-#| fig-cap: "Topological plot with route"
-#| warning: false
-#| error: false
-#| out-width: 100%
-#| column: screen
-#| eval: false
-#| include: false
-#| echo: false
-
-
-plet(
-dem, 
-tiles = "OpenTopoMap", 
-main = "Topographical\nElevation\n(DEM)") |>
-addPolylines(
-data = route, 
-color = "oldlace", 
-weight = 2, 
-opacity = 0.8
-)
-     
 ```
 :::
 
