@@ -29,7 +29,7 @@
 #' print(result)
 #' }
 #' @export
-create_enum_and_associate <- function(duckdb_con, enum_name, table_name, codes, descriptions) {
+create_enum_and_associate <- function(duckdb_con, enum_name, table_name, code_frame) {
      
      # Attempt to drop the ENUM type if it exists
      drop_query <- paste0("DROP TYPE IF EXISTS ", enum_name, ";")
@@ -45,7 +45,7 @@ create_enum_and_associate <- function(duckdb_con, enum_name, table_name, codes, 
      enum_query <- paste0(
           "CREATE TYPE ", enum_name, " AS ENUM (",
           paste0(
-               "'", codes, "'", collapse = ", "), ");"
+               "'", code_frame$code, "'", collapse = ", "), ");"
           )
      
      dbExecute(duckdb_con, enum_query)
@@ -55,11 +55,7 @@ create_enum_and_associate <- function(duckdb_con, enum_name, table_name, codes, 
      dbWriteTable(
           duckdb_con,
           table_name,
-          data.frame(
-               Code = codes,
-               Description = descriptions,
-               stringsAsFactors = TRUE
-          ),
+          code_frame,
           overwrite = TRUE
      )
 }

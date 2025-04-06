@@ -1,0 +1,31 @@
+column_name,column_type,null,key,default,extra
+date,TIMESTAMP,YES,NA,NA,NA
+temperature_2m,FLOAT,YES,NA,NA,NA
+precipitation_probability,DOUBLE,YES,NA,NA,NA
+precipitation,FLOAT,YES,NA,NA,NA
+rain,FLOAT,YES,NA,NA,NA
+showers,FLOAT,YES,NA,NA,NA
+snowfall,FLOAT,YES,NA,NA,NA
+snow_depth,FLOAT,YES,NA,NA,NA
+weather_code,DOUBLE,YES,NA,NA,NA
+visibility,FLOAT,YES,NA,NA,NA
+wind_speed_10m,FLOAT,YES,NA,NA,NA
+wind_direction_10m,DOUBLE,YES,NA,NA,NA
+latitude,DOUBLE,YES,NA,NA,NA
+longitude,DOUBLE,YES,NA,NA,NA
+speed_bin,"ENUM('0-2', '2-4', '4-6', '6-8', '8-10', '10+')",YES,NA,NA,NA
+wind_direction_cardinal,VARCHAR,YES,NA,NA,NA
+direction_bin,DOUBLE,YES,NA,NA,NA
+direction_angle,INTEGER,YES,NA,NA,NA
+visibility_category,VARCHAR,YES,NA,NA,NA
+date_only,VARCHAR,YES,NA,NA,NA
+year,BIGINT,YES,NA,NA,NA
+month,BIGINT,YES,NA,NA,NA
+month_name,"ENUM('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')",YES,NA,NA,NA
+month_abb,"ENUM('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')",YES,NA,NA,NA
+day,BIGINT,YES,NA,NA,NA
+weekday_name,"ENUM('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')",YES,NA,NA,NA
+weekday_abb,"ENUM('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')",YES,NA,NA,NA
+month_day,VARCHAR,YES,NA,NA,NA
+time_only,VARCHAR,YES,NA,NA,NA
+common_date,TIMESTAMP,YES,NA,NA,NA

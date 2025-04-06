@@ -7,21 +7,21 @@ $body-text-color: Ivory;
 
 p {
      color: $body-text-color;
-     font-size: clamp(0.7rem, 1.5vw, 1.0rem);
+    // font-size: clamp(0.7rem, 1.5vw, 1.0rem);
 }
 
 
 li {
-     font-size: clamp(0.7rem, 1.5vw, 1.0rem);
+   //  font-size: clamp(0.7rem, 1.5vw, 1.0rem);
 }
 
 
 .csl-entry {
-     font-size: clamp(0.7rem, 1.25vw, 0.9rem);
+//     font-size: clamp(0.7rem, 1.25vw, 0.9rem);
 }
 
 .quarto-float-caption {
-     font-size: clamp(0.7rem, 1.25vw, 1.0rem);
+  //   font-size: clamp(0.7rem, 1.25vw, 1.0rem);
 }
 
 .flex-container {

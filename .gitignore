@@ -9,3 +9,4 @@ about*
 unusedCode.qmd
 plots.R
 project_ideas.qmd
+data/historical_weather/*/**

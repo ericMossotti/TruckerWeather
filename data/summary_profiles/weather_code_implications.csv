@@ -1,0 +1,29 @@
+weather_code,description,implication,risk_score,dot_compliance,severity,insurance_surcharge,fuel_multiplier,route_delay_factor,safety_inspections,driver_wage_premium,equipment_wear_factor,carbon_multiplier,bridge_weight_limit,toll_multiplier,border_delay_hours,reroute_api
+0,Clear sky,Normal operations - No restrictions,0.1,§392.14(a),Low,0,1,1,Pre-trip only,0,1,1,1,1,0,NA
+1,Mainly clear,Normal operations - Increased vigilance,0.15,§392.14(a),Low,0,1,1,Pre-trip + mid-trip visual,0,1.02,1.01,1,1,0,NA
+2,Partly cloudy,Normal operations - Monitor weather updates,0.2,§392.14(a),Low,0.05,1.03,1.1,Pre-trip + brake check,0.05,1.05,1.03,0.98,1.05,0.5,HERE Weather API v3
+3,Overcast,Reduced visibility - Maintain safe following distance,0.25,§392.14(b),Low,0.07,1.05,1.2,Pre-trip + hourly tire checks,0.07,1.07,1.05,0.95,1.07,0.7,HERE Weather API v3
+45,Fog,Speed reduction required - Fog lights mandatory,0.4,§392.14(b)+§393.75(c),Moderate,0.1,1.12,1.5,Pre-trip + fog light checks,0.15,1.15,1.12,0.9,1.15,1.2,FHWA ARCHIS Live
+48,Depositing rime fog,Speed reduction required - Extreme caution,0.5,§392.14(c),Moderate,0.15,1.15,1.8,Pre-trip + 30-min interval checks,0.2,1.2,1.15,0.85,1.25,2,FHWA ARCHIS Live
+51,Drizzle: light,Potential minor delays - Road surface slickness,0.3,§392.71(a),Low,0.08,1.07,1.3,Pre-trip + 2hr brake tests,0.1,1.1,1.07,0.92,1.1,0.8,Google Maps Directions
+53,Drizzle: moderate,Speed restrictions - 15% reduction recommended,0.35,§392.71(b),Moderate,0.12,1.1,1.6,Pre-trip + 1hr brake tests,0.12,1.12,1.1,0.88,1.15,1.1,Google Maps Directions
+55,Drizzle: dense,Mandatory speed reduction - 25%+,0.45,§392.71(c),Moderate,0.18,1.15,2,Pre-trip + 30min brake tests,0.18,1.18,1.15,0.82,1.22,1.8,Google Maps Directions
+56,Freezing drizzle: light,Chain requirement - Level 1 traction advisory,0.55,§392.16(a),High,0.25,1.25,2.5,Pre-trip + axle temp monitoring,0.25,1.25,1.22,0.75,1.35,2.5,FMCSA SMS API
+57,Freezing drizzle: dense,Road closure likely - Avoid non-essential travel,0.8,§392.16(c),Critical,0.4,1.4,4,Continuous monitoring required,0.4,1.4,1.35,0.6,2,6,FMCSA SMS API
+61,Rain: slight,Increased stopping distance - 10% speed reduction,0.3,§392.71(a),Low,0.1,1.08,1.4,Pre-trip + wiper checks,0.1,1.12,1.08,0.93,1.12,0.9,USDOT NTAD
+63,Rain: moderate,15-20% speed reduction - Check tire tread,0.4,§392.71(b),Moderate,0.15,1.12,1.8,Pre-trip + 2hr wiper checks,0.15,1.15,1.12,0.87,1.18,1.3,USDOT NTAD
+65,Rain: heavy,25%+ speed reduction - Possible detour routing,0.6,§392.71(c),High,0.25,1.2,2.5,Pre-trip + 30min wiper checks,0.25,1.25,1.2,0.78,1.3,2.2,USDOT NTAD
+66,Freezing rain: light,Mandatory chains - Temperature monitoring,0.65,§392.16(b)+§393.95(d),High,0.35,1.3,3,Pre-trip + chain integrity checks,0.35,1.35,1.28,0.65,1.45,3.5,FMCSA SMS API
+67,Freezing rain: heavy,Road closure imminent - Immediate stop advised,0.85,§392.16(c),Critical,0.5,1.5,5,Roadside inspections mandatory,0.5,1.5,1.45,0.5,1.8,8,FMCSA SMS API
+71,Snow fall: slight,15% speed reduction - Traction control engaged,0.4,§392.14(b)+§393.95(a),Moderate,0.2,1.15,2,Pre-trip + tire chain prep,0.2,1.2,1.15,0.85,1.2,1.5,FHWA RWIS
+73,Snow fall: moderate,25% speed reduction - Chain requirement possible,0.6,§392.14(c)+§393.95(b),High,0.3,1.25,3,Pre-trip + hourly chain checks,0.3,1.3,1.25,0.72,1.35,2.8,FHWA RWIS
+75,Snow fall: heavy,Road closure likely - Abandon shipment staging,0.75,§392.16(c),Critical,0.45,1.4,4.5,Continuous chain monitoring,0.45,1.45,1.4,0.55,1.6,5,FHWA RWIS
+77,Snow grains,Speed restriction - Watch for black ice,0.5,§392.14(c),Moderate,0.25,1.2,2.5,Pre-trip + sanding required,0.25,1.25,1.2,0.8,1.25,1.7,USGS Streamflow
+80,Rain showers: slight,Increased following distance - 4-second rule,0.35,§392.14(b),Moderate,0.12,1.1,1.5,Pre-trip + drainage checks,0.12,1.1,1.1,0.91,1.13,1,NOAA NOWData
+81,Rain showers: moderate,20% speed reduction - Avoid lane changes,0.5,§392.14(c),Moderate,0.2,1.15,2,Pre-trip + undercarriage checks,0.2,1.15,1.15,0.86,1.2,1.5,NOAA NOWData
+82,Rain showers: violent,Immediate parking advised - Flash flood risk,0.7,§392.16(c),High,0.35,1.3,3.5,Abort trip + full inspection,0.35,1.3,1.3,0.6,1.7,4,USGS Flood Events
+85,Snow showers: slight,Chain requirement - Trailer brake check,0.6,§393.95(c),High,0.3,1.25,3,Pre-trip + plow attachment,0.3,1.25,1.25,0.7,1.4,2.5,FHWA CCAP
+86,Snow showers: heavy,Road closure protocol activated,0.8,§392.16(c),Critical,0.5,1.45,5,Roadside de-icing required,0.5,1.45,1.4,0.45,2.1,7,FHWA CCAP
+95,Thunderstorm: slight or moderate,Delay shipments - No open-top trailers,0.65,§392.14(d)+§393.75(e),High,0.4,1.35,3.5,Pre-trip + lightning protocol,0.4,1.35,1.35,0.68,1.55,3,NWS CAP Alerts
+96,Thunderstorm with slight hail,Immediate stop - Seek shelter,0.85,§392.16(c),Critical,0.6,1.6,6,Immediate shelter + inspection,0.6,1.6,1.55,0.4,2.3,9,NWS CAP Alerts
+99,Thunderstorm with heavy hail,Catastrophic risk - Emergency protocols,0.95,§392.16(e),Critical,0.8,2,10,Post-storm forensic inspection,0.8,2,1.8,0.3,3,12,DHS HSIN

@@ -6,6 +6,30 @@ project:
     - "!practice/"
     - "!unusedCode.qmd"
 
+#server:
+#  type: shiny
+
+#notebook-view:
+#  - notebook: pythonWorkflow.qmd
+#    title: "Python Workflow"
+   # url: notebooks/pythonWorkflow.qmd
+engine: knitr
+
+
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    #comments:
+#      hypothesis:
+#        theme: clean
+#        openSidebar: false
+    theme:
+       - darkly
+       - 'scss/main.scss'
+
+
 website:
   title: "TruckerWeather"
   #navbar:
@@ -14,20 +38,10 @@ website:
   ##      text: Home
    #   - about.qmd
 
-engine: knitr
 execute:
   freeze: auto
   
 layout: article
 editor: visual
 
-format:
-  html:
-    comments:
-      hypothesis:
-        theme: clean
-        openSidebar: false
-    theme:
-       - darkly
-       - 'scss/main.scss'
 

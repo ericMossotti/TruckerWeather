@@ -20,7 +20,9 @@ plot_temperature_trend <- function(con, freezing_threshold = 32) {
       common_date,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -109,7 +111,9 @@ plot_precipitation <- function(con) {
       common_date,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -196,7 +200,9 @@ plot_wind_rose <- function(con) {
       common_date,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -224,7 +230,9 @@ plot_wind_rose_ggplot <- function(con) {
          direction_angle,
          time_only,
          month_day
-       FROM forecast_data;
+       FROM forecast_data
+       WHERE
+         latitude = 38.748;
      "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -252,8 +260,8 @@ plot_wind_rose_ggplot <- function(con) {
                coord_polar(start = 2 * pi) +
                scale_x_continuous(
                     limits = c(0, 360),
-                    breaks = seq(0, 360, by = 45),
-                    labels = c('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N')  # Cardinal labels
+                    breaks = seq(22.5, 360, by = 22.5),
+                    labels = c(' ', 'NE', ' ', 'E', ' ', 'SE', ' ', 'S', ' ','SW', ' ', 'W', ' ', 'NW', ' ', 'N')  # Cardinal labels
                ) +
                scale_fill_paletteer_d('ggprism::viridis') +
                labs(
@@ -285,12 +293,11 @@ plot_wind_rose_ggplot <- function(con) {
                day_plot,
                #width = 24,
                #height = 20,
-               scale = 1.5
+               scale = 2
           )
      })
      
-     #message("Plots saved for each day.")
-}
+     }
 
 
 # Visibility geom_line ----
@@ -302,7 +309,9 @@ plot_visibility_line <- function(con) {
       common_date,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -342,7 +351,9 @@ plot_visibility_heat <- function(con) {
       time_only,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -391,7 +402,9 @@ plot_visibility_categorical_heat <- function(con) {
       time_only,
       month_day
     FROM
-      forecast_data;
+      forecast_data
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data
@@ -448,7 +461,9 @@ plot_weather_codes <- function(con) {
       fd.month_day
     FROM
       forecast_data fd
-    LEFT JOIN WeatherCodeDictionary wc ON wc.Code == fd.weather_code;
+    LEFT JOIN weather_codes wc ON wc.weather_code == fd.weather_code
+    WHERE
+      latitude = 38.748;
   "
      
      data <- execute_query(con, query)  # Execute the query and get the data

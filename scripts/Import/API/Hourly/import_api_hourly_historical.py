@@ -4,7 +4,11 @@ import pandas as pd
 import polars as pl
 from retry_requests import retry
 
-def import_api_hourly_historical(latitude: float, longitude: float) -> pl.DataFrame:
+def import_api_hourly_historical(
+     latitude: float, longitude: float, 
+     startDate: str, # e.g. "1974-01-01"
+     endDate: str # e.g. "2024-12-31"
+     ) -> pl.DataFrame:
      # Setup the Open-Meteo API client with cache and retry on error
      cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
      retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
@@ -14,10 +18,10 @@ def import_api_hourly_historical(latitude: float, longitude: float) -> pl.DataFr
      # The order of variables in hourly or daily is important to assign them correctly below
      url = "https://archive-api.open-meteo.com/v1/archive"
      params = {
-     	"latitude": 38.748,
-     	"longitude": -90.439,
-     	"start_date": "1974-01-01",
-     	"end_date": "2024-12-31",
+     	"latitude": latitude,
+     	"longitude": longitude,
+     	"start_date": startDate,
+     	"end_date": endDate,
      	"hourly": [
      	     "temperature_2m", 
      	     "precipitation", 
@@ -56,32 +60,23 @@ def import_api_hourly_historical(latitude: float, longitude: float) -> pl.DataFr
      hourly_wind_speed_10m = hourly.Variables(7).ValuesAsNumpy()
      hourly_wind_direction_10m = hourly.Variables(8).ValuesAsNumpy()
 
-
-     # Create a time range for the hourly data using Pandas (supports hourly intervals)
-     start_time = datetime.fromtimestamp(hourly.Time(), tz = timezone.utc)  # Start time of the data
-     end_time = datetime.fromtimestamp(hourly.TimeEnd(), tz = timezone.utc)  # End time of the data
-     interval = pd.Timedelta(seconds=hourly.Interval())  # Time interval between data points
+     hourly_data = {"date": pd.date_range(
+     	start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+     	end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+     	freq = pd.Timedelta(seconds = hourly.Interval()),
+     	inclusive = "left"
+     )}
      
-     # Generate the date range using Pandas
-     date_range = pd.date_range(
-          start = start_time,
-          end = end_time - interval,  # Subtract interval to match the API's inclusive="left" behavior
-          freq = interval
-     )
-
-
-     hourly_data = {
-     "date": date_range,
-     "temperature_2m": hourly_temperature_2m,
-     "precipitation": hourly_precipitation,
-     "rain": hourly_rain,
-    # "showers": hourly_showers,
-     "snowfall": hourly_snowfall,
-     "snow_depth": hourly_snow_depth,
-     "weather_code": hourly_weather_code,
-     "visibility": hourly_visibility,
-     "wind_speed_10m": hourly_wind_speed_10m,
-     "wind_direction_10m": hourly_wind_direction_10m
-     }
-
-     return pl.DataFrame(hourly_data)
+     hourly_data["latitude"] = latitude
+     hourly_data["longitude"] = longitude
+     hourly_data["temperature_2m"] = hourly_temperature_2m
+     hourly_data["precipitation"] = hourly_precipitation
+     hourly_data["rain"] = hourly_rain
+     hourly_data["snowfall"] = hourly_snowfall
+     hourly_data["snow_depth"] = hourly_snow_depth
+     hourly_data["visibility"] = hourly_visibility
+     hourly_data["weather_code"] = hourly_weather_code
+     hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+     hourly_data["wind_direction_10m"] = hourly_wind_direction_10m
+     
+     return(pd.DataFrame(data = hourly_data))

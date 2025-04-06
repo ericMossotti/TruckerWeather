@@ -1,0 +1,19 @@
+/*-- mermaid theme defaults --*/
+$mermaid-bg-color: #222 !default;
+$mermaid-fg-color: #222 !default;
+
+//$mermaid-fg-color--lightest: lighten($mermaid-fg-color, 15%) !default;
+//$mermaid-fg-color--lighter: lighten($mermaid-fg-color, 8%) !default;
+
+//$mermaid-label-fg-color: #E0E0E0 !default;
+$mermaid-label-bg-color: lighten($mermaid-bg-color, 5%) !default;
+
+//$mermaid-node-fg-color: #B0E0E6 !default;
+$mermaid-node-bg-color: lighten($mermaid-bg-color, 5%) !default;
+
+$mermaid-edge-color: #FF5722 !default;
+
+
+#mermaid-2 .edgeLabel p {
+     background-color: #444 !important;
+} 

@@ -1,7 +1,7 @@
 /*-- scss:code --*/
 
 // Classes
-
+/*
 .nutshell-bubble p code:not(.sourceCode), 
 .nutshell-bubble li code:not(.sourceCode),
 p code:not(.sourceCode),
@@ -10,6 +10,7 @@ td code:not(.sourceCode) {
   background-color: rgba(255,255, 255, .25);
   color: rgba(255, 255, 0, 1);
 }
+*/
 
 .cell div.sourceCode {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -22,10 +23,10 @@ td code:not(.sourceCode) {
     word-wrap: normal;
     word-break: normal;
     font-size: 14px;
-    padding: .50rem;
+   // padding: .50rem;
     background-color: rgba(34, 34, 34, 1);
-    box-shadow: 3px 2px 1px 0px rgba(255, 255, 255, .8);
-    border: 2px solid  rgba(255, 255, 255, 0.7);
+  //  box-shadow: 3px 2px 1px 0px rgba(255, 255, 255, .8);
+   // border: 2px solid  rgba(255, 255, 255, 0.7);
 }
 
 
@@ -38,6 +39,6 @@ td code:not(.sourceCode) {
   max-width: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, .50) transparent;
-  padding: .5rem;
+  margin-top: .5rem;
   margin-bottom: .5rem;
 }
