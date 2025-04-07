@@ -15,7 +15,6 @@ code-tools: true
 
 fig-responsive: true
 
-
 lightbox: true
 
 smooth-scroll: true
@@ -2106,7 +2105,6 @@ temp_vars <- tbl(duckdb_con, "historical_data") |>
 
 # Calculate correlation matrix (Pearson)
 cor_matrix_temp <- cor(temp_vars, use = "complete.obs", method = "pearson")
-
 ```
 :::
 
