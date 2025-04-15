@@ -176,10 +176,28 @@ Python ingestion → R loading → SQL transformations → final table materiali
 #| code-summary: "Write hourly api results."
 
 coordinates <- list(
-  c(38.748, -90.439),  # Original coordinates
-  c(40.7128, -74.0060),  # New York
-  c(34.0522, -118.2437)  # Los Angeles
+     c(34.0522, -118.2437),
+     c(33.9806, -117.3755),
+     c(34.1495, -117.2345),
+     c(33.6103, -114.5964),
+     c(33.4484, -112.0740),
+     c(35.1983, -111.6513),
+     c(35.0844, -106.6504),
+     c(34.9333, -104.6876),
+     c(35.2210, -101.8313),
+     c(35.2161, -100.2491),
+     c(35.4676, -97.5164),
+     c(36.7538, -95.2206),
+     c(37.0842, -94.5133),
+     c(38.7480, -90.4390),
+     c(39.1200, -88.5435),
+     c(39.7684, -86.1581),
+     c(39.7589, -84.1916),
+     c(40.4406, -79.9959),
+     c(39.9995, -78.2341),
+     c(40.7357, -74.1724)
 )
+
 
 lats <- purrr::map_dbl(coordinates, 1)
 lons <- purrr::map_dbl(coordinates, 2)
@@ -210,6 +228,7 @@ purrr::walk2(lats, lons, \(lat, lon) {
 ``` r
 #| label: writeHistoricalAPIdata
 #| code-summary: "Write hourly api historical data."
+#| eval: false
 
 save_to_partition <- function(df, lat, lon) {
   # Add partitioning columns to the data frame
@@ -279,7 +298,7 @@ purrr::walk2(lats, lons, \(lat, lon) {
 ```
 :::
 
-#### storage:// 
+#### storage://
 
 -   data/
 
@@ -295,7 +314,7 @@ purrr::walk2(lats, lons, \(lat, lon) {
 
                         -   part-0.parquet
 
-```{sql}
+``` sql
 #| connection: duckdb_con
 #| output.var: partExample 
 SELECT * --lat/lon/year/month
@@ -364,25 +383,26 @@ notes_list =  list(
   )
 
 footnotes_df <- tibble(
-  notes = notes_list, 
-  locations = locations_list)
+     notes = notes_list, 
+     locations = locations_list
+)
 
 pal_df <- tibble(
-  cols = locations_list
+     cols = locations_list
 #  pals = list(eval_palette("viridis::viridis", 2, 'c', 1))
 )
 
 rTable <- r_table_theming(
-forecast_models,
-title = "Forecast Models: Attributes",
-subtitle = NULL,
-footnotes_df,
-source_note = md("**source**: "),
-pal_df,
-multiline_feet = TRUE,
-table_font_size = pct(85),
-target_everything = TRUE,
-row_name_col = "Model",
+     forecast_models,
+     title = "Forecast Models: Attributes",
+     subtitle = NULL,
+     footnotes_df,
+     source_note = md("**source**: "),
+     pal_df,
+     multiline_feet = TRUE,
+     table_font_size = pct(85),
+     target_everything = TRUE,
+     row_name_col = "Model"
 )
 ```
 :::
@@ -987,7 +1007,7 @@ footnotes_df,
 source_note = md("**source**: World Meteorlogical Organization"),
 pal_df,
 multiline_feet = TRUE,
-table_font_size = pct(70),
+table_font_size = pct(80),
 target_everything = TRUE,
 color_by_columns = "risk_score",
 #row_name_col = "Model"
@@ -1743,7 +1763,149 @@ VACUUM historical_data;
 ```
 :::
 
-## Weather Code Stats
+## Optimal Brokering
+
+```{r}
+
+# Define base assumptions
+base_costs <- tibble(
+  parameter = c(
+    "base_fuel_efficiency",  # Semi-truck average
+    "fuel_price_per_gallon",
+    "base_driver_wage", 
+    "base_speed_mph",
+    "base_toll_cost",
+    "equipment_cost_per_mile",
+    "profit_margin",
+    "route_distance_miles"),
+  value = c(6.5, 3.50, 25, 60, 50, 0.15, 0.20, 500)) |> 
+  pivot_wider(names_from = parameter, values_from = value)
+
+dbWriteTable(duckdb_con, "base_costs", base_costs)
+     
+query <- glue::glue_sql(
+     "SELECT
+          weather_code,
+          description,
+          fuel_multiplier,
+          route_delay_factor,
+          driver_wage_premium,
+          toll_multiplier,
+          equipment_wear_factor
+     FROM weather_codes
+     WHERE weather_code IN ({vals*});", 
+     vals = c('0', '63', '75'), 
+     .con = duckdb_con)
+
+dbWriteTable(duckdb_con,  "weather_scenarios", dbGetQuery(duckdb_con, query))
+```
+
+```{r}
+
+cost_calculation_query <- glue::glue_sql(.con = duckdb_con,
+     "WITH cost_components AS (
+     SELECT
+          weather_code,
+          description,
+          -- Base calculations
+          (route_distance_miles / base_fuel_efficiency) * fuel_price_per_gallon * fuel_multiplier AS raw_fuel,
+          (route_distance_miles / (base_speed_mph / route_delay_factor)) * base_driver_wage * (1 + driver_wage_premium) AS raw_labor,
+          route_distance_miles * equipment_cost_per_mile * equipment_wear_factor AS raw_equipment,
+          base_toll_cost * toll_multiplier AS raw_toll,
+          profit_margin
+     FROM base_costs
+     CROSS JOIN weather_scenarios
+     )
+     SELECT
+          CONCAT(weather_code, ' (', description, ')') AS 'Scenario',
+          ROUND(raw_fuel, 2) AS 'Fuel Cost',
+          ROUND(raw_labor, 2) AS 'Labor Cost',
+          ROUND(raw_equipment, 2) AS 'Equipment Cost',
+          ROUND(raw_toll, 2) AS 'Toll Cost',
+          ROUND(raw_fuel + raw_labor + raw_equipment + raw_toll, 2) AS 'Total Cost',
+          ROUND((raw_fuel + raw_labor + raw_equipment + raw_toll) * (1 + profit_margin), 2) AS 'Brokerage Price'
+     FROM cost_components;",
+  .sep = "\n"
+)
+
+ccTable <- dbGetQuery(duckdb_con, cost_calculation_query)
+
+ccTable
+```
+
+```{r}
+#| label: ccTableSetup
+#| code-summary: table setup
+#| warning: false
+
+locations_list = colnames(ccTable)
+
+notes_list <- c(
+     "Scenario" = "Weather conditions from WMO weather codes",
+     "Fuel Cost" = "Calculated: (distance / efficiency) × fuel price × weather multiplier",
+     "Labor Cost" = "Drive time × ($25/hr × (1 + wage premium)), where drive time = distance / (base speed / delay factor)",
+     "Equipment Cost" = "Miles × $0.15/mile × equipment wear factor",
+     "Toll Cost" = "Base toll × weather-adjusted toll multiplier",
+     "Total Cost" = "Sum of all cost components before profit margin",
+     "Brokerage Price" = "Total cost × 1.20 (20% profit margin)"
+)
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list
+)
+
+pal_df <- tibble(
+  cols = locations_list
+ # pals = list(eval_palette("grDevices::Rocket", 10 , 'c', 1))
+)
+
+rTable <- r_table_theming(
+     ccTable,
+     title = "Cost Breakdown by Weather Scenario",
+     subtitle = NULL,
+     footnotes_df,
+     source_note = md("**source**: "),
+     pal_df,
+     footnotes_multiline = TRUE,
+     table_font_size = pct(90),
+     # do_col_labels = TRUE,
+     target_everything = TRUE
+)
+
+```
+
+```{r}
+#| label: tbl-ccTable
+#| echo: false
+rTable
+```
+
+As shown in @tbl-cost-breakdown, heavy snow conditions increase costs by **320%** compared to clear skies, primarily due to:
+
+-   Labor costs rising from \$208 to \$1,359 (+553%)
+-   Fuel costs increasing by 40%
+-   Equipment wear nearly doubling
+
+$$
+\text{Optimal Price} = \bigg(\sum_{}{Costs}\bigg)\times \big( 1 + \text{Profit Margin}\big)
+$$ Costs
+
+-   Fuel Cost: **`(distance / base_fuel_efficiency) × fuel_multiplier × fuel_price`**
+
+-   Labor Cost: **`(distance / adjusted_speed) × (base_wage × wage_premium)`**
+
+-   Equipment Cost: **`This is route distance multiplied by the base equipment cost per mile and the wear factor from weather.`**
+
+-   Adjusted Speed: **`base_speed_mph / route_delay_factor`**
+
+-   Tolls: **`base_toll × toll_multiplier`**
+
+$$
+\text{Equipment Cost} = \underbrace{\text{Distance}}_\text{miles} \times \underbrace{\text{Base Equipment Cost Rate}}_\text{\$/mile} \times \underbrace{\text{Equipment Wear Factor}}_\text{Weather multiplier}
+$$
+
+## Estimating Route Delays (doesn't quite work yet)
 
 ### Forecast
 
@@ -1756,7 +1918,7 @@ INSTALL spatial; LOAD spatial;
 
 ```{sql}
 #| label: statsTransformation
-#| code-summary: Contextualize weather data by linking codes to actionable insights using in-database processing.
+#| code-summary: Contextualize weather data by linking codes to insights using in-database processing.
 #| connection: duckdb_con
 #| output.var: exampleOutput
 WITH routes AS (
@@ -1808,8 +1970,6 @@ FROM route_weather_join
 GROUP BY route_id, distance_miles
 ORDER BY route_id ASC;
 ```
-
-SUM(route_delay_factor \* distance_miles / 60) + SUM(border_delay_hours) AS total_delay,
 
 ```{r}
 #| label: "statsTransformTableSetup"
@@ -1944,7 +2104,7 @@ $$
 :::
 ::::
 
-The workflow transforms raw coordinates into actionable route risk profiles using spatial relationships and weighted averages.
+The workflow transforms raw coordinates into route risk profiles using spatial relationships and weighted averages.
 
 ## Historical EDA
 
@@ -1977,7 +2137,6 @@ glue_sql_sum <- function(con,
                      transformation_col,
                      metric_col,
                      from_tbl) {
-     # Create parameterized query with glue_sql
      query <- glue::glue_sql("
      SELECT
           {`group_cols`*}
@@ -1994,7 +2153,6 @@ glue_sql_count <- function(con,
                      transformation_col,
                      metric_col,
                      from_tbl) {
-     # Create parameterized query with glue_sql
      query <- glue::glue_sql("
      SELECT
           {`group_cols`*}
@@ -2170,11 +2328,8 @@ corrplot(cor_matrix_precip, method = "color", type = "upper")
 #| code-summary: "Create a plot list for wind roses"
 #| warning: false
 #| error: false
-
 base_path = "data/plots/"
-
 plot_wind_rose_ggplot(duckdb_con)
-
 fileList <-list.files(base_path, pattern = "^wind_rose")
 ```
 :::
