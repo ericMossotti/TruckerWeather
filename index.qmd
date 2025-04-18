@@ -28,27 +28,21 @@ source: true
 #| message: false
 
 library(arrow)
+library(corrplot)
 library(DBI)
 library(dbplyr)
 library(dplyr)
 library(duckdb)
 library(forcats)
+library(GGally)
+library(plyr)
+library(ggstats)
 library(ggplot2)
 library(gt)
 library(lubridate)
-library(odbc)
-library(openair)
-library(patchwork)
-library(pointblank)
-#library(pillar)
-library(pryr)
 library(purrr)
 library(paletteer)
-#library(plotly)
-#library(plumber)
-library(polars)
 library(png)
-#library(profvis)
 library(readr)
 library(reticulate)
 library(scales)
@@ -63,7 +57,7 @@ library(tidyr)
 #| echo: false
 #| warning: false
 #| message: false
-import duckdb
+#import duckdb
 import openmeteo_requests
 import pandas as pd
 import polars as pl
@@ -78,6 +72,7 @@ Can weather data help predict costs associated with routes?
 ## Database Connections
 
 ```{r}
+#| label: "mssqlODBC"
 #| include: false
 #| eval: false
 #| echo: false
@@ -148,11 +143,13 @@ duckdb_con <- dbConnect(duckdb::duckdb(
 
 ## Data Ingestion Workflow
 
-Data moves from:
+Generally, data moves from:
 
 Python ingestion → R loading → SQL transformations → final table materialization
 
-![workflow](diagrams/svgWorkflow.svg){fig-align="center" width="598" height="140"}
+![workflow](diagrams/svgWorkflow.svg){fig-align="center" width="676" height="190"}
+
+Python can be used interchangeably for much of the workflow, so this can be adapted to different preferences.
 
 # Import
 
@@ -174,6 +171,7 @@ Python ingestion → R loading → SQL transformations → final table materiali
 ```{r}
 #| label: writeHourlyForecastAPIdata
 #| code-summary: "Write hourly api results."
+#| output: false
 
 coordinates <- list(
      c(34.0522, -118.2437),
@@ -217,15 +215,16 @@ purrr::walk2(lats, lons, \(lat, lon) {
 ### Historical
 
 ::: code-fold-flex
-``` python
+```{python}
 #| label: loadHourlyHistoricalAPIscript
 #| code-summary: "Run the API script to import the dataset."
 #| file: "scripts/Import/API/Hourly/import_api_hourly_historical.py"
+#| eval: false
 ```
 :::
 
 ::: code-fold-flex
-``` r
+```{r}
 #| label: writeHistoricalAPIdata
 #| code-summary: "Write hourly api historical data."
 #| eval: false
@@ -300,29 +299,11 @@ purrr::walk2(lats, lons, \(lat, lon) {
 
 #### storage://
 
--   data/
+::: callout-note
+## Where the historical data is stored:
 
-    -   weather_data/
-
-        -   lat=34.0522/
-
-            -   lon=-118.2437/
-
-                -   year=2024/
-
-                    -   month=01/
-
-                        -   part-0.parquet
-
-``` sql
-#| connection: duckdb_con
-#| output.var: partExample 
-SELECT * --lat/lon/year/month
-FROM read_parquet(
-     'data/historical_weather/*/*/*/*/part-0.parquet', 
-     hive_partitioning = true)
-LIMIT 100;
-```
+~/data/weather_data/lat= ... /lon= ... /year= ... /month= ... /part-0.parquet
+:::
 
 ```{sql}
 #| label: createTable
@@ -1018,7 +999,8 @@ color_by_columns = "risk_score",
 
 @noaa_wmo_2025
 
-:::: column-screen-inset
+::::: column-screen-inset
+:::: table-flex
 ::: {#weatherCodeTable}
 ```{r}
 #| label: "tbl-wc"
@@ -1039,9 +1021,11 @@ box-shadow: -1px 0px 1px 0px rgba(255, 255, 255, 0.2) inset,
 ```
 :::
 ::::
+:::::
 
 ::: code-fold-flex
 ```{sql}
+#| label: createMoreEnums
 #| connection: duckdb_con
 
 -- Create ENUM for wind direction
@@ -1127,7 +1111,7 @@ CREATE TYPE speed_bin_enum AS ENUM (
 ```
 :::
 
-## Transformation with Validation
+## Transformation
 
 Stages:
 
@@ -1146,18 +1130,6 @@ Stages:
 ::: p-1
 Views enhance transformation safety by acting as virtual tables, processing data dynamically without storing intermediates or risking source corruption. They enable iterative logic refinement, avoiding table rewrites. DuckDB optimizes view queries through computation pushdown, boosting efficiency. Self-documenting views clarify transformation logic, fostering collaboration and maintenance
 :::
-
-``` sql
-#| label: typeCastWeatherCode
-#| connection: duckdb_con
-
-CREATE OR REPLACE TABLE forecast_data AS
-SELECT 
-     *,
-     weather_code::INTEGER::TEXT AS weather_code
-FROM 
-     forecast_data;
-```
 
 ::: code-fold-flex
 ```{sql}
@@ -1265,6 +1237,7 @@ SELECT * FROM final_data;
 
 ::: code-fold-flex
 ```{sql}
+#| label: viewForecast
 #| connection: duckdb_con
 #| output.var: viewOfForecast
 SELECT * FROM transformed_forecast;
@@ -1383,6 +1356,8 @@ SELECT * FROM forecast_data LIMIT 10;
 
 ::: code-fold-flex
 ```{sql}
+#| label: dropForecastView
+#| code-summary: Drop transformation view.
 #| connection: duckdb_con
 DROP VIEW transformed_forecast;
 ```
@@ -1390,58 +1365,14 @@ DROP VIEW transformed_forecast;
 
 ::: code-fold-flex
 ```{sql}
+#| label: cleanForecastData
+#| code-summary: Db cleanup
 #| connection: duckdb_con
 VACUUM forecast_data;
 ```
 :::
 
 ### Dataset: Historical, 1974-2024
-
-``` r
-#| label: "preValidationHistorical"
-#| code-summary: "Pre-Transformation Validation (Raw Data)"
-#| code-fold: true
-
-# Using existing DuckDB connection
-raw_data <- tbl(duckdb_con, "historical_data")
-
-# Create validation agent for raw data
-raw_agent <- create_agent(tbl = raw_data,
-                          actions = action_levels(warn_at = 0.01, stop_at = 0.05)) |>
-     # Core structure validation
-     col_exists(
-          vars(
-               date,
-               temperature_2m,
-               precipitation,
-               rain,
-               snowfall,
-               snow_depth,
-               weather_code,
-               wind_speed,
-               wind_direction
-          )
-     ) |>
-     col_is_date(vars(date)) |>
-     # Value range checks
-     col_vals_between(vars(temperature_2m), -50, 130, na_pass = TRUE) |>
-     col_vals_gte(vars(precipitation), 0, na_pass = TRUE) |>
-     
-     # Add valid codes
-    # col_vals_in_set(vars(weather_code), set = codes) |> 
-     
-     col_vals_between(vars(wind_direction_10m), 0, 360, na_pass = TRUE) |>
-     
-     interrogate()
-```
-
-::: column-screen-inset
-``` r
-#| label: "outputRawAgent"
-#| echo: false
-raw_agent 
-```
-:::
 
 ::: code-fold-flex
 ```{sql}
@@ -1534,112 +1465,9 @@ SELECT * FROM final_data;
 ```
 :::
 
-``` r
-#| label: "postTransformHistorical"
-#| code-summary: "Post-Transformation Validation"
-#| code-fold: true
-
-transformed_data <- tbl(duckdb_con, "transformed_historical")
-
-trans_agent <- create_agent(
-     tbl = transformed_data, label = "Post-Transformed Validation", actions = action_levels(warn_at = 0.01, stop_at = 0.05)
-) |>
-     # Validate enum mappings
-     col_is_factor(vars(weather_code, speed_bin, wind_direction_cardinal)) |>
-     
-     # Validate temperature decimal places (simpler arithmetic check)
-     col_vals_expr(
-          expr = ~ MOD(temperature_2m * 10, 1) == 0,
-          label = "Temperature has 1 decimal place",
-          #na_pass = TRUE  # Skip NA values automatically
-     ) |>
-
-     # Validate speed bin logic
-     col_vals_in_set(vars(speed_bin), set = c("0-2", "2-4", "4-6", "6-8", "8-10", "10+")) |>
-     
-     # Date validations
-     col_vals_between(vars(year), 1974, 2024) |>
-     col_vals_between(vars(month), 1, 12) |>
-     col_vals_between(vars(day), 1, 31) |>
-     
-     # Month/weekday validations
-     col_vals_in_set(vars(month_name), set = month.name) |>
-     col_vals_in_set(vars(month_abb), set = month.abb) |>
-     col_vals_in_set(
-          vars(weekday_name),
-          set = c(
-               "Sunday",
-               "Monday",
-               "Tuesday",
-               "Wednesday",
-               "Thursday",
-               "Friday",
-               "Saturday"
-          )
-     ) |>
-     col_vals_in_set(vars(weekday_abb),
-                     set = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")) |>
-     
-     # Alternative month_day validation
-     col_vals_expr(
-          expr = ~ month_day == sql("STRFTIME(date, '%b %d')"),
-          label = "Month/day format matches date"
-     ) |>
-     
-     # Alternative time_only validation
-     col_vals_expr(
-          expr = ~ time_only == sql("STRFTIME(date, '%H:%M:%S')"),
-          label = "Time format matches date"
-     ) |>
-
-     # Common date validation
-     col_is_date(vars(common_date)) |>
-     col_vals_between(
-          vars(common_date),
-          left = as.POSIXct("1970-01-01 00:00:00"),
-          right = as.POSIXct("1970-01-01 23:59:59")
-     ) |>
-     
-     # Wind direction validations
-     col_vals_between(vars(direction_angle), 0, 315, na_pass = TRUE) |>
-     col_vals_in_set(vars(wind_direction_cardinal),
-                     set = c("N", "NE", "E", "SE", "S", "SW", "W", "NW")) |>
-     
-     # Cross-validations using SQL expressions
-     col_vals_expr(
-          expr = ~ time_only == sql("STRFTIME(common_date, '%H:%M:%S')"),
-          label = "Time matches common_date"
-     ) |>
-     
-     col_vals_expr(
-          expr = ~ month_name == sql(
-               "CASE month
-                WHEN 1 THEN 'January' WHEN 2 THEN 'February'
-                WHEN 3 THEN 'March' WHEN 4 THEN 'April'
-                WHEN 5 THEN 'May' WHEN 6 THEN 'June'
-                WHEN 7 THEN 'July' WHEN 8 THEN 'August'
-                WHEN 9 THEN 'September' WHEN 10 THEN 'October'
-                WHEN 11 THEN 'November' WHEN 12 THEN 'December' END"
-          ),
-          label = "Month name matches month number"
-     ) |>
-     
-     col_vals_expr(expr = ~ weekday_abb == sql("SUBSTR(weekday_name, 1, 3)"),
-                   label = "Weekday abbreviation matches name") |>
-     
-     interrogate()
-```
-
-::: column-screen-inset
-``` r
-#| label: "transAgent"
-#| echo: false
-trans_agent
-```
-:::
-
 ::: code-fold-flex
 ```{sql}
+#| label: histView20obs
 #| connection: duckdb_con
 #| output.var: viewOfHistorical
 
@@ -1739,6 +1567,7 @@ box-shadow: -1px 0px 0px 0px rgba(255, 255, 255, 0.2) inset,
 
 ::: code-fold-flex
 ```{sql}
+#| label: replaceHistoricalData
 #| connection: duckdb_con
 #| code-summary: Replace the historical weather table
 CREATE OR REPLACE TABLE historical_data AS
@@ -1748,6 +1577,7 @@ SELECT * FROM transformed_historical;
 
 ::: code-fold-flex
 ```{sql}
+#| label: dropHistoricalView
 #| connection: duckdb_con
 #| code-summary: "Drop the view"
 DROP VIEW transformed_historical;
@@ -1766,7 +1596,9 @@ VACUUM historical_data;
 ## Optimal Brokering
 
 ```{r}
-
+#| label: "baseCosts"
+#| code-summary: "Create base_costs db table."
+#| 
 # Define base assumptions
 base_costs <- tibble(
   parameter = c(
@@ -1795,12 +1627,15 @@ query <- glue::glue_sql(
      FROM weather_codes
      WHERE weather_code IN ({vals*});", 
      vals = c('0', '63', '75'), 
-     .con = duckdb_con)
+     .con = duckdb_con
+     )
 
 dbWriteTable(duckdb_con,  "weather_scenarios", dbGetQuery(duckdb_con, query))
 ```
 
 ```{r}
+#| label: "costCalculation"
+#| code-summary: "In database calculations return hypothetical costs associated with a certain scenarios based on weather code data."
 
 cost_calculation_query <- glue::glue_sql(.con = duckdb_con,
      "WITH cost_components AS (
@@ -1829,8 +1664,6 @@ cost_calculation_query <- glue::glue_sql(.con = duckdb_con,
 )
 
 ccTable <- dbGetQuery(duckdb_con, cost_calculation_query)
-
-ccTable
 ```
 
 ```{r}
@@ -1856,8 +1689,8 @@ footnotes_df <- tibble(
 )
 
 pal_df <- tibble(
-  cols = locations_list
- # pals = list(eval_palette("grDevices::Rocket", 10 , 'c', 1))
+  cols = locations_list,
+  pals = list(eval_palette("grDevices::RdYlGn", 10, 'c', -1))
 )
 
 rTable <- r_table_theming(
@@ -1870,42 +1703,150 @@ rTable <- r_table_theming(
      footnotes_multiline = TRUE,
      table_font_size = pct(90),
      # do_col_labels = TRUE,
-     target_everything = TRUE
+     target_everything = TRUE,
+     color_by_columns = "Brokerage Price"
 )
 
 ```
 
+::: {#costBreak}
 ```{r}
 #| label: tbl-ccTable
 #| echo: false
-rTable
+rTable |>
+opt_css(
+css = '
+#costBreak .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+```
+:::
+
+```{r}
+#| label: "scenarioExplanations"
+#| code-summary: "Create the scenario explanations tibble."
+
+scenario_explanations <- tribble(
+  ~Scenario, ~Key_Differences, ~Fuel_Impact, ~Labor_Impact, ~Equipment_Impact, ~Toll_Impact,
+  "0 (Clear sky)", 
+  "Baseline conditions with no weather penalties",
+  "No multiplier (1.0). MPG at rated efficiency. No detours",
+  "Full speed (60 mph). No wage premium. Standard hourly rate",
+  "Standard wear rate ($0.15/mile). No corrosion/weather damage",
+  "Base tolls only. No route adjustments",
+  
+  "63 (Rain: moderate)", 
+  "Moderate weather penalties with reduced visibility",
+  "12% increase (1.12x multiplier) From reduced MPG + minor detours",
+  "24% increase (1.24x multiplier). Speed ↓33% to ~40 mph. 15% wage premium",
+  "15% wear increase (1.15x multiplier). Wet road corrosion. Frequent brake use",
+  "18% toll increase (1.18x multiplier). Alternate routes. Dynamic pricing",
+  
+  "75 (Snow fall: heavy)", 
+  "Severe operational constraints",
+  "40% increase (1.40x multiplier). Low traction MPG loss. Major detours",
+  "110% increase (2.10x multiplier). Speed ↓78% to ~13 mph. 45% wage premium",
+  "45% wear increase (1.45x multiplier). Salt/slush damage. Frequent part failures",
+  "60% toll increase (1.60x multiplier). Mandatory snow routes. Peak pricing"
+) |>
+  mutate(Total_Cost_Increase = c(0, 17.1, 66.5))  # Percentage vs baseline
 ```
 
-As shown in @tbl-cost-breakdown, heavy snow conditions increase costs by **320%** compared to clear skies, primarily due to:
+```{r}
+#| label: scenarioSetup
+#| code-summary: "table setup"
+#| warning: true
 
--   Labor costs rising from \$208 to \$1,359 (+553%)
--   Fuel costs increasing by 40%
--   Equipment wear nearly doubling
+locations_list = colnames(scenario_explanations)
 
+notes_list <- list(
+  "Fuel multipliers from table, `weather_codes`, column `fuel_multiplier`",
+  "Speed reductions calculated as: `base_speed_mph / route_delay_factor`",
+  "Equipment wear factors account for corrosion (salt), particulate ingress, and mechanical stress",
+  "Toll multipliers reflect real-time pricing adjustments from `reroute_api` column data",
+  "Wage premiums follow OSHA hazard pay guidelines for transportation workers",
+  "MPG calculations assume 80,000 lb GVWR at sea level with DEF consumption",
+  "Dynamic pricing thresholds follow FHWA congestion management protocols"
+)
+
+footnotes_df <- tibble(
+  notes = notes_list, 
+  locations = locations_list
+)
+
+pal_df <- tibble(
+  cols = locations_list,
+  pals = list(eval_palette("grDevices::RdYlGn", 10, 'c', -1))
+)
+
+rTable <- r_table_theming(
+scenario_explanations,
+title = "Scenario Explanations",
+subtitle = NULL,
+footnotes_df,
+source_note = md("**source**:"),
+pal_df,
+multiline_feet = TRUE,
+table_font_size = pct(90),
+target_everything = TRUE,
+color_by_columns = "Total_Cost_Increase",
+#row_name_col = "Model"
+)
+
+```
+
+:::: {#scenarioExp}
+::: column-page-right
+```{r}
+#| label: "tbl-scenarioExplanations"
+#| echo: false
+rTable |>
+opt_css(
+css = '
+#scenarioExp .gt_table_body td.gt_row {
+box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
+} 
+'
+)
+
+```
+:::
+::::
+
+::: {.p-3 style="font-size: 95%; text-align: center"}
 $$
-\text{Optimal Price} = \bigg(\sum_{}{Costs}\bigg)\times \big( 1 + \text{Profit Margin}\big)
-$$ Costs
-
--   Fuel Cost: **`(distance / base_fuel_efficiency) × fuel_multiplier × fuel_price`**
-
--   Labor Cost: **`(distance / adjusted_speed) × (base_wage × wage_premium)`**
-
--   Equipment Cost: **`This is route distance multiplied by the base equipment cost per mile and the wear factor from weather.`**
-
--   Adjusted Speed: **`base_speed_mph / route_delay_factor`**
-
--   Tolls: **`base_toll × toll_multiplier`**
-
+\color{rgb(184, 52, 38)}{\text{Optimal Price} = \bigg(\sum_{}{Costs}\bigg)\times \big( 1 + \text{Profit Margin}\big)}
 $$
-\text{Equipment Cost} = \underbrace{\text{Distance}}_\text{miles} \times \underbrace{\text{Base Equipment Cost Rate}}_\text{\$/mile} \times \underbrace{\text{Equipment Wear Factor}}_\text{Weather multiplier}
-$$
+:::
 
-## Estimating Route Delays (doesn't quite work yet)
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$$
+\color{rgb(184, 52, 38)}{\text{Fuel Cost}=\frac{\text{Distance}}{\text{Fuel Efficiency}} \times \text{Fuel Price} \times \underbrace{\text{Fuel Multiplier}}_\text{Weather Multiplier}}
+$$
+:::
+
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$$
+\color{rgb(184, 52, 38)}{\text{Labor Cost}=\bigg( \frac{\text{Distance}}{\text{Base Speed}\  /\  \underbrace{\text{Delay Factor}}_\text{Weather Multiplier}}\bigg)\times \text{Hourly Wage}\times \big(1 + \text{Wage Premium}\big)}
+$$
+:::
+
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$$
+\color{rgb(184, 52, 38)}{\text{Toll Cost}=\text{Base Toll}\times \underbrace{\text{Toll Multiplier}}_\text{Weather Multiplier}}
+$$
+:::
+
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$$
+\color{rgb(184, 52, 38)}{\text{Equipment Cost} = \underbrace{\text{Distance}}_\text{miles} \times \underbrace{\text{Base Equipment Cost Rate}}_\text{\$/mile} \times \underbrace{\text{Equipment Wear Factor}}_\text{Weather multiplier}}
+$$\
+\
+:::
+
+## Estimating Route Delays (needs adjustment for real roads)
 
 ### Forecast
 
@@ -1980,7 +1921,7 @@ locations_list = colnames(exampleOutput)
 
 notes_list <- c(
   "Unique identifier for the transportation route",
-  "Highest severity level of weather impacts along the route (Low/Moderate/High/Critical)",
+  "Highest severity level of weather impacts along the route (Low/Moderate/International is committed to providing outstanding service. If you would like to provide feedback on or have High/Critical)",
   "Sum of all risk scores from weather events affecting the route",
   "Estimated total fuel consumption adjusted for weather multipliers",
   "Cumulative delay time (hours) due to weather-related speed reductions",
@@ -2036,19 +1977,27 @@ box-shadow: -1px -1px 7px 1px rgba(0, 0, 0, 0.2) inset;
 
 **Convert coordinates into geometric objects:**
 
-::: {.p-1 style="font-size: 115%; text-align: center"}
-$\color{yellow}{Routes\to LineStrings}$
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Routes\to LineStrings}$
 
-$\color{yellow}{Forecast\ Points\to Points}$ $\color{gray}{\text{where:}}$ $\color{yellow}{LineString\small_R\normalsize=ST\_MakeLine(ST\_Point(start),\ ST\_Point(end))}$ $\color{yellow}{Point(F)=ST\_Point(longitude,\ latitude)}$
+$\color{rgb(184, 52, 38)}{Forecast\ Points\to Points}$ $\color{gray}{\text{  where:}}$ $\color{rgb(184, 52, 38)}{LineString\small_R\normalsize=ST\_MakeLine(ST\_Point(start),\ ST\_Point(end))}$ $\color{rgb(184, 52, 38)}{Point(F)=ST\_Point(longitude,\ latitude)}$
 :::
 
 ${\textbf{R}}$ - Route definition (tuple of start/end coordinates)
 
-${\textbf{LineString(R)}}$ - Linear geometry connecting route endpoints, generated by: $\color{gray}{ST\_MakeLine(ST\_Point(start_{Lon},\ start_{Lat}),\ ST\_Point(end_{Lon},\ end_{Lat}))}$
+${\textbf{LineString(R)}}$ - Linear geometry connecting route endpoints, generated by:
+
+::: {.p-1 style="font-size: 90%; text-align: left"}
+$\color{gray}{ST\_MakeLine(ST\_Point(start_{Lon},\ start_{Lat}),\ ST\_Point(end_{Lon},\ end_{Lat}))}$
+:::
 
 ${\textbf{F}}$ - Raw forecast data point (from API)
 
-${\textbf{Point(F)}}$ - Geometric point representing weather observation, generated by: $\color{gray}{\ ST\_Point(longitude,\ latitude))}$
+${\textbf{Point(F)}}$ - Geometric point representing weather observation, generated by:
+
+::: {.p-1 style="font-size: 90%; text-align: left"}
+$\color{gray}{\ ST\_Point(longitude,\ latitude))}$
+:::
 
 ${\textbf{start, end}}$ - Route endpoints (latitude/longitude pairs)
 
@@ -2060,20 +2009,20 @@ ${\textbf{ST\_MakeLine}}$ - DuckDB function creating route lines
 
 **Summarize impacts per route:**
 
-::: {.p-1 style="font-size: 110%; text-align: center"}
-$\color{yellow}{Total\ Risk_R=\sum{risk\_score}^{}}$
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Total\ Risk_R=\sum{risk\_score}^{}}$
 :::
 
-::: {.p-1 style="font-size: 110%; text-align: center"}
-$\color{yellow}{Max\ Severity\small_R\normalsize=max(severity)}$
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Max\ Severity\small_R\normalsize=max(severity)}$
 :::
 
-::: {.p-1 style="font-size: 110%; text-align: center"}
-$\color{yellow}{Fuel\ Impact_R=distance\ \times \ \overline{fuel\_multiplier}}$
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Fuel\ Impact_R=distance\ \times \ \overline{fuel\_multiplier}}$
 :::
 
-::: {.p-1 style="font-size: 110%; text-align: center"}
-$\color{yellow}{Delay\small_R\normalsize=\left(\frac{distance}{60}\ \times\ route\_delay\right)\ +\ border\_delays}$
+::: {.p-3 style="font-size: 95%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Delay\small_R\normalsize=\left(\frac{distance}{60}\ \times\ route\_delay\right)\ +\ border\_delays}$
 :::
 
 ${\textbf{R}}$ - Route definition (tuple of start/end coordinates)
@@ -2082,9 +2031,9 @@ ${\textbf{R}}$ - Route definition (tuple of start/end coordinates)
 
 **Identify weather impacts along routes:**
 
-:::: column-page
-::: {.p-1 style="font-size: 110%; text-align: center"}
-$\color{yellow}{Impacted\ Points=\{F\ |\ ST\_Intersects(ST\_Buffer(LineString(R),\ Point(F))\}}$
+:::: column-page-right
+::: {.p-1 style="font-size: 100%; text-align: center"}
+$\color{rgb(184, 52, 38)}{Impacted\ Points=\{F\ |\ ST\_Intersects(ST\_Buffer(LineString(R),\ Point(F))\}}$
 :::
 ::::
 
@@ -2097,9 +2046,9 @@ ${\textbf{ST\_Buffer}}$ - Expands route line by 0.1 degr. (\~11 km at equator)
 ### Simplified Pipeline
 
 :::: column-page-right
-::: {.p-1 style="font-size: 115%; text-align: center"}
+::: {.p-1 style="font-size: 100%; text-align: center"}
 $$
-\color{yellow}{Raw\ Forecast\overset{Spatialize}{\longrightarrow}Points\overset{Intersect\ Routes}{\longrightarrow}Filtered\ Data\overset{Aggregate}{\longrightarrow}Risk\ Metrics}
+\color{rgb(184, 52, 38)}{Raw\ Forecast\overset{Spatialize}{\longrightarrow}Points\overset{Intersect\ Routes}{\longrightarrow}Filtered\ Data\overset{Aggregate}{\longrightarrow}Risk\ Metrics}
 $$
 :::
 ::::
@@ -2169,7 +2118,8 @@ glue_sql_count <- function(con,
 
 ::: code-fold-flex
 ```{r}
-
+#| label: "executeAggFunctions"
+#| code-summary: "Testing sql aggregate functions."
 # Define parameters
 group_cols <- c("year", "month")
 transformation_col <- "temperature_2m"
@@ -2211,11 +2161,13 @@ count_data <- glue_sql_count(
 ```
 :::
 
-### Test A Correlation Visual
+### Test Stats Visuals
 
 ::: code-fold-flex
 ```{r}
 #| label: "matrixCorrelationSetup"
+#| eval: false
+#| include: false
 library(GGally)
 
 # Define parameters
@@ -2247,12 +2199,18 @@ ggplot2::aes(color = as.factor(month), alpha = 0.5)
 #| warning: false
 #| label: "fig-monthYearTemp"
 #| out-width: 100%
+#| eval: false
+#| include: false
+
 pm + ggplot_theming()  # Apply custom theme
 ```
 :::
 
 ::: code-fold-flex
 ```{r}
+#| eval: false
+#| include: false
+
 library(corrplot)
 
 # Subset temperature-related numerical variables
@@ -2268,35 +2226,51 @@ cor_matrix_temp <- cor(temp_vars, use = "complete.obs", method = "pearson")
 
 ```{r}
 #| label: "fig-corMatrixTemp"
+#| eval: false
+#| include: false
+
 cor_matrix_temp
 ```
 
 ```{r}
+#| eval: false
+#| include: false
+
 # Visualize with corrplot
 corrplot(cor_matrix_temp, method = "number", type = "upper", tl.cex = 0.7)
 ```
 
-ANOVA for cateogorical (e.g., weather_code) to continuous data (e.g., temperature, precipitation)
+ANOVA for categorical (e.g., weather_code) to continuous data (e.g., temperature, precipitation)
 
 ::: code-fold-flex
 ```{r}
+#| label: "tempWC"
+#| code-summary: "Historical relationship between temperature and weather code data."
+
 # Example: Weather code vs temperature
 temp_weather_code <- tbl(duckdb_con, "historical_data") |> 
      select(temperature_2m, weather_code) |>
      dplyr::collect() 
 
-anova_temp <-aov(temperature_2m ~ weather_code, data = temp_weather_code)
+# anova_temp <-aov(temperature_2m ~ weather_code, data = temp_weather_code)
 
-summary(anova_temp)
+# summary(anova_temp)
 ```
 :::
 
 ::: code-fold-flex
 ```{r}
+#| label: "fig-tempByWC"
+#| echo: false
+
 # Boxplot visualization
 ggplot(temp_weather_code, aes(x = as.factor(weather_code), y = temperature_2m)) +
      geom_boxplot() +
-     labs(title = "Temperature by Weather Code")
+     labs(title = "Temperature by Weather Code", x = "Weather Code", y = "Temperature") +
+     ggplot_theming(
+      #    legend.position = "right"
+     )  # Apply custom theme
+
 ```
 :::
 
@@ -2304,6 +2278,9 @@ ggplot(temp_weather_code, aes(x = as.factor(weather_code), y = temperature_2m)) 
 ```{r}
 #| lable: corTest
 #| code-summary: "figure setup"
+#| eval: false
+#| include: false
+
 
 # Subset precipitation variables
 precip_vars <- tbl(duckdb_con, "historical_data") |> 
@@ -2317,6 +2294,9 @@ cor_matrix_precip <- cor(precip_vars, use = "complete.obs", method = "spearman")
 
 ```{r}
 #| label: "fig-corPrecip"
+#| eval: false
+#| include: false
+
 corrplot(cor_matrix_precip, method = "color", type = "upper")
 ```
 
