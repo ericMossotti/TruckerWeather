@@ -45,7 +45,7 @@ create_enum_and_associate <- function(duckdb_con, enum_name, table_name, code_fr
      enum_query <- paste0(
           "CREATE TYPE ", enum_name, " AS ENUM (",
           paste0(
-               "'", code_frame$code, "'", collapse = ", "), ");"
+               "'", code_frame$weather_code, "'", collapse = ", "), ");"
           )
      
      dbExecute(duckdb_con, enum_query)

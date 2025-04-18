@@ -240,7 +240,7 @@ plot_wind_rose_ggplot <- function(con) {
      # Summarize data for plotting
      plot_data <- data |>
           group_by(wind_direction_10m, speed_bin, month_day, time_only) |>
-          summarise(count = n(), .groups = "drop")
+          dplyr::summarise(count = n(), .groups = "drop")
      
      # Get unique days
      days <- unique(plot_data$month_day)
